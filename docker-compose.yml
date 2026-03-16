@@ -1,0 +1,78 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: watergas_app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    networks:
+      - watergas
+
+  web:
+    image: nginx:alpine
+    container_name: watergas_web
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - watergas
+
+  db:
+    image: mysql:8.0
+    container_name: watergas_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: password
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - watergas
+
+  redis:
+    image: redis:alpine
+    container_name: watergas_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - watergas
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: watergas_mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - watergas
+
+  node:
+    image: node:18
+    container_name: watergas_node
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    ports:
+      - "5173:5173"  # <--- ADICIONE ESTA LINHA
+    command: npm run dev
+    networks:
+      - watergas
+
+volumes:
+  dbdata:
+
+networks:
+  watergas:
+    driver: bridge

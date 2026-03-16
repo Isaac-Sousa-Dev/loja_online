@@ -1,0 +1,197 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Models\Brand;
+use App\Models\BrandsDefault;
+use App\Models\CategoriesDefault;
+use App\Models\Category;
+use App\Models\Client;
+use App\Models\Image;
+use App\Models\Modelo;
+use App\Models\Partner;
+use App\Models\Product;
+use App\Models\Subcategories;
+use App\Models\User;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Hash;
+
+class InitialData extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'insert-data';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Inserindo dados iniciais no banco de dados.';
+
+    /**
+     * Execute the console command.
+     */
+    public function handle()
+    {
+
+        $faker = \Faker\Factory::create();
+
+        $this->info('Inserindo dados iniciais no banco de dados...');
+
+        // INSERINDO ADMINISTRADOR
+        $this->info('Inserindo usuário administrador...');
+        User::create([
+            'name' => 'Admin',
+            'email' => 'admin@mail.com',
+            'password' => Hash::make('abcd@1234'),
+            'role' =>  'admin',
+        ]);
+
+
+        // INSERINDO CATEGORIAS PADRÃO
+        $this->info('Inserindo categorias padrão...');
+        $categories = ['Moto', 'Carro'];
+        foreach($categories as $category) {
+            Category::create([
+                'name' => $category,
+                'description' => null,
+                'default' => 1,
+                'partner_id' => null
+            ]);
+        }
+
+
+        // INSERINDO MARCAS PADRÃO
+        $this->info('Inserindo marcas padrão');
+        $brands = ['Toyota', 'Honda', 'Ford', 'Wolkswagen', 'Fiat', 'Renault', 'Yamaha', 'Hyundai', 'BMW', 'Posche', 'Chevrolet'];
+        foreach($brands as $brand) {
+            Brand::create([
+                'name' => $brand,
+                'logo_brand' => null,
+                'default' => 1,
+                'partner_id' => null
+            ]);
+        }
+
+
+        // INSERINDO SÓCIOS
+        $this->info('Inserindo Sócios...');
+        $qtd_partners = 4;
+        for ($i = 1; $i <= $qtd_partners; $i++) {
+            $user = User::create([
+                'name' => $faker->name,
+                'email' => $faker->email,
+                'password' => Hash::make('abcd@1234'),
+                'role' =>  'partner',
+            ]);
+
+            $partner = Partner::create([
+                'user_id' => $user->id,
+                'phone' => $faker->phoneNumber,
+                'status' => $faker->randomElement(['active', 'inactive']),
+                'address' =>  $faker->streetAddress,
+                'partner_link' => $faker->slug(5),
+                'city' => $faker->city,
+                'zip_code' => $faker->postcode,
+                'neighborhood' => $faker->city,
+                'number' => $faker->buildingNumber,
+            ]);
+
+            // INSERINDO CATEGORIAS
+            $this->info('Inserindo Categorias');
+            $arrayCategories = ['Carros', 'Motos'];
+            $qtd_categories = 1;
+            for($l = 0; $l <= $qtd_categories; $l++){
+                $category = Category::create([
+                    'name' => $arrayCategories[$l],
+                    'partner_id' => $partner->id,
+                    'description' => $faker->paragraph
+                ]);
+
+    
+                // INSERINDO SUBCATEGORIAS
+                $arraySubcategories = ['Honda', 'Sapatos', 'Ternos'];
+                $qtd_subcategories = 2;
+                for($m = 0; $m <= $qtd_subcategories; $m++){
+                    $subcategory = Subcategories::create([
+                        'name' => $arraySubcategories[$m],
+                        'slug' => $faker->slug(5),
+                        'category_id' => $category->id,
+                        'description' => $faker->paragraph
+                    ]); 
+
+
+                    // INSERINDO MODELOS
+                    $this->info('Inserindo Modelos');
+                    $arrayOfModels = ['Civic', 'City', 'Fit', 'HRV', 'Civic Si', 'Civic Type R'];
+                    $qtd_modelos = 5;
+                    for($n = 0; $n <= $qtd_modelos; $n++){
+                        $modelo = Modelo::create([
+                            'name' => $arrayOfModels[$n],
+                            'subcategory_id' => $subcategory->id,
+                            'slug' => $faker->slug(5),
+                            'partner_id' => $partner->id,
+                            'description' => $faker->paragraph
+                        ]);
+
+                        // INSERINDO PRODUTOS
+                        $this->info('Inserindo Produtos');
+                        $qtd_products = rand(2, 3);
+                        for($j = 1; $j <= $qtd_products; $j++){
+                            $product = Product::create([
+                                'name' => $faker->name,
+                                'description' => $faker->words(3, true),
+                                'price' => rand(30, 100),
+                                'stock' => rand(1, 10),
+                                'modelo_id' => $modelo->id,
+                                'tags' => $faker->randomElement(['jeans, escuro, jogger', 'tenis, calçados, correr', 'longos, algodão'])
+                            ]);
+
+                            // INSERINDO IMAGES
+                            $this->info('Inserindo Imagens para produto');
+                            $qtd_images = rand(1, 3);
+                            for($k = 1; $k <= $qtd_images; $k++){
+                                Image::create([
+                                    'product_id' => $product->id,
+                                    'url' => $faker->randomElement([
+                                        'https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+                                        'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZHVjdHxlbnwwfHwwfHx8MA%3D%3D',
+                                        'https://assets-global.website-files.com/619e8d2e8bd4838a9340a810/64c590c754d6bc13ebd90cbc_ai_product_photo_styles.webp'
+                                    ]),
+                                    'mimeType' => 'image',
+                                    
+                                ]);
+                            }
+
+                        }
+                    }
+
+                }
+            
+            }
+    
+        }
+
+        // INSERINDO CLIENTES
+        $this->info('Inserindo clientes...');
+        $qtd_clients = 5;
+        for ($i = 1; $i <= $qtd_clients; $i++) {
+            Client::create([
+                'name' => $faker->name,
+                'email' => $faker->email,
+                'phone' => $faker->phoneNumber,
+                'address' =>  $faker->streetAddress,
+                'city' => $faker->city,
+                'neighborhood' => $faker->city,
+                'zip_code' => $faker->postcode,
+                'number' => $faker->buildingNumber,
+            ]);
+        }
+
+        $this->info('Dados inseridos com sucesso!');
+    }
+}
