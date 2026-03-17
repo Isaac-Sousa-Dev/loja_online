@@ -11,10 +11,8 @@ class Modelo extends Model
 
     protected $fillable = [
         'name',
-        'description',
-        'slug',
-        'partner_id',
-        'subcategory_id'
+        'brand_id',
+        'codigo'
     ];
 
 

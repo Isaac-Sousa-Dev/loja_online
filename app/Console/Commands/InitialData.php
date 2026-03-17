@@ -10,10 +10,15 @@ use App\Models\Client;
 use App\Models\Image;
 use App\Models\Modelo;
 use App\Models\Partner;
+use App\Models\Plan;
+use App\Models\PlanModules;
 use App\Models\Product;
+use App\Models\Store;
 use App\Models\Subcategories;
+use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Hash;
 
 class InitialData extends Command
@@ -52,6 +57,28 @@ class InitialData extends Command
         ]);
 
 
+        // INSERINDO PLANO
+        $plan = Plan::create([
+            'name' => 'Teste',
+            'slug' => 'teste-teste',
+            'description' => 'Plano Teste',
+            'price' => 48.00,
+            'duration' => '90',
+            'status' => 'active',
+            'type' => 'monthly'
+        ]);
+
+        // INSERINDO MÓDULOS DO PLANO
+        $modules = ['dashboard', 'analitycs', 'requests', 'agentia', 'sales', 'team', 'vehicles'];
+        foreach($modules as $module) {
+            PlanModules::create([
+                'plan_id' => $plan->id,
+                'module' => $module
+            ]);
+        }
+       
+
+
         // INSERINDO CATEGORIAS PADRÃO
         $this->info('Inserindo categorias padrão...');
         $categories = ['Moto', 'Carro'];
@@ -72,9 +99,9 @@ class InitialData extends Command
             Brand::create([
                 'name' => $brand,
                 'logo_brand' => null,
-                'default' => 1,
+                'codigo' => $faker->randomDigit(0, 999),
                 'partner_id' => null
-            ]);
+            ]); 
         }
 
 
@@ -99,6 +126,30 @@ class InitialData extends Command
                 'zip_code' => $faker->postcode,
                 'neighborhood' => $faker->city,
                 'number' => $faker->buildingNumber,
+            ]);
+
+            // INSERINDO ASSINATURA
+            $subscription = Subscription::create([
+                'partner_id' => $partner->id,
+                'plan_id' => $plan->id,
+                'status' => 'active',
+                'start_date' => Date::now(),
+                'end_date' => '2026-12-12',
+                'payment_method' => 'pix',
+                'appellant' => true
+            ]);
+
+            // INSERINDO LOJA
+            $store = Store::create([
+                'store_name' => "Loja $user->name",
+                'store_email' => "loja.$user->name@gmail.com",
+                'store_phone' => $faker->phoneNumber(),
+                'store_cpf_cnpj' => '61355738377',
+                'qtd_vehicles_in_stock' => 2,
+                'logo' => null,
+                'banner' => null,
+                'partner_id' => $partner->id,
+                'plan_id' => $plan->id
             ]);
 
             // INSERINDO CATEGORIAS
@@ -132,10 +183,8 @@ class InitialData extends Command
                     for($n = 0; $n <= $qtd_modelos; $n++){
                         $modelo = Modelo::create([
                             'name' => $arrayOfModels[$n],
-                            'subcategory_id' => $subcategory->id,
-                            'slug' => $faker->slug(5),
-                            'partner_id' => $partner->id,
-                            'description' => $faker->paragraph
+                            'brand_id' => 1,
+                            'codigo' => $faker->randomDigit(0, 999)
                         ]);
 
                         // INSERINDO PRODUTOS

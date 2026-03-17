@@ -11,9 +11,6 @@ import 'toastr/build/toastr.min.css';
 
 window.toastr = toastr;
 
-//teste toastr
-// toastr.success('Hello World!', 'Toastr fun!');
-
 window.Alpine = Alpine;
 Alpine.start();
 

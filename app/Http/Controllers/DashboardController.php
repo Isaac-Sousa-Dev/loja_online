@@ -14,21 +14,10 @@ class DashboardController extends Controller
     {
         $userAuth = Auth::user();
         if($userAuth->role == 'admin') {
-            $data = $this->getDataForAdminDashboard($userAuth);
-            // foreach($data['allPartners'] as $user) {
-            //     // dd($partner->partner->subscription->plan->name);
-            //     // dd($partner);
-            //     // $partner->teste = 'teste';
-            //     $planId = $user->partner->subscription->plan_id;
-            //     $plan = Plan::where('id', $planId)->first();
-            //     // dd($plan);
-            //     $user->plan_name = $plan->name;
-            // }
-            
+            $data = $this->getDataForAdminDashboard($userAuth);            
             return view('admin.dashboard', $data);
         } else {
             $data = $this->getDataForPartnerDashboard($userAuth);
-            // dd($data);
             return view('partner.dashboard', $data);
         }
     }
