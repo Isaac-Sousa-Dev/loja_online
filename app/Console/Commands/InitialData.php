@@ -69,7 +69,7 @@ class InitialData extends Command
         ]);
 
         // INSERINDO MÓDULOS DO PLANO
-        $modules = ['dashboard', 'analitycs', 'requests', 'agentia', 'sales', 'team', 'vehicles'];
+        $modules = ['dashboard', 'analitycs', 'requests', 'agentia', 'sales', 'team', 'vehicles', 'categories', 'brands'];
         foreach($modules as $module) {
             PlanModules::create([
                 'plan_id' => $plan->id,

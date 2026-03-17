@@ -8,11 +8,11 @@
                 <div class="flex justify-between items-center mt-4">
                     <div>
                         <h2 class="font-semibold text-2xl mb-3 mt-3 text-gray-800">
-                            {{ __('Solicitações') }}
+                            {{ __('Pedidos') }}
                         </h2>
     
                         <div class="leading-4 ml-1 text-sm font-semibold text-gray-600">
-                            Aqui você pode acompanhar todas as solicitações de clientes para seus veículos que estão no catálogo e iniciar uma conversa no WhatsApp.
+                            Aqui você pode acompanhar todos os pedidos de clientes para seus produtos que estão no catálogo e iniciar uma conversa no WhatsApp.
                         </div>
                     </div>
                 </div>
@@ -45,12 +45,12 @@
                         @if($requestsByStore->isEmpty())
                             <div class="shadow-sm rounded-xl h-32 py-2 border bg-white border-gray-300 mt-3 md:mr-1">
                                 <div class="bg-slate-100 px-2 font-semibold">
-                                    Nenhuma solicitação encontrada
+                                    Nenhum pedido encontrado
                                 </div>
 
                                 <div class="px-2 text-sm mt-2">
                                     <span class="font-semibold">Dica:</span>
-                                    <span>Compartilhe o link do seu estabelecimento para que seus clientes possam solicitar veículos.</span>
+                                    <span>Compartilhe o link do seu estabelecimento para que seus clientes possam realizar seus pedidos.</span>
                                 </div>
                             </div>
                         @endif
