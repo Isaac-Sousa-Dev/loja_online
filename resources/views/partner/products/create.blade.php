@@ -5,7 +5,7 @@
         <div class="md:flex md:max-w-[1200px] flex-col w-full ml-2 mr-2">
 
             <h2 class="font-semibold ml-1 text-2xl mb-3 mt-3 text-gray-800">
-                {{ __('Novo Veículo') }}
+                {{ __('Novo Produto') }}
             </h2>
 
             <div class="p-1 mt-3 md:flex gap-2">
@@ -14,7 +14,7 @@
                     @csrf
                     <div class="rounded-xl shadow-md pt-3 pb-2 mb-4 flex flex-col bg-white px-3">
                         <div class="text-lg font-semibold text-gray-800 mb-3">
-                            Dados do veículo
+                            Dados do produto
                         </div>
                         <div class="md:flex mb-0 gap-3">
                             <div class="w-full mb-3">

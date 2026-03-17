@@ -9,7 +9,7 @@
 
                     <div class="flex items-center justify-between">
                         <h2 class="font-semibold text-2xl mb-3 mt-3 text-gray-800">
-                            {{ __('Veículos') }}
+                            {{ __('Produtos') }}
                         </h2>
                         <button class="flex" href="javascript:void(0)">
                             <a href="{{ route('products.create') }}"
@@ -18,7 +18,7 @@
                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7.757v8.486M7.757 12h8.486M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                                 </svg>
                                 <span>
-                                    {{ __('Novo Veículo') }}
+                                    {{ __('Novo Produto') }}
                                 </span>                                      
                             </a>
                         </button>
@@ -66,7 +66,7 @@
                     </div>
 
                     <div class="font-medium text-gray-500 mt-0">
-                        {{count($products)}} Veículos  
+                        {{count($products)}} Produtos  
                     </div>
 
                 </div>
@@ -74,7 +74,7 @@
                 <!-- component -->
                 @if (count($products) === 0)
                     <div class="text-center mt-4 py-2">
-                        <p class="text-gray-500 font-medium text-lg">Nenhum veículo cadastrado</p>
+                        <p class="text-gray-500 font-medium text-lg">Nenhum produto cadastrado</p>
                     </div>
                 @else
                     <div class="overflow-auto  md:overflow-hidden rounded-lg border border-gray-200 shadow-sm mt-3">
