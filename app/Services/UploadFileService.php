@@ -4,14 +4,14 @@ namespace App\Services;
 
 use App\Models\Image;
 
-class UploadFileService {
+class UploadFileService
+{
 
     protected $imageModel;
 
     public function __construct(
         Image $imageModel
-    )
-    {
+    ) {
         $this->imageModel = $imageModel;
     }
 
@@ -25,7 +25,6 @@ class UploadFileService {
             'index' => $key,
             'mimeType' => $dataFile['extension']
         ]);
-    
     }
 
 
@@ -44,13 +43,13 @@ class UploadFileService {
     public function getPathAndExtension($request, $object = null)
     {
 
-        if($request->hasFile('product-images') || $request->hasFile('product-images')){
+        if ($request->hasFile('product-images') || $request->hasFile('product-images')) {
 
-            if($request->file('product-images')){
+            if ($request->file('product-images')) {
 
-                foreach($request->file('product-images') as $key => $file){
+                foreach ($request->file('product-images') as $key => $file) {
                     $extension = $file->getClientOriginalExtension();
-                    $path = $file->store('images', 'public');
+                    $path = $file->store('public');
 
                     $this->insertImagesOfProducts([
                         'path' => $path,
@@ -58,7 +57,7 @@ class UploadFileService {
                     ], $object, $key);
                 }
             } else {
-                $path = $request->file('image')->store('images', 'public');
+                $path = $request->file('image')->store('public');
                 $extension = $request->file('image')->getClientOriginalExtension();
 
                 $this->insertImagesOfProducts([
@@ -66,22 +65,19 @@ class UploadFileService {
                     'extension' => $extension
                 ], $object);
             }
-    
         }
-
     }
 
 
     public function uploadMainImage($request)
     {
-        // dd($request->hasFile('product-images') || $request->hasFile('products-images'));
-        if($request->hasFile('product-images') || $request->hasFile('products-images')){
-    
-            if($request->file('product-images')){
+        if ($request->hasFile('product-images') || $request->hasFile('products-images')) {
 
-                foreach($request->file('product-images') as $file){
+            if ($request->file('product-images')) {
+
+                foreach ($request->file('product-images') as $file) {
                     $extension = $file->getClientOriginalExtension();
-                    $path = $file->store('images', 'public');
+                    $path = $file->store('public');
 
                     return [
                         'path' => $path,
@@ -89,17 +85,15 @@ class UploadFileService {
                     ];
                 }
             } else {
-                
-                $path = $request->file('image')->store('images', 'public');
+
+                $path = $request->file('image')->store('public');
                 $extension = $request->file('image')->getClientOriginalExtension();
 
                 return [
                     'path' => $path,
                     'extension' => $extension
                 ];
-                
             }
-    
         } else {
             return false;
         }

@@ -22,8 +22,8 @@
                                 <div class="w-full mb-3">
                                     <x-input-label for="name" :value="__('Categoria *')" />
                                     <div class="w-full ">
-                                        <select id="model_id"
-                                            class="select-models border-gray-300 focus:border-indigo-300 focus:ring-indigo-300 rounded-xl shadow-xs block w-full">
+                                        <select id="category_id"
+                                            class="select-category border-gray-300 focus:border-indigo-300 focus:ring-indigo-300 rounded-xl shadow-xs block w-full">
                                             @foreach ($categoriesByPartner as $storeCategory)
                                                 <option value="{{ $storeCategory->category->id }}">
                                                     {{ $storeCategory->category->name }}</option>
@@ -31,8 +31,8 @@
                                         </select>
 
                                         <script>
-                                            new TomSelect(".select-models", {
-                                                create: true,
+                                            new TomSelect(".select-category", {
+                                                create: false,
                                                 sortField: {
                                                     field: "text",
                                                     direction: "asc"
@@ -54,7 +54,7 @@
 
                                         <script>
                                             new TomSelect(".select-brands", {
-                                                create: true,
+                                                create: false,
                                                 sortField: {
                                                     field: "text",
                                                     direction: "asc"
@@ -326,6 +326,13 @@
                                     <x-text-input id="color" placeholder="Ex: Preto" name="color" type="text"
                                         class="border-gray-300 pt-1.5 focus:border-indigo-300 focus:ring-indigo-300 rounded-md h-9 shadow-xs w-full" />
                                     <x-input-error class="mt-2" :messages="$errors->get('color')" />
+                                </div>
+
+                                <div class="w-full">
+                                    <x-input-label for="stock" :value="__('Estoque')" />
+                                    <x-text-input id="stock" placeholder="Ex: 10" name="stock" type="number"
+                                        class="border-gray-300 pt-1.5 focus:border-indigo-300 focus:ring-indigo-300 rounded-md h-9 shadow-xs w-full" />
+                                    <x-input-error class="mt-2" :messages="$errors->get('stock')" />
                                 </div>
 
                             </div>
@@ -683,29 +690,21 @@
         // Crie um objeto FormData
         const formData = new FormData();
         formData.append('brand_id', $('#brand_id').val());
-        formData.append('model_id', $('#model_id').val());
+        formData.append('category_id', $('#category_id').val());
         formData.append('name', $('#name').val());
         formData.append('description', $('#description').val());
         formData.append('price', $('#price').val());
         formData.append('price_promotional', $('#price_promotional').val());
         formData.append('cost', $('#cost').val());
         formData.append('profit', $('#profit').val().replace('%', ''));
-        formData.append('year_of_manufacture', $('#year_of_manufacture').val());
-        formData.append('fuel', $('#fuel').val());
-        formData.append('license_plate', $('#license_plate').val());
-        formData.append('miliage', $('#miliage').val());
-        formData.append('exchange', $('#exchange').val());
-        formData.append('bodywork', $('#bodywork').val());
         formData.append('color', $('#color').val());
-        formData.append('accept_exchange', $('#accept_exchange').val());
-        formData.append('review_done', $('#review_done').val());
-        formData.append('reindeer', $('#reindeer').val());
-        formData.append('chassis', $('#chassis').val());
-        formData.append('engine', $('#engine').val());
-        formData.append('type', $('#type').val());
-        formData.append('crlv', $('#crlv')[0].files[0] || null);
-        formData.append('dut', $('#dut')[0].files[0] || null);
-        formData.append('invoice', $('#purchase_invoice')[0].files[0] || null);
+        formData.append('installments', $('#installments').val());
+        formData.append('discount_pix', $('#discount_pix').val());
+        formData.append('weight', $('#weight').val());
+        formData.append('width', $('#width').val());
+        formData.append('height', $('#height').val());
+        formData.append('length', $('#length').val());
+
         imagesArray.forEach(image => {
             formData.append('product-images[]', image);
         });

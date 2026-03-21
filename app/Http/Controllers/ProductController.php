@@ -5,17 +5,14 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Partner\ProductRequest;
 use App\Models\Brand;
 use Illuminate\Http\Request;
-use App\Models\Category;
 use App\Models\Modelo;
 use App\Models\Product;
 use App\Models\StoreCategories;
-use App\Models\StoreSubcategories;
 use App\Services\product\ImageProductService;
 use App\Services\UploadFileService;
 use App\Services\product\ProductService;
 use Illuminate\Support\Facades\Auth;
 use App\Services\PropertyService;
-use App\Services\subcategory\SubcategoryService;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
@@ -32,8 +29,7 @@ class ProductController extends Controller
         ProductService $productService,
         PropertyService $propertyService,
         ImageProductService $uploadProductService
-    )
-    {
+    ) {
         $this->uploadFileService = $uploadFileService;
         $this->productService = $productService;
         $this->propertyService = $propertyService;
@@ -53,7 +49,7 @@ class ProductController extends Controller
             foreach ($products as $product) {
                 if ($product->images->isNotEmpty()) {
                     $mainImageProduct = $product->images[0]->url;
-                    break; // Pegando apenas a primeira imagem e saindo do loop
+                    break;
                 }
             }
         }
@@ -68,7 +64,6 @@ class ProductController extends Controller
         $partner = $userAuth->partner;
 
         $categoriesByPartner = StoreCategories::where('store_id', $partner->id)->get();
-        // $brandsByPartner = StoreSubcategories::where('store_id', $partner->store->id)->get();
 
         $models = Modelo::all();
         $brands = Brand::where('partner_id', $partner->id)->get();
@@ -83,35 +78,31 @@ class ProductController extends Controller
 
     public function store(ProductRequest $request)
     {
-
         try {
             $userAuth = Auth::user();
             $partner = $userAuth->partner;
             $products = $partner->products;
 
-            if($products->count() < 10) {
+            if ($products->count() < 30) {
 
                 DB::beginTransaction();
                 $data = $request->all();
-
                 $data['partner_id'] = $partner->id;
-        
+
                 $product = $this->productService->insert($data, $request);
-                $this->propertyService->insert($data, $product->id);
+                // $this->propertyService->insert($data, $product->id);
                 DB::commit();
-                
-                session()->flash('success', 'Veículo cadastrado!');
+
+                session()->flash('success', 'Produto cadastrado!');
             } else {
                 DB::rollBack();
-                session()->flash('error', 'Você atingiu o limite máximo de 10 veículos cadastrados!');
+                session()->flash('error', 'Você atingiu o limite máximo de 30 produtos cadastrados!');
             }
-            
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             dd($e->getMessage());
             DB::rollBack();
-            session()->flash('error', 'Erro ao cadastrar veículo');
+            session()->flash('error', 'Erro ao cadastrar produto');
         }
-
     }
 
 
@@ -119,11 +110,11 @@ class ProductController extends Controller
     {
         $userAuth = Auth::user();
         $partner = $userAuth->partner;
-        $product = Product::find($id);  
+        $product = Product::find($id);
 
         $images = $product->images()->orderBy('index', 'asc')->get();
 
-        foreach($images as $image){
+        foreach ($images as $image) {
             $image->url = $this->imageToBase64($image->url);
         }
 
@@ -141,15 +132,18 @@ class ProductController extends Controller
 
     public function update(ProductRequest $request, string $id)
     {
-        $data = $request->all();  
-        $product = Product::find($id);  
+        $data = $request->all();
+        $product = Product::find($id);
 
-        if($request->hasFile('crlv')): $data['crlv'] = $this->uploadFileService->getPathAndExtensionTest($request->file('crlv'), 'documents')['path']; endif;
-        if($request->hasFile('dut')): $data['dut'] = $this->uploadFileService->getPathAndExtensionTest($request->file('dut'), 'documents')['path']; endif;
-        if($request->hasFile('invoice')): $data['invoice'] = $this->uploadFileService->getPathAndExtensionTest($request->file('invoice'), 'documents')['path']; endif;
+        if ($request->hasFile('crlv')): $data['crlv'] = $this->uploadFileService->getPathAndExtensionTest($request->file('crlv'), 'documents')['path'];
+        endif;
+        if ($request->hasFile('dut')): $data['dut'] = $this->uploadFileService->getPathAndExtensionTest($request->file('dut'), 'documents')['path'];
+        endif;
+        if ($request->hasFile('invoice')): $data['invoice'] = $this->uploadFileService->getPathAndExtensionTest($request->file('invoice'), 'documents')['path'];
+        endif;
 
         $this->imageProductService->initUpdate($data, $product);
-        $this->propertyService->update($data, $id);   
+        $this->propertyService->update($data, $id);
         $this->productService->update($data, $product);
 
         session()->flash('success', 'Veículo atualizado!');

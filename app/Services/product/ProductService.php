@@ -8,7 +8,8 @@ use App\Models\Product;
 use App\Repository\product\ProductRepository;
 use App\Services\UploadFileService;
 
-class ProductService {
+class ProductService
+{
 
     public $uploadFileService;
     public $productRepository;
@@ -16,8 +17,7 @@ class ProductService {
     public function __construct(
         UploadFileService $uploadFileService,
         ProductRepository $productRepository
-    )
-    {
+    ) {
         $this->uploadFileService = $uploadFileService;
         $this->productRepository = $productRepository;
     }
@@ -25,19 +25,15 @@ class ProductService {
 
     public function insert(array $data, $request = null)
     {
-
-        if($request->hasFile('crlv')): $data['crlv'] = $this->uploadFileService->getPathAndExtensionTest($request->file('crlv'), 'documents')['path']; endif;
-        if($request->hasFile('dut')): $data['dut'] = $this->uploadFileService->getPathAndExtensionTest($request->file('dut'), 'documents')['path']; endif;
-        if($request->hasFile('invoice')): $data['invoice'] = $this->uploadFileService->getPathAndExtensionTest($request->file('invoice'), 'documents')['path']; endif;
-        if ($request->hasFile('product-images')): $data['image_main'] = $this->uploadFileService->uploadMainImage($request)['path']; endif;
-
+        if ($request->hasFile('product-images')): $data['image_main'] = $this->uploadFileService->uploadMainImage($request)['path'];
+        endif;
         $data['price'] = $this->formattedPrice($data['price']);
         $data['price_promotional'] = $this->formattedPrice($data['price_promotional']);
         $data['cost'] = $this->formattedPrice($data['cost']);
 
-        $dataForInsert = $this->prepareAddData($data);
-        $productCreated = $this->productRepository->create($dataForInsert);
-        $this->uploadFileService->getPathAndExtension($request, $productCreated);    
+        // $dataForInsert = $this->prepareAddData($data);
+        $productCreated = $this->productRepository->create($data);
+        $this->uploadFileService->getPathAndExtension($request, $productCreated);
 
         return $productCreated;
     }
@@ -51,7 +47,7 @@ class ProductService {
 
         $dataForUpdate = $this->prepareUpdateData($data);
         $dataForUpdate['id'] = $product->id;
-        $this->productRepository->update($dataForUpdate);        
+        $this->productRepository->update($dataForUpdate);
     }
 
     public function updatePricePromotional($data)
@@ -84,7 +80,7 @@ class ProductService {
             if ($image) {
                 $image->delete();
             }
-        }   
+        }
     }
 
 
@@ -104,30 +100,24 @@ class ProductService {
 
     public function prepareAddData($data)
     {
-        if(isset($data['image_main'])){
+        if (isset($data['image_main'])) {
             $dataForInsert['image_main'] = $data['image_main'];
         }
 
         $dataForInsert = [
             "name" => $data['name'],
             "description" => $data['description'],
-            "price" => $data['price'],
-            "price_promotional" => $data['price_promotional'] > 0 ? $data['price_promotional'] : 0,
-            "cost" => $data['cost'],
             "profit" => $data['profit'],
-            "accept_exchange" => $data['accept_exchange'],
-            "reindeer" => $data['reindeer'],
-            "chassis" => $data['chassis'],
-            "engine" => $data['engine'],
-            "review_done" => $data['review_done'],
             "partner_id" => $data['partner_id'],
             "brand_id" => $data['brand_id'],
-            "model_id" => $data['model_id'],
-            "type" => $data['type'] ?? null,
-            "old_price" => null,
-            "invoice" => $data['invoice'] != null ? $data['invoice'] : null,
-            "crlv" => $data['crlv'] != null ? $data['crlv'] : null,
-            "dut" => $data['dut'] != null ? $data['dut'] : null,
+            "category_id" => $data['category_id'],
+            "color" => $data['color'],
+            "width" => $data['width'],
+            "height" => $data['height'],
+            "length" => $data['length'],
+            "weight" => $data['weight'],
+            "discount_pix" => $data['discount_pix'],
+            "installments" => $data['installments']
         ];
 
         return $dataForInsert;
@@ -150,9 +140,12 @@ class ProductService {
             "model_id" => $data['model_id'],
         ];
 
-        if(isset($data['invoice'])): $dataForInsert['invoice'] = $data['invoice']; endif;
-        if(isset($data['crlv'])): $dataForInsert['crlv'] = $data['crlv']; endif;
-        if(isset($data['dut'])): $dataForInsert['dut'] = $data['dut']; endif;
+        if (isset($data['invoice'])): $dataForInsert['invoice'] = $data['invoice'];
+        endif;
+        if (isset($data['crlv'])): $dataForInsert['crlv'] = $data['crlv'];
+        endif;
+        if (isset($data['dut'])): $dataForInsert['dut'] = $data['dut'];
+        endif;
 
         return $dataForInsert;
     }
