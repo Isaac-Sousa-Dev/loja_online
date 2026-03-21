@@ -8,6 +8,12 @@ use Illuminate\Support\Facades\Auth;
 
 class BrandController extends Controller
 {
+
+    public function index()
+    {
+        return 'index marcas';
+    }
+
     public function store(Request $request)
     {
         $this->validations($request);

@@ -21,20 +21,17 @@ return new class extends Migration
             $table->decimal('profit', 10, 2)->nullable();
             $table->unsignedBigInteger('partner_id')->nullable();
             $table->unsignedBigInteger('brand_id')->nullable();
-            $table->unsignedBigInteger('model_id')->nullable();
-            $table->string('type')->nullable();
+            $table->unsignedBigInteger('category_id')->nullable();
+            $table->enum('gender', ['feminine', 'masculine'])->nullable();
             $table->integer('stock')->nullable();
             $table->string('image_main')->nullable();
-            $table->string('crlv')->nullable();
-            $table->string('dut')->nullable();
-            $table->string('invoice')->nullable();
             $table->string('color')->nullable();
             $table->string('old_price')->nullable();    
 
 
             $table->foreign('partner_id')->references('id')->on('partners')->onDelete('cascade');
             $table->foreign('brand_id')->references('id')->on('brands')->onDelete('cascade');
-            $table->foreign('model_id')->references('id')->on('modelos')->onDelete('cascade');
+            $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
             $table->softDeletes();
             $table->timestamps();
         });
