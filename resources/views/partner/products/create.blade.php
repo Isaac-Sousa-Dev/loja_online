@@ -1,7 +1,7 @@
 <x-app-layout>
     @section('content')
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
-        <div class="flex md:justify-center">
+        <div class="flex md:justify-center pb-24 md:pb-0">
 
             <div class="md:flex md:max-w-[1200px] flex-col w-full ml-2 mr-2">
 
@@ -402,15 +402,17 @@
                     </div>
 
                 </div>
-                <div class="w-full justify-end flex mb-4 gap-2">
-                    <div class="flex w-full md:w-2/6 justify-between gap-3 py-2 px-3 bg-white rounded-xl">
-                        <x-secondary-button id="">
-                            <a href="{{ route('products.index') }}">
+                <div
+                    class="fixed bottom-0 md:rounded-2xl left-0 w-full z-40 bg-white border-t border-gray-200 p-4 md:static md:bg-transparent md:border-none md:p-0 flex md:justify-end md:mb-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-none">
+                    <div class="flex w-full md:w-[280px] justify-between gap-3 md:py-1 md:px-3 bg-white rounded-xl">
+                        <x-secondary-button id="" class="w-full justify-center md:w-auto">
+                            <a href="{{ route('products.index') }}" class="w-full text-center">
                                 {{ __('Cancelar') }}
                             </a>
                         </x-secondary-button>
 
-                        <x-primary-button id="btnSaveDataProduct">{{ __('Salvar') }}</x-primary-button>
+                        <x-primary-button id="btnSaveDataProduct"
+                            class="w-full justify-center md:w-auto">{{ __('Salvar') }}</x-primary-button>
                     </div>
                 </div>
             </div>
@@ -441,7 +443,7 @@
     </div>
     <div class="p-4">
         <h3 class="text-3xl font-bold">Fotos</h3>
-        <p class="mb-0 text-sm font-semibold text-gray-500">Selecione e orderne as fotos do veículo:</p>
+        <p class="mb-0 text-sm font-semibold text-gray-500">Selecione e orderne as fotos do produto:</p>
         <div class="flex gap-1 items-center mb-2">
             <svg class="w-4 h-4 text-blue-700" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                 height="24" fill="none" viewBox="0 0 24 24">
