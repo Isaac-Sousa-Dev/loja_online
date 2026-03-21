@@ -17,24 +17,14 @@ class Product extends Model
         'price_promotional',
         'cost',
         'profit',
-        'year_of_manufacture',
-        'fuel',
-        'license_plate',
-        'miliage',
-        'exchange',
-        'bodywork',
         'color',
-        'accept_exchange',
-        'review_done',
         'brand_id',
-        'model_id',
+        'brand_id',
         'stock',
         'partner_id',
         'old_price',
-        'type',
-        'invoice',
-        'crlv',
-        'dut'
+        'category_id',
+        'gender'
     ];
 
     public function images()
@@ -46,11 +36,6 @@ class Product extends Model
     {
         return $this->hasOne(Property::class, 'product_id', 'id');
     }
-
-    // public function subcategory()
-    // {
-    //     return $this->belongsTo(Subcategories::class, 'subcategory_id', 'id');
-    // }
 
     public function brand()
     {

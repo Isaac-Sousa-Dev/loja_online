@@ -26,8 +26,8 @@ return new class extends Migration
             $table->integer('stock')->nullable();
             $table->string('image_main')->nullable();
             $table->string('color')->nullable();
-            $table->string('old_price')->nullable();    
-
+            $table->string('old_price')->nullable();   
+            $table->string('tags')->nullable();     
 
             $table->foreign('partner_id')->references('id')->on('partners')->onDelete('cascade');
             $table->foreign('brand_id')->references('id')->on('brands')->onDelete('cascade');

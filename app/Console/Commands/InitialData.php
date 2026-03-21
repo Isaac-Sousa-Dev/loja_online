@@ -79,30 +79,30 @@ class InitialData extends Command
        
 
 
-        // INSERINDO CATEGORIAS PADRÃO
-        $this->info('Inserindo categorias padrão...');
-        $categories = ['Moto', 'Carro'];
-        foreach($categories as $category) {
-            Category::create([
-                'name' => $category,
-                'description' => null,
-                'default' => 1,
-                'partner_id' => null
-            ]);
-        }
+        // // INSERINDO CATEGORIAS
+        // $this->info('Inserindo categorias padrão...');
+        // $categories = ['Camisetas', 'Vestidos', 'Polos', 'Jeans'];
+        // foreach($categories as $category) {
+        //     Category::create([
+        //         'name' => $category,
+        //         'description' => null,
+        //         'default' => 1,
+        //         'partner_id' => null
+        //     ]);
+        // }
 
 
-        // INSERINDO MARCAS PADRÃO
-        $this->info('Inserindo marcas padrão');
-        $brands = ['Toyota', 'Honda', 'Ford', 'Wolkswagen', 'Fiat', 'Renault', 'Yamaha', 'Hyundai', 'BMW', 'Posche', 'Chevrolet'];
-        foreach($brands as $brand) {
-            Brand::create([
-                'name' => $brand,
-                'logo_brand' => null,
-                'codigo' => $faker->randomDigit(0, 999),
-                'partner_id' => null
-            ]); 
-        }
+        // // INSERINDO MARCAS
+        // $this->info('Inserindo marcas padrão');
+        // $brands = ['Nike', 'Adidas', 'Lacoste', 'Zara'];
+        // foreach($brands as $brand) {
+        //     Brand::create([
+        //         'name' => $brand,
+        //         'logo_brand' => null,
+        //         'codigo' => $faker->randomDigit(0, 999),
+        //         'partner_id' => null
+        //     ]); 
+        // }
 
 
         // INSERINDO SÓCIOS
@@ -154,8 +154,8 @@ class InitialData extends Command
 
             // INSERINDO CATEGORIAS
             $this->info('Inserindo Categorias');
-            $arrayCategories = ['Carros', 'Motos'];
-            $qtd_categories = 1;
+            $arrayCategories = ['Camisetas', 'Vestidos', 'Polos', 'Jeans'];
+            $qtd_categories = 3;
             for($l = 0; $l <= $qtd_categories; $l++){
                 $category = Category::create([
                     'name' => $arrayCategories[$l],
@@ -163,62 +163,57 @@ class InitialData extends Command
                     'description' => $faker->paragraph
                 ]);
 
-    
-                // INSERINDO SUBCATEGORIAS
-                $arraySubcategories = ['Honda', 'Sapatos', 'Ternos'];
-                $qtd_subcategories = 2;
-                for($m = 0; $m <= $qtd_subcategories; $m++){
-                    $subcategory = Subcategories::create([
-                        'name' => $arraySubcategories[$m],
-                        'slug' => $faker->slug(5),
-                        'category_id' => $category->id,
-                        'description' => $faker->paragraph
-                    ]); 
+                // INSERINDO MARCAS
+                $this->info('Inserindo Marcas');
+                $arrayOfBrands = ['Nike', 'Adidas', 'Lacoste', 'Zara'];
+                $qtd_brands = 5;
+                for($n = 0; $n <= $qtd_brands; $n++){
+                    $brand = Brand::create([
+                        'codigo' => $n,
+                        'name' => $faker->words(2, true),
+                        'type' => 'teste',
+                        'logo_brand' => 'teste'
+                    ]);
 
-
-                    // INSERINDO MODELOS
-                    $this->info('Inserindo Modelos');
-                    $arrayOfModels = ['Civic', 'City', 'Fit', 'HRV', 'Civic Si', 'Civic Type R'];
-                    $qtd_modelos = 5;
-                    for($n = 0; $n <= $qtd_modelos; $n++){
-                        $modelo = Modelo::create([
-                            'name' => $arrayOfModels[$n],
-                            'brand_id' => 1,
-                            'codigo' => $faker->randomDigit(0, 999)
+                    // INSERINDO PRODUTOS
+                    $this->info('Inserindo Produtos');
+                    $qtd_products = rand(2, 3);
+                    for($j = 1; $j <= $qtd_products; $j++){
+                        $product = Product::create([
+                            'name' => $faker->name,
+                            'description' => $faker->words(3, true),
+                            'price' => rand(30, 100),
+                            'stock' => rand(1, 10),
+                            'brand_id' => $brand->id,
+                            'tags' => $faker->randomElement(['jeans, escuro, jogger', 'tenis, calçados, correr', 'longos, algodão']),
+                            'gender' => $faker->randomElement(['masculine', 'feminine']),
+                            'category_id' => $category->id,
+                            'partner_id' => $partner->id,
+                            'image_main' => $faker->randomElement([
+                                'https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+                                'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZHVjdHxlbnwwfHwwfHx8MA%3D%3D',
+                                'https://assets-global.website-files.com/619e8d2e8bd4838a9340a810/64c590c754d6bc13ebd90cbc_ai_product_photo_styles.webp'
+                            ]),
+                            'color' => $faker->randomElement(['red', 'green', 'blue'])
                         ]);
 
-                        // INSERINDO PRODUTOS
-                        $this->info('Inserindo Produtos');
-                        $qtd_products = rand(2, 3);
-                        for($j = 1; $j <= $qtd_products; $j++){
-                            $product = Product::create([
-                                'name' => $faker->name,
-                                'description' => $faker->words(3, true),
-                                'price' => rand(30, 100),
-                                'stock' => rand(1, 10),
-                                'modelo_id' => $modelo->id,
-                                'tags' => $faker->randomElement(['jeans, escuro, jogger', 'tenis, calçados, correr', 'longos, algodão'])
+                        // INSERINDO IMAGES
+                        $this->info('Inserindo Imagens para produto');
+                        $qtd_images = rand(1, 3);
+                        for($k = 1; $k <= $qtd_images; $k++){
+                            Image::create([
+                                'product_id' => $product->id,
+                                'url' => $faker->randomElement([
+                                    'https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+                                    'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZHVjdHxlbnwwfHwwfHx8MA%3D%3D',
+                                    'https://assets-global.website-files.com/619e8d2e8bd4838a9340a810/64c590c754d6bc13ebd90cbc_ai_product_photo_styles.webp'
+                                ]),
+                                'mimeType' => 'image',
+                                
                             ]);
-
-                            // INSERINDO IMAGES
-                            $this->info('Inserindo Imagens para produto');
-                            $qtd_images = rand(1, 3);
-                            for($k = 1; $k <= $qtd_images; $k++){
-                                Image::create([
-                                    'product_id' => $product->id,
-                                    'url' => $faker->randomElement([
-                                        'https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-                                        'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZHVjdHxlbnwwfHwwfHx8MA%3D%3D',
-                                        'https://assets-global.website-files.com/619e8d2e8bd4838a9340a810/64c590c754d6bc13ebd90cbc_ai_product_photo_styles.webp'
-                                    ]),
-                                    'mimeType' => 'image',
-                                    
-                                ]);
-                            }
-
                         }
-                    }
 
+                    }
                 }
             
             }
