@@ -23,6 +23,7 @@ class ProductRequest extends FormRequest
             'name' => 'required|string',
             'description' => 'required|string',
             'price' => 'required',
+            'price_wholesale' => 'required',
             // 'stock' => 'required',
         ];
     }
@@ -34,6 +35,7 @@ class ProductRequest extends FormRequest
             'name.required' => 'O campo nome é obrigatório',
             'description.required' => 'Descrição do veículo é obrigatória',
             'price.required' => 'Preço de venda é obrigatório',
+            'price_wholesale.required' => 'Preço de atacado é obrigatório',
             // 'stock.required' => 'Informe a quantidade em estoque',
         ];
     }

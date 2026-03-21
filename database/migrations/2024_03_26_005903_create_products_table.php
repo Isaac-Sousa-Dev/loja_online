@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->text('description');
             $table->decimal('price', 10, 2);
+            $table->decimal('price_wholesale', 10, 2)->nullable();
             $table->decimal('price_promotional', 10, 2)->nullable();
             $table->decimal('cost', 10, 2)->nullable();
             $table->decimal('profit', 10, 2)->nullable();
@@ -34,6 +35,7 @@ return new class extends Migration
             $table->decimal('width', 10, 2)->nullable();
             $table->decimal('height', 10, 2)->nullable();
             $table->decimal('length', 10, 2)->nullable();
+            $table->string('size')->nullable();
 
             $table->foreign('partner_id')->references('id')->on('partners')->onDelete('cascade');
             $table->foreign('brand_id')->references('id')->on('brands')->onDelete('cascade');

@@ -212,13 +212,19 @@
 
                             <div class="flex flex-col gap-2">
                                 <div class="w-full flex gap-2">
-                                    <div class="w-1/2">
-                                        <x-input-label for="price" :value="__('Preço de venda *')" />
+                                    <div class="w-1/3">
+                                        <x-input-label for="price" :value="__('Preço de varejo *')" />
                                         <x-text-input id="price" placeholder="R$ 0.00" name="price" type="text"
                                             class="price-mask required" />
                                     </div>
 
-                                    <div class="w-1/2">
+                                    <div class="w-1/3">
+                                        <x-input-label for="price_wholesale" :value="__('Preço de atacado *')" />
+                                        <x-text-input id="price_wholesale" placeholder="R$ 0.00" name="price_wholesale"
+                                            type="text" class="price-mask required" />
+                                    </div>
+
+                                    <div class="w-1/3">
                                         <x-input-label for="price_promotional" :value="__('Preço promocional')" />
                                         <x-text-input id="price_promotional" placeholder="R$ 0.00"
                                             name="price_promotional" type="text" class="price-mask" autofocus
@@ -294,7 +300,7 @@
 
                     <div class="md:w-[30%]">
                         <div
-                            class="text-lg h-[31.5%] text-gray-800 rounded-xl shadow-md pt-3 pb-2 mb-4 flex flex-col bg-white px-3">
+                            class="text-lg h-[42.5%] text-gray-800 rounded-xl shadow-md pt-3 pb-2 mb-4 flex flex-col bg-white px-3">
                             <div class="mb-3 font-semibold flex items-center">
                                 <i class="fa-solid fa-list-ul text-blue-600 mr-2"></i> Propriedades
                             </div>
@@ -410,7 +416,7 @@
 
                 </div>
                 <div
-                    class="fixed bottom-0 md:rounded-2xl left-0 w-full z-40 bg-white border-t border-gray-200 p-4 md:static md:bg-transparent md:border-none md:p-0 flex md:justify-end md:mb-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-none">
+                    class="fixed bottom-0 md:rounded-2xl left-0 w-full z-40 bg-white border-t border-gray-200 p-3 md:static md:bg-transparent md:border-none md:p-0 flex md:justify-end md:mb-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-none">
                     <div class="flex w-full md:w-[280px] justify-between gap-3 md:py-1 md:px-3 bg-white rounded-xl">
                         <x-secondary-button id="" class="w-full justify-center md:w-auto">
                             <a href="{{ route('products.index') }}" class="w-full text-center">
@@ -691,9 +697,12 @@
         const formData = new FormData();
         formData.append('brand_id', $('#brand_id').val());
         formData.append('category_id', $('#category_id').val());
+        formData.append('gender', $('#gender').val());
+        formData.append('size', $('#size').val());
         formData.append('name', $('#name').val());
         formData.append('description', $('#description').val());
         formData.append('price', $('#price').val());
+        formData.append('price_wholesale', $('#price_wholesale').val());
         formData.append('price_promotional', $('#price_promotional').val());
         formData.append('cost', $('#cost').val());
         formData.append('profit', $('#profit').val().replace('%', ''));
@@ -704,6 +713,7 @@
         formData.append('width', $('#width').val());
         formData.append('height', $('#height').val());
         formData.append('length', $('#length').val());
+        formData.append('stock', $('#stock').val());
 
         imagesArray.forEach(image => {
             formData.append('product-images[]', image);

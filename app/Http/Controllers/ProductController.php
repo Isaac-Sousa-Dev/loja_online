@@ -114,18 +114,16 @@ class ProductController extends Controller
 
         $images = $product->images()->orderBy('index', 'asc')->get();
 
-        foreach ($images as $image) {
-            $image->url = $this->imageToBase64($image->url);
-        }
-
         $models = Modelo::all();
         $brands = Brand::all();
+        $categoriesByPartner = StoreCategories::where('store_id', $partner->id)->get();
 
         return view('partner.products.edit', [
             'product' => $product,
             'models' => $models,
             'brands' => $brands,
-            'images' => $images
+            'images' => $images,
+            'categoriesByPartner' => $categoriesByPartner
         ]);
     }
 

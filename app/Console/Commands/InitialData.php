@@ -71,40 +71,12 @@ class InitialData extends Command
 
         // INSERINDO MÓDULOS DO PLANO
         $modules = ['dashboard', 'analitycs', 'requests', 'agentia', 'sales', 'team', 'vehicles', 'categories', 'brands'];
-        foreach($modules as $module) {
+        foreach ($modules as $module) {
             PlanModules::create([
                 'plan_id' => $plan->id,
                 'module' => $module
             ]);
         }
-       
-
-
-        // // INSERINDO CATEGORIAS
-        // $this->info('Inserindo categorias padrão...');
-        // $categories = ['Camisetas', 'Vestidos', 'Polos', 'Jeans'];
-        // foreach($categories as $category) {
-        //     Category::create([
-        //         'name' => $category,
-        //         'description' => null,
-        //         'default' => 1,
-        //         'partner_id' => null
-        //     ]);
-        // }
-
-
-        // // INSERINDO MARCAS
-        // $this->info('Inserindo marcas padrão');
-        // $brands = ['Nike', 'Adidas', 'Lacoste', 'Zara'];
-        // foreach($brands as $brand) {
-        //     Brand::create([
-        //         'name' => $brand,
-        //         'logo_brand' => null,
-        //         'codigo' => $faker->randomDigit(0, 999),
-        //         'partner_id' => null
-        //     ]); 
-        // }
-
 
         // INSERINDO SÓCIOS
         $this->info('Inserindo Sócios...');
@@ -157,7 +129,7 @@ class InitialData extends Command
             $this->info('Inserindo Categorias');
             $arrayCategories = ['Camisetas', 'Vestidos', 'Polos', 'Jeans'];
             $qtd_categories = 3;
-            for($l = 0; $l <= $qtd_categories; $l++){
+            for ($l = 0; $l <= $qtd_categories; $l++) {
                 $category = Category::create([
                     'name' => $arrayCategories[$l],
                     'created_by' => $partner->id
@@ -173,7 +145,7 @@ class InitialData extends Command
                 $this->info('Inserindo Marcas');
                 $arrayOfBrands = ['Nike', 'Adidas', 'Lacoste', 'Zara'];
                 $qtd_brands = 5;
-                for($n = 0; $n <= $qtd_brands; $n++){
+                for ($n = 0; $n <= $qtd_brands; $n++) {
                     $brand = Brand::create([
                         'codigo' => $n,
                         'name' => $faker->randomElement($arrayOfBrands),
@@ -183,48 +155,46 @@ class InitialData extends Command
                     ]);
 
                     // INSERINDO PRODUTOS
-                    $this->info('Inserindo Produtos');
-                    $qtd_products = rand(2, 3);
-                    for($j = 1; $j <= $qtd_products; $j++){
-                        $product = Product::create([
-                            'name' => $faker->name,
-                            'description' => $faker->words(3, true),
-                            'price' => rand(30, 100),
-                            'stock' => rand(1, 10),
-                            'brand_id' => $brand->id,
-                            'tags' => $faker->randomElement(['jeans, escuro, jogger', 'tenis, calçados, correr', 'longos, algodão']),
-                            'gender' => $faker->randomElement(['masculine', 'feminine']),
-                            'category_id' => $category->id,
-                            'partner_id' => $partner->id,
-                            'image_main' => $faker->randomElement([
-                                'https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-                                'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZHVjdHxlbnwwfHwwfHx8MA%3D%3D',
-                                'https://assets-global.website-files.com/619e8d2e8bd4838a9340a810/64c590c754d6bc13ebd90cbc_ai_product_photo_styles.webp'
-                            ]),
-                            'color' => $faker->randomElement(['red', 'green', 'blue'])
-                        ]);
+                    // $this->info('Inserindo Produtos');
+                    // $qtd_products = rand(2, 3);
+                    // for($j = 1; $j <= $qtd_products; $j++){
+                    //     $product = Product::create([
+                    //         'name' => $faker->name,
+                    //         'description' => $faker->words(3, true),
+                    //         'price' => rand(30, 100),
+                    //         'stock' => rand(1, 10),
+                    //         'brand_id' => $brand->id,
+                    //         'tags' => $faker->randomElement(['jeans, escuro, jogger', 'tenis, calçados, correr', 'longos, algodão']),
+                    //         'gender' => $faker->randomElement(['masculine', 'feminine']),
+                    //         'category_id' => $category->id,
+                    //         'partner_id' => $partner->id,
+                    //         'image_main' => $faker->randomElement([
+                    //             'https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+                    //             'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZHVjdHxlbnwwfHwwfHx8MA%3D%3D',
+                    //             'https://assets-global.website-files.com/619e8d2e8bd4838a9340a810/64c590c754d6bc13ebd90cbc_ai_product_photo_styles.webp'
+                    //         ]),
+                    //         'color' => $faker->randomElement(['red', 'green', 'blue'])
+                    //     ]);
 
-                        // INSERINDO IMAGES
-                        $this->info('Inserindo Imagens para produto');
-                        $qtd_images = rand(1, 3);
-                        for($k = 1; $k <= $qtd_images; $k++){
-                            Image::create([
-                                'product_id' => $product->id,
-                                'url' => $faker->randomElement([
-                                    'https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-                                    'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZHVjdHxlbnwwfHwwfHx8MA%3D%3D',
-                                    'https://assets-global.website-files.com/619e8d2e8bd4838a9340a810/64c590c754d6bc13ebd90cbc_ai_product_photo_styles.webp'
-                                ]),
-                                'mimeType' => 'image',
-                                
-                            ]);
-                        }
+                    //     // INSERINDO IMAGES
+                    //     $this->info('Inserindo Imagens para produto');
+                    //     $qtd_images = rand(1, 3);
+                    //     for($k = 1; $k <= $qtd_images; $k++){
+                    //         Image::create([
+                    //             'product_id' => $product->id,
+                    //             'url' => $faker->randomElement([
+                    //                 'https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+                    //                 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZHVjdHxlbnwwfHwwfHx8MA%3D%3D',
+                    //                 'https://assets-global.website-files.com/619e8d2e8bd4838a9340a810/64c590c754d6bc13ebd90cbc_ai_product_photo_styles.webp'
+                    //             ]),
+                    //             'mimeType' => 'image',
 
-                    }
+                    //         ]);
+                    //     }
+
+                    // }
                 }
-            
             }
-    
         }
 
         // INSERINDO CLIENTES

@@ -14,6 +14,7 @@ class Product extends Model
         'description',
         'image_main',
         'price',
+        'price_wholesale',
         'price_promotional',
         'cost',
         'profit',
@@ -29,7 +30,8 @@ class Product extends Model
         'width',
         'height',
         'length',
-        'weight'
+        'weight',
+        'size'
     ];
 
     public function images()

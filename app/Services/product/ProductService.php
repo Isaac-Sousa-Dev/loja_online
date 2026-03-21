@@ -29,9 +29,9 @@ class ProductService
         endif;
         $data['price'] = $this->formattedPrice($data['price']);
         $data['price_promotional'] = $this->formattedPrice($data['price_promotional']);
+        $data['price_wholesale'] = $this->formattedPrice($data['price_wholesale']);
         $data['cost'] = $this->formattedPrice($data['cost']);
 
-        // $dataForInsert = $this->prepareAddData($data);
         $productCreated = $this->productRepository->create($data);
         $this->uploadFileService->getPathAndExtension($request, $productCreated);
 
@@ -43,6 +43,7 @@ class ProductService
     {
         $data['price'] = $this->formattedPrice($data['price']);
         $data['price_promotional'] = $this->formattedPrice($data['price_promotional']);
+        $data['price_wholesale'] = $this->formattedPrice($data['price_wholesale']);
         $data['cost'] = $this->formattedPrice($data['cost']);
 
         $dataForUpdate = $this->prepareUpdateData($data);
