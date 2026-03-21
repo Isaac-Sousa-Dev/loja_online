@@ -19,12 +19,17 @@ class Product extends Model
         'profit',
         'color',
         'brand_id',
-        'brand_id',
         'stock',
         'partner_id',
         'old_price',
         'category_id',
-        'gender'
+        'installments',
+        'discount_pix',
+        'gender',
+        'width',
+        'height',
+        'length',
+        'weight'
     ];
 
     public function images()

@@ -67,11 +67,11 @@ class ProductController extends Controller
         $userAuth = Auth::user();
         $partner = $userAuth->partner;
 
-        $categoriesByPartner = StoreCategories::where('store_id', $partner->store->id)->get();
+        $categoriesByPartner = StoreCategories::where('store_id', $partner->id)->get();
         // $brandsByPartner = StoreSubcategories::where('store_id', $partner->store->id)->get();
 
         $models = Modelo::all();
-        $brands = Brand::all();
+        $brands = Brand::where('partner_id', $partner->id)->get();
 
         return view('partner.products.create', [
             'brandsByPartner' => $brands,

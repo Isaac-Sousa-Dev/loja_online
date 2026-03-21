@@ -13,6 +13,7 @@ class Brand extends Model
         'codigo',
         'name',
         'type',
+        'partner_id',
         'logo_brand'
     ];
 

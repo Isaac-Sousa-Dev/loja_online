@@ -15,9 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('codigo');
             $table->string('name');
+            $table->unsignedBigInteger('partner_id')->nullable();
             $table->string('logo_brand')->nullable();
             $table->string('type')->nullable();
 
+            $table->foreign('partner_id')->references('id')->on('partners')->onDelete('cascade');
             $table->timestamps();
         });
     }

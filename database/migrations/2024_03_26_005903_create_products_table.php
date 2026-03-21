@@ -26,8 +26,14 @@ return new class extends Migration
             $table->integer('stock')->nullable();
             $table->string('image_main')->nullable();
             $table->string('color')->nullable();
-            $table->string('old_price')->nullable();   
-            $table->string('tags')->nullable();     
+            $table->string('old_price')->nullable();
+            $table->string('tags')->nullable();
+            $table->integer('installments')->nullable();
+            $table->decimal('discount_pix', 10, 2)->nullable();
+            $table->decimal('weight', 10, 2)->nullable();
+            $table->decimal('width', 10, 2)->nullable();
+            $table->decimal('height', 10, 2)->nullable();
+            $table->decimal('length', 10, 2)->nullable();
 
             $table->foreign('partner_id')->references('id')->on('partners')->onDelete('cascade');
             $table->foreign('brand_id')->references('id')->on('brands')->onDelete('cascade');

@@ -14,6 +14,7 @@ use App\Models\Plan;
 use App\Models\PlanModules;
 use App\Models\Product;
 use App\Models\Store;
+use App\Models\StoreCategories;
 use App\Models\Subcategories;
 use App\Models\Subscription;
 use App\Models\User;
@@ -159,8 +160,13 @@ class InitialData extends Command
             for($l = 0; $l <= $qtd_categories; $l++){
                 $category = Category::create([
                     'name' => $arrayCategories[$l],
-                    'partner_id' => $partner->id,
-                    'description' => $faker->paragraph
+                    'created_by' => $partner->id
+                ]);
+
+                StoreCategories::create([
+                    'description' => $faker->paragraph,
+                    'store_id' => $store->id,
+                    'category_id' => $category->id
                 ]);
 
                 // INSERINDO MARCAS
@@ -170,8 +176,9 @@ class InitialData extends Command
                 for($n = 0; $n <= $qtd_brands; $n++){
                     $brand = Brand::create([
                         'codigo' => $n,
-                        'name' => $faker->words(2, true),
+                        'name' => $faker->randomElement($arrayOfBrands),
                         'type' => 'teste',
+                        'partner_id' => $partner->id,
                         'logo_brand' => 'teste'
                     ]);
 
