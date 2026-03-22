@@ -119,6 +119,7 @@ Route::middleware('auth')->group(function () {
 
     // Routes for Brands
     Route::get('brands', [BrandController::class, 'index'])->name('brands.index');
+    Route::get('brands/create', [BrandController::class, 'create'])->name('brands.create');
     Route::post('brands/store', [BrandController::class, 'store'])->name('brands.store');
     Route::delete('brands/destroy/{id}', [BrandController::class, 'destroy'])->name('brands.destroy');
     Route::get('brands/edit/{id}', [BrandController::class, 'edit'])->name('brands.edit');
