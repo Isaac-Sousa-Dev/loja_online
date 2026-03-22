@@ -41,7 +41,7 @@
                             <div>
                                 <div class="w-full mb-3">
                                     <x-input-label for="name" :value="__('Nome *')" />
-                                    <x-text-input id="name-brand" class="required" placeholder="Nome da marca"
+                                    <x-text-input id="name-brand" class="mt-1 block w-full required" placeholder="Nome da marca"
                                         name="name-brand" type="text" autofocus autocomplete="name" />
                                 </div>
                             </div>

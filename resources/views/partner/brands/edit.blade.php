@@ -43,7 +43,7 @@
                             <div>
                                 <div class="w-full mb-3">
                                     <x-input-label for="name" :value="__('Nome *')" />
-                                    <x-text-input id="name-brand-update" class="required"
+                                    <x-text-input id="name-brand-update" class="mt-1 block w-full required"
                                         placeholder="Nome da marca" value="{{ $brand->name }}"
                                         name="name-brand-update" type="text" autofocus autocomplete="name" />
                                 </div>
