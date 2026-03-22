@@ -7,10 +7,10 @@
             <div class="md:flex md:max-w-[1200px] flex-col w-full ml-2 mr-2">
 
                 {{-- Breadcrumb --}}
-                <nav class="flex items-center gap-1.5 text-sm text-gray-500 mt-4 mb-1 px-1" aria-label="breadcrumb">
+                <nav class="flex items-center gap-1.5 text-sm text-gray-500 mt-4 mb-2 px-1" aria-label="breadcrumb">
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-1 hover:text-blue-600 transition-colors">
                         <i class="fa-solid fa-house text-xs"></i>
-                        <span>Dashboard</span>
+                        <span>Início</span>
                     </a>
                     <i class="fa-solid fa-chevron-right text-[10px] text-gray-400"></i>
                     <a href="{{ route('products.index') }}" class="hover:text-blue-600 transition-colors">Produtos</a>
@@ -30,15 +30,18 @@
                     </h2>
                 </div>
 
-                <div class="p-1 mt-3 md:flex gap-2">
+                <div class="p-1 mt-3 md:flex gap-4 lg:gap-6">
 
                     <form class="md:w-[70%]" action="{{ route('products.update', $product->id) }}" method="POST"
                         enctype="multipart/form-data">
                         @csrf
                         {{-- Dados do produto --}}
-                        <div class="rounded-xl shadow-md pt-3 pb-2 mb-4 flex flex-col bg-white px-3">
-                            <div class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                                <i class="fa-solid fa-box text-blue-600 mr-2"></i> Dados do produto
+                        <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col mb-4">
+                            <div class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+                                    <i class="fa-solid fa-box text-sm"></i>
+                                </div> 
+                                Dados do produto
                             </div>
                             <div class="md:flex mb-0 gap-3">
                                 <div class="w-full mb-3">
@@ -108,20 +111,19 @@
                         </div>
 
                         {{-- Fotos --}}
-                        <div class="rounded-xl shadow-md pt-3 pb-2 mb-4 flex flex-col bg-white px-3">
-                            <div class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                                <i class="fa-solid fa-camera text-blue-600 mr-2"></i> Fotos
-                                <div class="flex gap-1">
-                                    <svg class="w-4 h-4 text-blue-700" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                        width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                            stroke-width="2" d="M12 13V8m0 8h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                    </svg>
-                                    <span class="text-blue-700 text-xs">As fotos aparecem no seu catálogo.</span>
+                        <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col mb-4">
+                            <div class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
+                                    <i class="fa-solid fa-camera text-sm"></i>
+                                </div>
+                                Fotos
+                                <div class="flex gap-1 items-center ml-2 border-l border-gray-200 pl-3">
+                                    <i class="fa-solid fa-info-circle text-blue-500 text-xs"></i>
+                                    <span class="text-gray-500 text-xs font-normal">As fotos aparecem no seu catálogo.</span>
                                 </div>
                             </div>
 
-                            <div class="py-1 md:flex md:flex-row items-center gap-1 space-y-1 md:space-y-0">
+                            <div class="py-1 md:flex md:flex-row items-center gap-2 space-y-2 md:space-y-0">
                                 <div class="grid grid-cols-2 gap-1 md:w-1/2">
                                     <label for="" class="w-full">
                                         <div
@@ -212,9 +214,12 @@
                         </div>
 
                         {{-- Preços --}}
-                        <div class="rounded-xl shadow-md pt-3 mb-4 flex flex-col pb-3 bg-white px-3">
-                            <div class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                                <i class="fa-solid fa-tag text-blue-600 mr-2"></i> Preços
+                        <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col mb-4">
+                            <div class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                                    <i class="fa-solid fa-tag text-sm"></i>
+                                </div>
+                                Preços
                             </div>
 
                             <div id="divCostGreaterPrice" class="hidden">
@@ -312,10 +317,12 @@
                     <div class="md:w-[30%]">
 
                         {{-- Propriedades --}}
-                        <div
-                            class="text-lg h-[42.5%] text-gray-800 rounded-xl shadow-md pt-3 pb-2 mb-4 flex flex-col bg-white px-3">
-                            <div class="mb-3 font-semibold flex items-center">
-                                <i class="fa-solid fa-list-ul text-blue-600 mr-2"></i> Propriedades
+                        <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col mb-4">
+                            <div class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center">
+                                    <i class="fa-solid fa-list-ul text-sm"></i>
+                                </div>
+                                Propriedades
                             </div>
                             <div class="flex flex-col gap-3">
                                 <div class="w-full">
@@ -359,11 +366,14 @@
                         </div>
 
                         {{-- Dimensões --}}
-                        <div class="text-lg text-gray-800 rounded-xl shadow-md pt-3 pb-2 mb-4 flex flex-col bg-white px-3">
-                            <div class="mb-3 font-semibold flex items-center">
-                                <i class="fa-solid fa-ruler-combined text-blue-600 mr-2"></i> Dimensões
+                        <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col mb-4">
+                            <div class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
+                                    <i class="fa-solid fa-ruler-combined text-sm"></i>
+                                </div>
+                                Dimensões
                             </div>
-                            <div class="flex flex-col gap-3 pb-3">
+                            <div class="flex flex-col gap-3">
                                 <div class="w-full">
                                     <x-input-label for="weight" :value="__('Peso (kg)')" />
                                     <x-text-input id="weight" placeholder="Ex: 0.300" name="weight" type="number"
@@ -396,11 +406,14 @@
                         </div>
 
                         {{-- Pagamento --}}
-                        <div class="text-lg text-gray-800 rounded-xl shadow-md pt-3 pb-2 mb-4 flex flex-col bg-white px-3">
-                            <div class="mb-3 font-semibold flex items-center">
-                                <i class="fa-solid fa-credit-card text-blue-600 mr-2"></i> Pagamento
+                        <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col mb-4">
+                            <div class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center">
+                                    <i class="fa-solid fa-credit-card text-sm"></i>
+                                </div>
+                                Pagamento
                             </div>
-                            <div class="flex flex-col gap-3 pb-3">
+                            <div class="flex flex-col gap-3">
                                 <div class="w-full">
                                     <x-input-label for="installments" :value="__('Parcelamento em até')" />
                                     <select id="installments" name="installments"
