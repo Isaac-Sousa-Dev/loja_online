@@ -5,9 +5,29 @@
 
             <div class="md:flex md:max-w-[1200px] flex-col w-full ml-2 mr-2">
 
-                <h2 class="font-semibold ml-1 text-2xl mb-3 mt-3 text-gray-800">
-                    {{ __('Novo Produto') }}
-                </h2>
+                {{-- Breadcrumb --}}
+                <nav class="flex items-center gap-1.5 text-sm text-gray-500 mt-4 mb-1 px-1" aria-label="breadcrumb">
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-1 hover:text-blue-600 transition-colors">
+                        <i class="fa-solid fa-house text-xs"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <i class="fa-solid fa-chevron-right text-[10px] text-gray-400"></i>
+                    <a href="{{ route('products.index') }}" class="hover:text-blue-600 transition-colors">Produtos</a>
+                    <i class="fa-solid fa-chevron-right text-[10px] text-gray-400"></i>
+                    <span class="font-semibold text-gray-700">Novo Produto</span>
+                </nav>
+
+                {{-- Title + Back button --}}
+                <div class="flex items-center gap-3 mt-2 mb-1 px-1">
+                    <a href="{{ route('products.index') }}"
+                       class="flex items-center justify-center w-9 h-9 rounded-full bg-white shadow border border-gray-200 text-gray-500 hover:text-blue-600 hover:border-blue-400 hover:shadow-md transition-all"
+                       title="Voltar para Produtos">
+                        <i class="fa-solid fa-arrow-left text-sm"></i>
+                    </a>
+                    <h2 class="font-semibold text-2xl text-gray-800">
+                        {{ __('Novo Produto') }}
+                    </h2>
+                </div>
 
                 <div class="p-1 mt-3 md:flex gap-2">
 

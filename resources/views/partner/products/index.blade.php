@@ -1,11 +1,23 @@
 <x-app-layout>
 
     @section('content')
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
         <div class="p-2 flex justify-center">
             <div class="md:flex md:max-w-[1200px] flex-col w-full ml-2 mr-2">
+
+                {{-- Breadcrumb --}}
+                <nav class="flex items-center gap-1.5 text-sm text-gray-500 mt-4 mb-1 px-1" aria-label="breadcrumb">
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-1 hover:text-blue-600 transition-colors">
+                        <i class="fa-solid fa-house text-xs"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <i class="fa-solid fa-chevron-right text-[10px] text-gray-400"></i>
+                    <span class="font-semibold text-gray-700">Produtos</span>
+                </nav>
+
                 <div>
 
-                    <div class="flex flex-col md:justify-between mt-4">
+                    <div class="flex flex-col md:justify-between">
 
                         <div class="flex items-center justify-between">
                             <h2 class="font-semibold text-2xl mb-3 mt-3 text-gray-800">
