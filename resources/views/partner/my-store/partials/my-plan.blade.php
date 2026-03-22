@@ -1,5 +1,10 @@
-<div class="container bg-white p-3 rounded-xl">
-    <h2 class="font-semibold">Minha Assinatura</h2>
+<div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100">
+    <div class="flex items-center gap-2 mb-1">
+        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+            <i class="fa-solid fa-crown text-sm"></i>
+        </div>
+        <h2 class="font-semibold text-lg text-gray-800">Minha Assinatura</h2>
+    </div>
 
     <div class="py-1 rounded-lg mt-2">
         @if ($partner->subscription->status == 'active')

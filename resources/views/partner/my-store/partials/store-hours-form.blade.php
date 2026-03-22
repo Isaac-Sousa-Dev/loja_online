@@ -1,143 +1,76 @@
-<div class="container bg-white p-3 rounded-xl">
-    <h2 class="font-semibold">Horários de Funcionamento</h2>
+<section class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100">
+    <header class="mb-4 flex gap-2 items-center">
+        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+            <i class="fa-regular fa-clock text-sm"></i>
+        </div>
+        <h2 class="font-semibold text-xl text-gray-800">Horários de Funcionamento</h2>
+    </header>
 
-    <form class="mt-2" action="{{ route('store_hours.update', $store->id) }}" method="POST">
+    <form class="mt-2 flex flex-col gap-3" action="{{ route('store_hours.update', $store->id) }}" method="POST">
         @csrf
 
-        <div class="flex items-center border-b-[1px] border-gray-300 py-2">
-            <div class="w-1/2">
-                <label for="">Seg a Sex</label>
+        {{-- Seg a Sex --}}
+        <div class="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100 gap-3 md:gap-0 hover:border-gray-200 transition">
+            <div class="font-medium text-gray-700 w-full md:w-1/3 flex items-center gap-2">
+                <i class="fa-regular fa-calendar-days text-gray-400"></i>
+                Seg a Sex
             </div>
-            <div class="flex gap-2">
-                <x-text-input type="time" />
-                <x-text-input type="time" />
-            </div>
-        </div>
-
-        <div class="flex items-center border-b-[1px] border-gray-300 py-2">
-            <div class="w-1/2">
-                <label for="">Sábado</label>
-            </div>
-            <div class="flex gap-2">
-                <x-text-input type="time" />
-                <x-text-input type="time" />
-            </div>
-        </div>
-
-        <div class="flex items-center border-b-[1px] border-gray-300 py-2">
-            <div class="w-1/2">
-                <label for="">Domingo</label>
-            </div>
-            <div class="flex gap-2">
-                <x-text-input type="time" />
-                <x-text-input type="time" />
-            </div>
-        </div>
-
-        {{-- @foreach(range(0, 6) as $key => $day)
-
-            <div class="flex rounded-lg mb-2">
-                <div class="border-b w-3/5">
-                    <button data-key="{{$key}}" onclick="toggleAccordion({{$key}})" class="w-full flex justify-between items-center py-2 px-1 text-slate-800 btn-toggle-store-hour">
-                    <label for="hours[{{ $day }}][open_time]" class="form-label">
-                        {{ ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'][$day] }}
-                    </label>    
-        
-                    <div class="flex items-center gap-2">
-                        <span id="icon-{{$key}}" class="text-slate-800 transition-transform duration-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-                                <path fill-rule="evenodd" d="M11.78 9.78a.75.75 0 0 1-1.06 0L8 7.06 5.28 9.78a.75.75 0 0 1-1.06-1.06l3.25-3.25a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06Z" clip-rule="evenodd" />
-                            </svg>
-                        </span>
-                    </div>
-                    </button>
-                    <div id="content-{{$key}}" class="max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
-                    <div class="pb-1 text-sm text-slate-500">
-                        <div class="bg-slate-50 flex flex-col md:flex-row items-center gap-2 p-2 rounded-lg">
-                            <div class="items-center md:w-1/2 gap-2">
-                                <label class="text-xs" for="">Horário Inicial</label>
-                                <input type="time" class="rounded-lg w-full" placeholder="Horário inicial" name="hours[{{ $day }}][open_time]" 
-                                    value="{{ optional($storeHours->firstWhere('day_of_week', $day))->open_time }}">
-                            </div>
-        
-                            <div class="items-center md:w-1/2 gap-2">
-                                <label class="text-xs" for="">Horário Final</label>
-                                <input type="time" class="rounded-lg w-full" placeholder="Horário final" name="hours[{{ $day }}][close_time]"
-                                    value="{{ optional($storeHours->firstWhere('day_of_week', $day))->close_time }}">
-                            </div>
-        
-                        </div>
-                    </div>
-                    </div>
+            <div class="flex items-center gap-3 w-full md:w-2/3 md:justify-end">
+                <div class="flex flex-col w-full md:w-32">
+                    <span class="text-[10px] uppercase text-gray-500 font-bold mb-1 ml-1">Abertura</span>
+                    <x-text-input type="time" name="weekday_open" class="text-sm rounded-xl border-gray-300 text-gray-600" />
                 </div>
-        
-                <div class=" text-center w-2/5 justify-center">
-                    <div class="text-xs">Atendimento</div>
-
-                    <div class="inline-flex items-center gap-2">
-                        <label for="switch-component-on" class="text-red-600 text-sm cursor-pointer">Não</label>
-
-                        <label class="relative inline-flex cursor-pointer items-center">
-                            <input id="switch-2" name="hours[{{ $day }}][is_open]" @checked($store->storeHours[$day]['is_open'] != 0) type="checkbox" class="peer sr-only" />
-                            <label for="switch-2" class="hidden"></label>
-                            <div class="peer h-4 w-11 rounded-full border bg-slate-200 after:absolute after:-top-1 after:left-0 after:h-6 after:w-6 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-green-300 peer-checked:after:translate-x-full peer-focus:ring-green-300"></div>
-                        </label>
-                        <label for="switch-component-on" class="text-green-600 text-sm cursor-pointer">Sim</label>
-                    </div>
+                <span class="text-gray-300 mt-4">-</span>
+                <div class="flex flex-col w-full md:w-32">
+                    <span class="text-[10px] uppercase text-gray-500 font-bold mb-1 ml-1">Fechamento</span>
+                    <x-text-input type="time" name="weekday_close" class="text-sm rounded-xl border-gray-300 text-gray-600" />
                 </div>
             </div>
-        @endforeach --}}
+        </div>
 
-        {{-- <script>
+        {{-- Sábado --}}
+        <div class="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100 gap-3 md:gap-0 hover:border-gray-200 transition">
+            <div class="font-medium text-gray-700 w-full md:w-1/3 flex items-center gap-2">
+                <i class="fa-regular fa-calendar-check text-gray-400"></i>
+                Sábado
+            </div>
+            <div class="flex items-center gap-3 w-full md:w-2/3 md:justify-end">
+                <div class="flex flex-col w-full md:w-32">
+                    <span class="text-[10px] uppercase text-gray-500 font-bold mb-1 ml-1">Abertura</span>
+                    <x-text-input type="time" name="saturday_open" class="text-sm rounded-xl border-gray-300 text-gray-600" />
+                </div>
+                <span class="text-gray-300 mt-4">-</span>
+                <div class="flex flex-col w-full md:w-32">
+                    <span class="text-[10px] uppercase text-gray-500 font-bold mb-1 ml-1">Fechamento</span>
+                    <x-text-input type="time" name="saturday_close" class="text-sm rounded-xl border-gray-300 text-gray-600" />
+                </div>
+            </div>
+        </div>
 
-            $('.btn-toggle-store-hour').click(function(event) {
-                event.preventDefault();
-                const index = $(this).data('key');
-                this.toggleAccordion(index);
-            });
+        {{-- Domingo --}}
+        <div class="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100 gap-3 md:gap-0 hover:border-gray-200 transition">
+            <div class="font-medium text-gray-700 w-full md:w-1/3 flex items-center gap-2">
+                <i class="fa-regular fa-calendar-xmark text-gray-400"></i>
+                Domingo
+            </div>
+            <div class="flex items-center gap-3 w-full md:w-2/3 md:justify-end">
+                <div class="flex flex-col w-full md:w-32">
+                    <span class="text-[10px] uppercase text-gray-500 font-bold mb-1 ml-1">Abertura</span>
+                    <x-text-input type="time" name="sunday_open" class="text-sm rounded-xl border-gray-300 text-gray-600" />
+                </div>
+                <span class="text-gray-300 mt-4">-</span>
+                <div class="flex flex-col w-full md:w-32">
+                    <span class="text-[10px] uppercase text-gray-500 font-bold mb-1 ml-1">Fechamento</span>
+                    <x-text-input type="time" name="sunday_close" class="text-sm rounded-xl border-gray-300 text-gray-600" />
+                </div>
+            </div>
+        </div>
 
-            function toggleAccordion(index) {
-                const content = document.getElementById(`content-${index}`);
-                const icon = document.getElementById(`icon-${index}`);
-            
-                // SVG for Down icon
-                const downSVG = `
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-                    <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
-                </svg>
-                `;
-            
-                // SVG for Up icon
-                const upSVG = `
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-                    <path fill-rule="evenodd" d="M11.78 9.78a.75.75 0 0 1-1.06 0L8 7.06 5.28 9.78a.75.75 0 0 1-1.06-1.06l3.25-3.25a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06Z" clip-rule="evenodd" />
-                </svg>
-                `;
-            
-                // Toggle the content's max-height for smooth opening and closing
-                if (content.style.maxHeight && content.style.maxHeight !== '0px') {
-                    content.style.maxHeight = '0';
-                    icon.innerHTML = upSVG;
-                } else {
-                    content.style.maxHeight = content.scrollHeight + 'px';
-                    icon.innerHTML = downSVG;
-                }
-            }
-        </script> --}}
-
-        {{-- <div class="flex items-center gap-4 mt-3">
-            <button class="py-2 px-4 text-white font-semibold rounded-xl bg-primary" id="btnSaveStoreHour">{{ __('Salvar') }}</button>
-
-            @if (session('status') === 'profile-updated')
-                <p
-                    x-data="{ show: true }"
-                    x-show="show"
-                    x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600"
-                >{{ __('Saved.') }}</p>
-            @endif
-        </div> --}}
+        <div class="flex justify-end mt-4 pt-5 border-t border-gray-100">
+            <x-primary-button id="btnSaveStoreHour" class="w-full justify-center md:w-auto px-6 py-2.5 shadow-md">
+                {{ __('Atualizar Horários') }}
+            </x-primary-button>
+        </div>
 
     </form>
-</div>
+</section>
