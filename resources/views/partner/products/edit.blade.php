@@ -432,7 +432,7 @@
 
                 {{-- Botões de ação (fixo mobile, estático desktop) --}}
                 <div
-                    class="fixed bottom-0 md:rounded-2xl left-0 w-full z-40 bg-white border-t border-gray-200 p-3 md:static md:bg-transparent md:border-none md:p-0 flex md:justify-end md:mb-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-none">
+                    class="fixed bottom-0 md:rounded-2xl left-0 w-full z-20 bg-white border-t border-gray-200 p-3 md:static md:bg-transparent md:border-none md:p-0 flex md:justify-end md:mb-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-none">
                     <div class="flex w-full md:w-[280px] justify-between gap-3 md:py-1 md:px-3 bg-white rounded-xl">
                         <x-secondary-button id="" class="w-full justify-center md:w-auto">
                             <a href="{{ route('products.index') }}" class="w-full text-center">

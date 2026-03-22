@@ -16,7 +16,7 @@ class CategoryController extends Controller
     public function __construct(CategoryService $categoryService)
     {
         $this->categoryService = $categoryService;
-    }   
+    }
 
     public function index()
     {
@@ -37,7 +37,13 @@ class CategoryController extends Controller
     {
         $userAuth = Auth::user();
         $partner = $userAuth->partner;
-        $this->categoryService->create($request->all(), $partner);
+        $data = $request->all();
+
+        if ($request->hasFile('image')) {
+            $data['image_url'] = $request->file('image')->store('categories', 'public');
+        }
+
+        $this->categoryService->create($data, $partner);
 
         return session()->flash('success', 'Categoria cadastrada!');
     }
@@ -51,10 +57,16 @@ class CategoryController extends Controller
 
 
     public function update(Request $request, string $id)
-    {      
+    {
         $userAuth = Auth::user();
         $partner = $userAuth->partner;
-        $this->categoryService->update($request->all(), $partner);
+        $data = $request->all();
+
+        if ($request->hasFile('image')) {
+            $data['image_url'] = $request->file('image')->store('categories', 'public');
+        }
+
+        $this->categoryService->update($data, $partner);
 
         return session()->flash('success', 'Categoria atualizada!');
     }

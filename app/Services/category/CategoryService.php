@@ -36,7 +36,8 @@ class CategoryService {
             StoreCategories::create([
                 'store_id' => $partner->store->id,
                 'category_id' => $responseCreated->id,
-                'description' => $data['description'] ?? null
+                'description' => $data['description'] ?? null,
+                'image_url' => $data['image_url'] ?? null
             ]);
         }
     }
@@ -55,11 +56,17 @@ class CategoryService {
             $responseCreated = $this->categoryRepository->create($data);
         }
 
-        $storeCategoryUpdate->update([
+        $updateData = [
             'store_id' => $partner->store->id,
             'category_id' => $responseCreated != null ? $responseCreated->id : $checkExistenceCategory->id,
             'description' => $data['description']
-        ]);
+        ];
+        
+        if (isset($data['image_url'])) {
+            $updateData['image_url'] = $data['image_url'];
+        }
+
+        $storeCategoryUpdate->update($updateData);
     }
 
 
