@@ -15,14 +15,15 @@
                     <i class="fa-solid fa-chevron-right text-[10px] text-gray-400"></i>
                     <a href="{{ route('categories.index') }}" class="hover:text-blue-600 transition-colors">Categorias</a>
                     <i class="fa-solid fa-chevron-right text-[10px] text-gray-400"></i>
-                    <span class="font-semibold text-gray-700 truncate max-w-[200px]">{{ $storeCategory->category->name }}</span>
+                    <span
+                        class="font-semibold text-gray-700 truncate max-w-[200px]">{{ $storeCategory->category->name }}</span>
                 </nav>
 
                 {{-- Title + Back button --}}
                 <div class="flex items-center gap-3 mt-2 mb-1 px-1">
                     <a href="{{ route('categories.index') }}"
-                       class="flex items-center justify-center w-9 h-9 rounded-full bg-white shadow border border-gray-200 text-gray-500 hover:text-blue-600 hover:border-blue-400 hover:shadow-md transition-all"
-                       title="Voltar para Categorias">
+                        class="flex items-center justify-center w-9 h-9 rounded-full bg-white shadow border border-gray-200 text-gray-500 hover:text-blue-600 hover:border-blue-400 hover:shadow-md transition-all"
+                        title="Voltar para Categorias">
                         <i class="fa-solid fa-arrow-left text-sm"></i>
                     </a>
                     <h2 class="font-semibold text-3xl text-gray-800 leading-tight truncate">
@@ -41,9 +42,9 @@
                             <div>
                                 <div class="w-full mb-3">
                                     <x-input-label for="name" :value="__('Nome *')" />
-                                    <x-text-input id="name-category-update" class="required" placeholder="Carro, Moto..."
-                                        value="{{ $storeCategory->category->name }}" name="name-category-update"
-                                        type="text" autofocus autocomplete="name" />
+                                    <x-text-input id="name-category-update" class="required"
+                                        placeholder="Camisetas, Jeans..." value="{{ $storeCategory->category->name }}"
+                                        name="name-category-update" type="text" autofocus autocomplete="name" />
                                     {{-- <x-input-error class="mt-2" :messages="$errors->get('name')" /> --}}
                                 </div>
                             </div>
@@ -61,32 +62,40 @@
                             </div>
 
                         </div>
-                        
+
                         {{-- Imagem da Categoria --}}
                         <div class="rounded-xl shadow-md pt-3 pb-4 mb-4 flex flex-col bg-white px-3">
                             <div class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
                                 <i class="fa-solid fa-camera text-blue-600 mr-2"></i> Imagem (Opcional)
                             </div>
                             <div class="w-full">
-                                <label for="image-category" class="w-full md:w-1/2 flex flex-col items-center justify-center p-4 border-2 border-dashed border-sky-500 rounded-lg cursor-pointer bg-blue-50 text-gray-600 relative overflow-hidden h-40">
-                                    <div id="image-preview-container" class="absolute inset-0 {{ $storeCategory->image_url ? '' : 'hidden' }}">
-                                        <img id="image-preview" src="{{ $storeCategory->image_url ? asset('storage/' . $storeCategory->image_url) : '' }}" class="w-full h-full object-cover">
+                                <label for="image-category"
+                                    class="w-full md:w-1/2 flex flex-col items-center justify-center p-4 border-2 border-dashed border-sky-500 rounded-lg cursor-pointer bg-blue-50 text-gray-600 relative overflow-hidden h-40">
+                                    <div id="image-preview-container"
+                                        class="absolute inset-0 {{ $storeCategory->image_url ? '' : 'hidden' }}">
+                                        <img id="image-preview"
+                                            src="{{ $storeCategory->image_url ? asset('storage/' . $storeCategory->image_url) : '' }}"
+                                            class="w-full h-full object-cover">
                                     </div>
-                                    <div id="image-placeholder" class="flex flex-col items-center {{ $storeCategory->image_url ? 'hidden' : '' }}">
+                                    <div id="image-placeholder"
+                                        class="flex flex-col items-center {{ $storeCategory->image_url ? 'hidden' : '' }}">
                                         <svg class="w-8 h-8 mb-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                                            <path fill="currentColor" d="M149.1 64.8L138.7 96H64C28.7 96 0 124.7 0 160V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V160c0-35.3-28.7-64-64-64H373.3L362.9 64.8C356.4 45.2 338.1 32 317.4 32H194.6c-20.7 0-39 13.2-45.5 32.8zM256 192a96 96 0 1 1 0 192 96 96 0 1 1 0-192z"/>
+                                            <path fill="currentColor"
+                                                d="M149.1 64.8L138.7 96H64C28.7 96 0 124.7 0 160V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V160c0-35.3-28.7-64-64-64H373.3L362.9 64.8C356.4 45.2 338.1 32 317.4 32H194.6c-20.7 0-39 13.2-45.5 32.8zM256 192a96 96 0 1 1 0 192 96 96 0 1 1 0-192z" />
                                         </svg>
                                         <span class="text-sm font-semibold text-center">Adicionar foto da categoria</span>
                                     </div>
                                 </label>
-                                <input type="file" id="image-category" name="image-category" accept="image/*" class="hidden" onchange="previewImageCategory(event)">
+                                <input type="file" id="image-category" name="image-category" accept="image/*"
+                                    class="hidden" onchange="previewImageCategory(event)">
                             </div>
                         </div>
                     </form>
 
                 </div>
 
-                <div class="fixed bottom-0 md:rounded-2xl left-0 w-full z-20 bg-white border-t border-gray-200 p-3 md:static md:bg-transparent md:border-none md:p-0 flex md:justify-end md:mb-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-none">
+                <div
+                    class="fixed bottom-0 md:rounded-2xl left-0 w-full z-20 bg-white border-t border-gray-200 p-3 md:static md:bg-transparent md:border-none md:p-0 flex md:justify-end md:mb-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-none">
                     <div class="flex w-full md:w-[280px] justify-between gap-3 md:py-1 md:px-3 bg-white rounded-xl">
                         <x-secondary-button id="" class="w-full justify-center md:w-auto">
                             <a href="{{ route('categories.index') }}" class="w-full text-center">
@@ -129,7 +138,7 @@
         formData.append('name', $('#name-category-update').val());
         formData.append('description', $('#description-category-update').val());
         formData.append('category_id', '{{ $storeCategory->category->id }}');
-        
+
         const imageFile = $('#image-category')[0].files[0];
         if (imageFile) {
             formData.append('image', imageFile);
