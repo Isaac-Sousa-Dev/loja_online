@@ -23,7 +23,7 @@
                     <div class="grid md:grid-cols-3 gap-3">
                         <div class="border px-4 py-2 border-gray-600 rounded-xl bg-white">   
                             <div class="flex justify-center font-semibold">
-                                Estoque por categoria de veículo
+                                Estoque por categoria de produto
                             </div> 
                             <canvas id="estoqueChart"></canvas>
                         </div>
@@ -37,7 +37,7 @@
 
                         <div class="border px-4 py-2 border-gray-600 rounded-xl bg-white">   
                             <div class="flex justify-center font-semibold">
-                                Veículos mais visualizados
+                                Produtos mais visualizados
                             </div> 
                             <canvas id="visualizacoesChart"></canvas>
                         </div>
@@ -82,10 +82,10 @@
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['Carros', 'Motos', 'Caminhões'],
+                labels: ['Acessórios', 'Eletrônicos', 'Roupas'],
                 datasets: [
                     {
-                        // label: "Estoque por categoria de veículo",
+                        // label: "Estoque por categoria de produto",
                         data: [12, 19, 5],
                         backgroundColor: ['#4dc9f6','#190eeb','#537bc4'],
                     }
@@ -100,7 +100,7 @@
                     },
                     title: {
                         display: false,
-                        text: 'Estoque por categoria de veículo'
+                        text: 'Estoque por categoria de produto'
                     }
                 },
                 scales: {
@@ -157,7 +157,7 @@
             plugins: {
                 title: {
                     display: false,
-                    text: 'Veículos mais visualizados'
+                    text: 'Produtos mais visualizados'
                 }
             },
             scales: {
@@ -194,7 +194,7 @@
     new Chart(tempoCtx, {
         type: 'polarArea',
         data: {
-            labels: ['Carros', 'Motos', 'Caminhões'],
+            labels: ['Acessórios', 'Eletrônicos', 'Roupas'],
             datasets: [{
                 label: 'Dias médios até venda',
                 data: [22, 15, 30],

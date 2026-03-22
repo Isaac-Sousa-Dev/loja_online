@@ -122,7 +122,7 @@
                     <div class="flex space-x-3">
                         @if(count($categories) > 1)
                             <div data-categoryId="todos" style="letter-spacing: 1px" class="font-bold w-48 justify-center text-white rounded-full p-1 flex div-categoria bg-blue-600 cursor-pointer">
-                                Todos Veículos
+                                Todos Produtos
                             </div>
                         @endif
                     </div>
@@ -137,7 +137,7 @@
                 <span class="text-black font-bold">
                     {{$qtdProducts}}
                 </span>
-                veículos encontrados
+                produtos encontrados
             </div>
 
             <div class="section-center h-[calc(100vh-160px)] overflow-y-auto scrollbar-hidden">

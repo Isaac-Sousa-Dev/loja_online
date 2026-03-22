@@ -83,11 +83,11 @@
                 <section id="section-1" class="bg-white px-3 md:px-32 py-10 md:py-32 md:flex">
                     <div data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000" class="md:w-1/2 flex flex-col justify-center animate-fade-in-up delay-[400ms]">
                         <div class="text-3xl md:text-5xl text-blue-700 font-bold">
-                            Solução para lojas de veículos
+                            Solução para lojas online
                         </div>
     
                         <div class="mt-2 text-md md:text-xl font-medium text-gray-500 md:w-3/4">
-                            Gerencie sua loja de forma eficiente com ferramentas integradas: Gestão de Veículos, CRM Dedicado e um Catálogo Online.
+                            Gerencie sua loja de forma eficiente com ferramentas integradas: Gestão de Produtos, CRM Dedicado e um Catálogo Online.
                         </div>
     
                         <div class="mt-5">
@@ -134,11 +134,11 @@
                     <div class="md:flex md:flex-col md:items-center">
                         <div class="md:w-1/2 md:px-24">  
                             <div data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000" class="text-2xl md:text-3xl font-bold mt-14 md:mt-24 text-center px-10 text-blue-700">
-                                <span class="text-white">Principais soluções</span> do sistema para lojas de veículos Motiv
+                                <span class="text-white">Principais soluções</span> do sistema para lojas online Motiv
                             </div>
         
                             <div data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000" class="mt-5 px-6 text-center text-gray-300 font-medium">
-                                Conte com as funcionalidades avançadas do sistema para lojas de veículos Motiv para ter uma gestão empresarial eficiente e otimizada.
+                                Conte com as funcionalidades avançadas do sistema para lojas online Motiv para ter uma gestão empresarial eficiente e otimizada.
                             </div>
                         </div>
                     </div>
@@ -152,14 +152,14 @@
                                     <span>Catálogo Online</span>
                                 </div>
                                 <div class="mt-2 text-gray-400 font-medium text-center">
-                                    Tenha um site profissional para a sua loja de veículos, com design moderno e responsivo.
+                                    Tenha um site profissional para a sua loja online, com design moderno e responsivo.
                                 </div>
                             </div>
 
                             <div data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000" class="bg-[#04017c] shadow-md rounded-xl p-5 md:rounded-2xl md:py-10">
                                 <div class="text-2xl text-white font-bold text-center flex flex-col items-center">
                                     <ion-icon class="w-14 h-14" name="car-sport-outline"></ion-icon>
-                                    <span>Gestão de Veículos</span>
+                                    <span>Gestão de Produtos</span>
                                 </div>
                                 <div class="mt-2 text-gray-400 font-medium text-center">
                                     Cadastre, edite e gerencie os veículos da sua loja de forma prática e eficiente de forma fácil e intuitiva.
@@ -197,7 +197,7 @@
                         </div> 
     
                         <div class="mt-8 px-4 md:text-lg text-gray-300 font-medium">
-                            A hora de mudar a realidade da sua loja de veículos é agora.
+                            A hora de mudar a realidade da sua loja online é agora.
                         </div>
                     </div>
 
@@ -214,7 +214,7 @@
                                 
                                 <div>
                                     <div class="text-gray-500 font-medium text-center mt-2 px-10 md:px-4">
-                                        Tenha a melhor experiência de gestão para a sua loja de veículos com o sistema Motiv.
+                                        Tenha a melhor experiência de gestão para a sua loja online com o sistema Motiv.
                                     </div>
                                 </div>
                             </div>
@@ -232,7 +232,7 @@
                                 
                                 <div>
                                     <div class="text-gray-500 font-medium text-center mt-2 px-10 md:px-4">
-                                        Tenha segurança total dos dados da sua loja de veículos com o sistema Motiv.
+                                        Tenha segurança total dos dados da sua loja online com o sistema Motiv.
                                     </div>
                                 </div>
                             </div>
@@ -264,7 +264,7 @@
                     </div> 
 
                     <div class="mt-3 px-4 md:text-lg text-gray-500 text-center font-medium">
-                        Escolha o plano que melhor se encaixa com a sua loja de veículos.
+                        Escolha o plano que melhor se encaixa com a sua loja online.
                     </div>
 
                     <div class="mt-4 px-4 flex flex-col md:flex-row md:justify-center md:mt-16 gap-10">
@@ -273,7 +273,7 @@
                             <div class="flex gap-2 items-center">
                                 <div class="font-semibold bg-[#04017c] px-5 w-full py-4 rounded-t-3xl text-white">
                                     <div class="text-2xl">Plano Test</div>
-                                    <div class="text-xs">10 veículos</div>
+                                    <div class="text-xs">10 produtos</div>
                                 </div>
                             </div>
 
@@ -295,7 +295,7 @@
                                         <svg class="w-5 h-5 text-gray-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                                         </svg>                                          
-                                        Gestão de Veículos
+                                        Gestão de Produtos
                                     </div>
 
                                     <div class="line-through flex gap-1 items-center">
@@ -342,7 +342,7 @@
                             <div class="flex gap-2 items-center">
                                 <div class="font-semibold bg-[#04017c] px-5 w-full py-4 rounded-t-3xl text-white">
                                     <div class="text-2xl">Start Plus</div>
-                                    <div class="text-xs">25 veículos</div>
+                                    <div class="text-xs">25 produtos</div>
                                 </div>
                             </div>
                             
@@ -363,7 +363,7 @@
                                         <svg class="w-5 h-5 text-gray-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                                         </svg>                                          
-                                        Gestão de Veículos
+                                        Gestão de Produtos
                                     </div>
 
                                     <div class="flex gap-1 items-center">
@@ -410,7 +410,7 @@
                             <div class="flex items-center">
                                 <div class="font-semibold bg-[#04017c] px-5 w-full py-4 rounded-t-3xl text-white">
                                     <div class="text-2xl">Advanced</div>
-                                    <div class="text-xs">60 veículos</div>
+                                    <div class="text-xs">60 produtos</div>
                                 </div>
                             </div>
                             
@@ -431,7 +431,7 @@
                                         <svg class="w-5 h-5 text-gray-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                                         </svg>                                          
-                                        Gestão de Veículos
+                                        Gestão de Produtos
                                     </div>
 
                                     <div class="flex gap-1 items-center">
@@ -561,12 +561,12 @@
                                         <input type="text" id="store_name" class="w-full rounded-xl py-2 px-3 mt-1" placeholder="Informe o nome da loja">
                                     </div>
                                     <div>
-                                        <label for="qtd_vehicles_in_stock">Quantidade de veículos em estoque</label>
+                                        <label for="qtd_vehicles_in_stock">Quantidade de produtos em estoque</label>
                                         <select id="qtd_vehicles_in_stock" class="w-full rounded-xl py-2 px-3 mt-1" name="" id="">
-                                            <option value="10-vehicles">Até 10 veículos</option>
-                                            <option value="25-vehicles">Até 25 veículos</option>
-                                            <option value="60-vehicles">Até 60 veículos</option>
-                                            <option value="plus-vehicles">Mais de 60 veículos</option>
+                                            <option value="10-products">Até 10 produtos</option>
+                                            <option value="25-products">Até 25 produtos</option>
+                                            <option value="60-products">Até 60 produtos</option>
+                                            <option value="plus-products">Mais de 60 produtos</option>
                                         </select>    
                                     </div>
                                 </div>

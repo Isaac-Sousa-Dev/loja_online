@@ -169,9 +169,9 @@
                                         <div>
                                             <label class="block uppercase tracking-wide text-grey-darker text-[9px] font-bold mb-1"
                                                 for="grid-first-name">
-                                                Carroceria
+                                                Variação/Detalhes
                                             </label>
-                                            <input type="text" placeholder="Carroceria" class="w-full rounded-md" name="bodywork" value="{{$product->properties->bodywork}}">
+                                            <input type="text" placeholder="Variação/Detalhes" class="w-full rounded-md" name="bodywork" value="{{$product->properties->bodywork}}">
                                         </div>
 
                                     </div>

@@ -52,7 +52,7 @@
                         <div>
                             <p class="font-bold text-lg">Vamos para o próximo passo!</p>
                             <p class="text-sm mt-1 text-blue-700">Cadastre uma ou mais categorias para organizar o seu
-                                catálogo (ex: Carros, Motos, Náutica).</p>
+                                catálogo (ex: Celulares, Tênis, Moveis).</p>
                         </div>
                     </div>
                     <div>
@@ -71,7 +71,7 @@
                             <i class="fa-solid fa-copyright"></i>
                         </div>
                         <div>
-                            <p class="font-bold text-lg">Cadastrar Marca de Veículos!</p>
+                            <p class="font-bold text-lg">Cadastrar Marca de Produtos!</p>
                             <p class="text-sm mt-1 text-purple-700">Cadastre as marcas que compõem o seu estoque (ex: Honda,
                                 Toyota, Volkswagen).</p>
                         </div>
@@ -93,14 +93,14 @@
                         </div>
                         <div>
                             <p class="font-bold text-lg">Finalizando nosso Tour!</p>
-                            <p class="text-sm mt-1 text-orange-700">Cadastre seu primeiro veículo para que seus clientes o
+                            <p class="text-sm mt-1 text-orange-700">Cadastre seu primeiro produto para que seus clientes o
                                 vejam online no seu catálogo público.</p>
                         </div>
                     </div>
                     <div>
                         <a href="{{ route('products.create') }}"
                             class="block w-full text-center md:w-auto bg-orange-600 text-white font-medium px-5 py-2.5 rounded-xl hover:bg-orange-700 transition shadow-sm whitespace-nowrap">
-                            Cadastrar Veículo
+                            Cadastrar Produto
                         </a>
                     </div>
                 </div>
@@ -113,7 +113,7 @@
                 <div
                     class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition duration-300">
                     <div>
-                        <p class="text-sm font-semibold text-gray-500 mb-1">Veículos no estoque</p>
+                        <p class="text-sm font-semibold text-gray-500 mb-1">Produtos no estoque</p>
                         <p class="text-3xl font-bold text-gray-800">{{ $quantityStockVehicles }}</p>
                     </div>
                     <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
@@ -250,7 +250,7 @@
                         <i class="fa-solid fa-layer-group text-gray-700"></i>
                         <h3 class="font-semibold text-lg text-gray-800">Cadastros Recentes</h3>
                     </div>
-                    <p class="text-sm text-gray-500 mb-3 px-1">Os últimos veículos adicionados ao seu estoque.</p>
+                    <p class="text-sm text-gray-500 mb-3 px-1">Os últimos produtos adicionados ao seu estoque.</p>
 
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex-1 overflow-hidden">
 
@@ -259,7 +259,7 @@
                                 <thead
                                     class="bg-gray-50 text-xs uppercase text-gray-500 border-b border-gray-100 font-bold">
                                     <tr>
-                                        <th scope="col" class="px-4 py-3 w-[50%]">Veículo</th>
+                                        <th scope="col" class="px-4 py-3 w-[50%]">Produto</th>
                                         <th scope="col" class="px-4 py-3">Placa</th>
                                         <th scope="col" class="px-4 py-3">Ano</th>
                                     </tr>
@@ -271,7 +271,7 @@
                                             <td colspan="3" class="px-4 py-8 text-center text-gray-400 w-full">
                                                 <div class="flex flex-col items-center justify-center">
                                                     <i class="fa-solid fa-car-side text-3xl mb-3 opacity-50"></i>
-                                                    <span class="font-medium">Nenhum veículo cadastrado.</span>
+                                                    <span class="font-medium">Nenhum produto cadastrado.</span>
                                                 </div>
                                             </td>
                                         </tr>

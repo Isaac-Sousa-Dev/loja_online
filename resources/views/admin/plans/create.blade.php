@@ -26,7 +26,7 @@
 
                         <div class="flex gap-4">
                             <div class="w-full mb-3">
-                                <x-input-label for="qtd_vehicles" :value="__('Quantidade de veículos *')" />
+                                <x-input-label for="qtd_vehicles" :value="__('Quantidade de produtos *')" />
                                 <x-text-input id="qtd_vehicles" class="required" placeholder="10" name="qtd_vehicles" type="text" />
                             </div>
 
@@ -101,7 +101,7 @@
                             </div> --}}
                             <div class="mt-2 flex py-1 px-2 bg-blue-50 rounded-lg items-center gap-1">
                                 <input id="vehicles" checked name="vehicles" type="checkbox" class="module rounded-sm border-gray-300">
-                                <label for="vehicles" class="font-medium text-gray-700">Veículos</label>
+                                <label for="vehicles" class="font-medium text-gray-700">Produtos</label>
                             </div>
                         </div>
                     </div>

@@ -144,7 +144,7 @@ class ProductController extends Controller
         $this->propertyService->update($data, $id);
         $this->productService->update($data, $product);
 
-        session()->flash('success', 'Veículo atualizado!');
+        session()->flash('success', 'Produto atualizado!');
     }
 
 

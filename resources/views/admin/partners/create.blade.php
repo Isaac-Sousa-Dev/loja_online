@@ -51,12 +51,12 @@
                                 </div>
 
                                 <div class="w-1/2">
-                                    <x-input-label for="qtd_vehicles_in_stock" :value="__('Quantidade de veículos em estoque')" />
+                                    <x-input-label for="qtd_vehicles_in_stock" :value="__('Quantidade de produtos em estoque')" />
                                     <select id="qtd_vehicles_in_stock" class="w-full rounded-xl py-2 px-3 border-gray-300" name="" id="">
-                                        <option value="10-vehicles">Até 10 veículos</option>
-                                        <option value="25-vehicles">Até 25 veículos</option>
-                                        <option value="60-vehicles">Até 60 veículos</option>
-                                        <option value="plus-vehicles">Mais de 60 veículos</option>
+                                        <option value="10-products">Até 10 produtos</option>
+                                        <option value="25-products">Até 25 produtos</option>
+                                        <option value="60-products">Até 60 produtos</option>
+                                        <option value="plus-products">Mais de 60 produtos</option>
                                     </select> 
                                 </div>
 

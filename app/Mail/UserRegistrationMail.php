@@ -20,7 +20,7 @@ class UserRegistrationMail extends Mailable
 
     public function build()
     {
-        return $this->subject('Sua gestão inteligente de veículos está quase pronta!')
+        return $this->subject('Sua gestão inteligente de produtos está quase pronta!')
                     ->view('emails.user_registration');
     }
 }

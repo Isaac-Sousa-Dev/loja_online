@@ -33,7 +33,7 @@ class ProductRequest extends FormRequest
     {
         return [
             'name.required' => 'O campo nome é obrigatório',
-            'description.required' => 'Descrição do veículo é obrigatória',
+            'description.required' => 'Descrição do produto é obrigatória',
             'price.required' => 'Preço de venda é obrigatório',
             'price_wholesale.required' => 'Preço de atacado é obrigatório',
             // 'stock.required' => 'Informe a quantidade em estoque',

@@ -17,8 +17,8 @@
             <p style="margin-bottom: 16px;">Agora que você fez o cadastro, nossa equipe vai entrar em contato com você em breve para finalizar o pagamento e liberar seu acesso ao sistema.</p>
             <p style="margin-bottom: 16px;">Enquanto isso, dá uma olhada no que você vai ganhar usando a Motiv App:</p>
             <ul style="list-style-type: disc; padding-left: 20px; margin-bottom: 16px;">
-                <li style="margin-bottom: 8px;"><strong>Catálogo Online:</strong> Um site profissional e moderno para sua loja de veículos.</li>
-                <li style="margin-bottom: 8px;"><strong>Gestão de Veículos:</strong> Cadastre e gerencie seus veículos de um jeito super fácil.</li>
+                <li style="margin-bottom: 8px;"><strong>Catálogo Online:</strong> Um site profissional e moderno para sua loja online.</li>
+                <li style="margin-bottom: 8px;"><strong>Gestão de Produtos:</strong> Cadastre e gerencie seus produtos de um jeito super fácil.</li>
                 <li style="margin-bottom: 8px;"><strong>CRM Dedicado:</strong> Gerencie seus clientes e aumente suas vendas.</li>
                 {{-- <li style="margin-bottom: 8px;"><strong>Indique e Ganhe:</strong> Indique a Motiv e ganhe descontos na sua mensalidade.</li> --}}
             </ul>

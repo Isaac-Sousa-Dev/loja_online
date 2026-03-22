@@ -179,7 +179,7 @@
                 <div class="flex gap-3">
                     <div class="mt-1 flex items-center gap-2">
                         <input id="replacement" type="checkbox" class="rounded input-checkbox">
-                        <label for="replacement" >Dar veículo na troca</label>
+                        <label for="replacement" >Desejo negociar / Oferecer produto</label>
                     </div>
                     <div class="mt-1 flex items-center gap-2">
                         <input id="finance" type="checkbox" class="rounded input-checkbox">
@@ -193,7 +193,7 @@
                     Mensagem *
                 </div>
                 <textarea name="" id="" cols="30" rows="5" class="w-full border border-gray-300 rounded-lg p-2 mt-1">
-Olá, tenho interesse no veículo {{$product->name}}. Gostaria de receber mais informações sobre o veículo. Poderia entrar em contato?
+Olá, tenho interesse no produto {{$product->name}}. Gostaria de receber mais informações sobre o produto. Poderia entrar em contato?
                 </textarea>
             </div>
             <div class="mt-4">

@@ -180,7 +180,7 @@
                                       </svg>
                                       
                                       
-                                    {{ __('Veículos') }}
+                                    {{ __('Produtos') }}
                                 </x-nav-link>
                             @endif
                         </div>

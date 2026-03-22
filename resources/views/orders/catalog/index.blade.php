@@ -82,7 +82,7 @@
         if(data.length == 0) {
             document.getElementById('list-products-by-category').innerHTML = `
                 <div class="w-full flex justify-center items-center">
-                    <p class="text-gray-500">Não há veículos no momento.</p>
+                    <p class="text-gray-500">Não há produtos no momento.</p>
                 </div>
             `;
             return;
@@ -141,7 +141,7 @@
         if(data.length == 0) {
             document.getElementById('list-products-by-category-desktop').innerHTML = `
                 <div class="w-full flex justify-center items-center">
-                    <p class="text-gray-500">Não há veículos no momento.</p>
+                    <p class="text-gray-500">Não há produtos no momento.</p>
                 </div>
             `;
             return;
