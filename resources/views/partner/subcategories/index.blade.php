@@ -116,53 +116,30 @@
         </div>
     </div>
 
-    <!-- Modal de confirmação -->
-    <div id="deleteConfirmationModalSubcategory" class="hidden fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title"
+    <!-- Delete Modal -->
+    <div id="deleteConfirmationModalSubcategory"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center px-4"
         role="dialog" aria-modal="true">
-        <div class="flex items-center mt-72 justify-center md:mt-0 px-4">
-
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-            <div class="inline-block align-bottom w-full md:w-1/4 bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all"
-                role="dialog" aria-modal="true" aria-labelledby="modal-headline">
-                <div class="bg-white px-4 pt-2 pb-2">
-                    <div class="mt-1">
-                        <div
-                            class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                            <!-- Heroicon name: exclamation -->
-                            <svg class="w-6 h-6 text-red-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 13V8m0 8h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
-                              </svg>
-                              
-                        </div>
-                        <div class="mt-2 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-headline">
-                                Excluir marca
-                            </h3>
-                            <div class="mt-2">
-                                <p class="text-sm text-gray-500">
-                                    Tem certeza de que deseja excluir esta marca? Esta ação não pode ser desfeita.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+        <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" onclick="cancelDeleteSubcategoryButton()"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-modalIn">
+            <div class="flex justify-center mb-4">
+                <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center">
+                    <i class="fa-solid fa-trash text-red-500 text-xl"></i>
                 </div>
-                <div class="bg-gray-50 px-4 py-3 flex gap-2 justify-between">      
-                    <div>
-                        <button onclick="cancelDeleteSubcategoryButton()"  type="button"
-                            class="w-full justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            Cancelar
-                        </button>
-                    </div>
-                    <div class="">
-                        <button onclick="confirmDeleteSubcategoryButton()" id="confirmDeleteSubcategoryButton" type="button"
-                            class="w-full justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                            Excluir
-                        </button>
-                    </div>
-                </div>
+            </div>
+            <div class="text-center mb-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-1">Excluir marca?</h3>
+                <p class="text-sm text-gray-500">Esta ação <strong>não pode ser desfeita</strong>.</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="cancelDeleteSubcategoryButton()" type="button"
+                    class="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors">
+                    Cancelar
+                </button>
+                <button onclick="confirmDeleteSubcategoryButton()" id="confirmDeleteSubcategoryButton" type="button"
+                    class="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors shadow-sm">
+                    <i class="fa-solid fa-trash mr-1.5 text-xs"></i> Excluir
+                </button>
             </div>
         </div>
     </div>
