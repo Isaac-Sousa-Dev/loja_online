@@ -83,7 +83,7 @@
                         </a>
                     </div>
                 </div>
-            @elseif($quantityStockVehicles <= 0)
+            @elseif($quantityStockProducts <= 0)
                 <div
                     class="bg-orange-50 border border-orange-200 text-orange-800 rounded-2xl p-4 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
                     <div class="flex gap-4 items-start">
@@ -114,7 +114,7 @@
                     class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition duration-300">
                     <div>
                         <p class="text-sm font-semibold text-gray-500 mb-1">Produtos no estoque</p>
-                        <p class="text-3xl font-bold text-gray-800">{{ $quantityStockVehicles }}</p>
+                        <p class="text-3xl font-bold text-gray-800">{{ $quantityStockProducts }}</p>
                     </div>
                     <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
                         <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"
@@ -145,7 +145,7 @@
                 <div
                     class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition duration-300">
                     <div>
-                        <p class="text-sm font-semibold text-gray-500 mb-1">Novas Solicitações</p>
+                        <p class="text-sm font-semibold text-gray-500 mb-1">Novos Pedidos</p>
                         <p class="text-3xl font-bold text-gray-800">{{ $quantityRequests }}</p>
                     </div>
                     <div class="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
@@ -184,7 +184,7 @@
                         <i class="fa-solid fa-list-ol text-gray-700"></i>
                         <h3 class="font-semibold text-lg text-gray-800">Últimos Pedidos</h3>
                     </div>
-                    <p class="text-sm text-gray-500 mb-3 px-1">Acompanhe as propostas e chamados recentes do catálogo.</p>
+                    <p class="text-sm text-gray-500 mb-3 px-1">Acompanhe os pedidos recentes do catálogo.</p>
 
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex-1 overflow-hidden">
                         @if ($requestsByStore->count() == 0)

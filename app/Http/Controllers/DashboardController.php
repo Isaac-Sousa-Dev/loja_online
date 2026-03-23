@@ -13,8 +13,8 @@ class DashboardController extends Controller
     public function index()
     {
         $userAuth = Auth::user();
-        if($userAuth->role == 'admin') {
-            $data = $this->getDataForAdminDashboard($userAuth);            
+        if ($userAuth->role == 'admin') {
+            $data = $this->getDataForAdminDashboard($userAuth);
             return view('admin.dashboard', $data);
         } else {
             $data = $this->getDataForPartnerDashboard($userAuth);
@@ -27,9 +27,9 @@ class DashboardController extends Controller
     {
         $users = User::where('role', 'partner')->with('partner')->orderBy('created_at', 'desc')->get();
 
-        $filteredUsers = $users->filter(function($user) {
+        $filteredUsers = $users->filter(function ($user) {
             return $user->partner->status != 'pending';
-        });   
+        });
 
         $data = [];
         $data['allPartners'] = $filteredUsers;
@@ -54,14 +54,14 @@ class DashboardController extends Controller
 
         $requestsByStore = $store->requests->sortByDesc('created_at');
         $quantitySales = 0;
-        foreach($requestsByStore as $request) {
-            if($request->status == 4) {
+        foreach ($requestsByStore as $request) {
+            if ($request->status == 4) {
                 $quantitySales++;
             }
         }
-        
+
         $data = [];
-        $data['quantityStockVehicles'] = $partner->products->sum('stock');
+        $data['quantityStockProducts'] = $partner->products->sum('stock');
         $data['latestProducts'] = $latestProducts;
         $data['requestsByStore'] = $store->requests->sortByDesc('created_at')->take(3);
         $data['quantityRequests'] = $store->requests->count();
