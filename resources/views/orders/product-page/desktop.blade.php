@@ -133,7 +133,7 @@
             <div class="card-send-desktop bg-white shadow-md p-4 rounded-xl">
                 <div class="flex justify-between items-center">
                     <div class="text-lg font-bold text-gray-700">
-                        Enviar Mensagem
+                        Adicionar ao carrinho
                     </div>
                     {{-- <div class="close-modal-send cursor-pointer">
                             <ion-icon name="close-outline" class="text-2xl text-gray-700"></ion-icon>

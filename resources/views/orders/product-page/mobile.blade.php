@@ -128,8 +128,8 @@
 
 
     <div class="bg-white fixed bottom-0 w-full p-3 flex justify-center z-10">
-        <button class="btn-send-message-pdp bg-blue-700 px-4 py-3 w-full rounded-lg font-bold text-white">Enviar
-            Mensagem</button>
+        <button class="btn-send-message-pdp bg-blue-700 px-4 py-3 w-full rounded-lg font-bold text-white">Adicionar ao
+            carrinho</button>
     </div>
 
     {{-- Modal send Message --}}
@@ -138,7 +138,7 @@
             class="modal-send w-11/12 md:w-1/2 bg-white p-4 rounded-lg absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
             <div class="flex justify-between items-center">
                 <div class="text-lg font-bold text-gray-700">
-                    Enviar Mensagem
+                    Adicionar ao carrinho
                 </div>
                 <div class="close-modal-send cursor-pointer">
                     <ion-icon name="close-outline" class="text-2xl text-gray-700"></ion-icon>
