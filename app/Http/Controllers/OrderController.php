@@ -18,6 +18,7 @@ class OrderController extends Controller
         $partner = Partner::where('partner_link', $partner_link)->first();
         $store = $partner->store;
 
+
         if($store->logo): $logoStore = '/storage/'.$store->logo; endif;
         if($store->banner): $bannerStore = '/storage/'.$store->banner; endif;
 
@@ -26,15 +27,17 @@ class OrderController extends Controller
         $currentHour = date('H:i:s');
         $currentDay = date('w');
         $storeHours = StoreHour::where('day_of_week', $currentDay)->where('store_id', $store->id)->first();
+        // dd($storeHours);
 
-        $itsOpen = false;
-        if($storeHours->is_open) {
-            if($currentHour >= $storeHours->open_time && $currentHour <= $storeHours->close_time) {
-                $itsOpen = true;
-            }
-        }
+        // $itsOpen = false;
+        // if($storeHours->is_open) {
+        //     if($currentHour >= $storeHours->open_time && $currentHour <= $storeHours->close_time) {
+        //         $itsOpen = true;
+        //     }
+        // }
 
         $products = $partner->products;
+        // dd($products);
 
         $productWithStock = [];
         foreach($products as $product) {            
@@ -48,7 +51,7 @@ class OrderController extends Controller
             'partner' => $partner,
             'store' => $store,
             'logoStore' => $logoStore ?? null,
-            'itsOpen' => $itsOpen,
+            'itsOpen' => true,
             'bannerStore' => $bannerStore ?? null,
             'categories' => $categoriesByPartner,
             'qtdProducts' => $qtdProducts,
