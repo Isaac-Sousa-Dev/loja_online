@@ -14,11 +14,28 @@ class Request extends Model
         'client_id',
         'store_id',
         'product_id',
+        'product_variant_id',
+        'selected_color',
+        'selected_size',
+        'payment_method',
+        'delivery_type',
+        'delivery_address',
+        'delivery_city',
+        'delivery_state',
+        'delivery_zip',
+        'delivery_complement',
         'shift',
         'finance',
         'message',
-        'status'
+        'status',
+        'order_ref',
+        'quantity',
     ];
+
+    public function variant()
+    {
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+    }
 
     public function client()
     {

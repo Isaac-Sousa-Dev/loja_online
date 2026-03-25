@@ -108,6 +108,9 @@ Route::middleware('auth')->group(function () {
     Route::post('products/update/{id}', [ProductController::class, 'update'])->name('products.update');
     Route::post('products/update-price-promotional', [ProductController::class, 'updatePricePromotional'])->name('products.updatePricePromotional');
     Route::post('products/update-price', [ProductController::class, 'updatePrice'])->name('products.updatePrice');
+    Route::get('products/{id}/variants', [ProductController::class, 'getVariants'])->name('products.variants');
+    Route::post('products/{id}/variants', [ProductController::class, 'storeVariant'])->name('products.variants.store');
+    Route::delete('products/variants/{variantId}', [ProductController::class, 'destroyVariant'])->name('products.variants.destroy');
     
     // Routes for Categories
     Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
@@ -194,6 +197,7 @@ Route::middleware('auth')->group(function () {
 
 
 Route::post('requests/store', [RequestController::class, 'store'])->name('requests.store');
+Route::post('requests/store-cart', [RequestController::class, 'storeCart'])->name('requests.storeCart');
 Route::get('catalog/message-sent-page/{store_partner_link}', function(Request $request) {
     $storePartnerLink = $request->store_partner_link;
     return view('orders.message-sent', ['storePartnerLink' => $storePartnerLink]);

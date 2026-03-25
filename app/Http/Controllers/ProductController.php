@@ -162,6 +162,42 @@ class ProductController extends Controller
     }
 
 
+    public function getVariants(string $id)
+    {
+        $product = Product::with('variants')->findOrFail($id);
+        return response()->json($product->variants);
+    }
+
+
+    public function storeVariant(Request $request, string $id)
+    {
+        $request->validate([
+            'color' => 'nullable|string|max:50',
+            'size'  => 'nullable|string|max:20',
+            'stock' => 'required|integer|min:0',
+        ]);
+
+        $variant = \App\Models\ProductVariant::create([
+            'product_id'     => $id,
+            'color'          => $request->color,
+            'color_hex'      => $request->color_hex,
+            'size'           => $request->size,
+            'stock'          => $request->stock,
+            'price_override' => $request->price_override ?: null,
+            'active'         => true,
+        ]);
+
+        return response()->json(['success' => true, 'variant' => $variant], 201);
+    }
+
+
+    public function destroyVariant(string $variantId)
+    {
+        \App\Models\ProductVariant::findOrFail($variantId)->delete();
+        return response()->json(['success' => true]);
+    }
+
+
     public function destroy(string $id)
     {
         $product = Product::find($id);

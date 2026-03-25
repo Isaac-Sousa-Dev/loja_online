@@ -41,8 +41,9 @@ class DashboardController extends Controller
     private function getDataForPartnerDashboard($userAuth)
     {
         $partner = $userAuth->partner;
-        // Pegar os 4 últimos produtos cadastrados
+        // Pegar os últimos produtos cadastrados com imagens e marca
         $latestProducts = $partner->products()
+            ->with(['images', 'brand'])
             ->latest()
             ->take(6)
             ->get();
@@ -52,18 +53,13 @@ class DashboardController extends Controller
         $subcategoriesByStore = $store->subcategoriesByStore;
         $clientsByStore = ClientStore::where('store_id', $store->id)->orderBy('created_at', 'desc')->get();
 
-        $requestsByStore = $store->requests->sortByDesc('created_at');
-        $quantitySales = 0;
-        foreach ($requestsByStore as $request) {
-            if ($request->status == 4) {
-                $quantitySales++;
-            }
-        }
+        $requestsByStore = $store->requests()->with(['client', 'product'])->latest()->get();
+        $quantitySales = $requestsByStore->where('status', 'sold')->count();
 
         $data = [];
         $data['quantityStockProducts'] = $partner->products->sum('stock');
         $data['latestProducts'] = $latestProducts;
-        $data['requestsByStore'] = $store->requests->sortByDesc('created_at')->take(3);
+        $data['requestsByStore'] = $requestsByStore->take(5);
         $data['quantityRequests'] = $store->requests->count();
         $data['quantityClients'] = $clientsByStore->count();
         $data['quantitySales'] = $quantitySales;

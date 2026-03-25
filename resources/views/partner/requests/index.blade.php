@@ -1,352 +1,458 @@
 <x-app-layout>
+@section('content')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
 
-    @section('content')
-    <div class="p-2 flex md:justify-center">
-        <div class="md:flex md:max-w-[1200px] flex-col w-full ml-2 mr-2">
-            <div>
+<div class="p-2 flex md:justify-center pb-24 md:pb-0">
+<div class="md:flex md:max-w-[1200px] flex-col w-full ml-2 mr-2">
 
-                <div class="flex justify-between items-center mt-4">
-                    <div>
-                        <h2 class="font-semibold text-2xl mb-3 mt-3 text-gray-800">
-                            {{ __('Pedidos') }}
-                        </h2>
-    
-                        <div class="leading-4 ml-1 text-sm font-semibold text-gray-600">
-                            Aqui você pode acompanhar todos os pedidos de clientes para seus produtos que estão no catálogo e iniciar uma conversa no WhatsApp.
+    {{-- Breadcrumb --}}
+    <nav class="flex items-center gap-1.5 text-sm text-gray-500 mt-4 mb-2 px-1">
+        <a href="{{ route('dashboard') }}" class="flex items-center gap-1 hover:text-blue-600 transition-colors">
+            <i class="fa-solid fa-house text-xs"></i><span>Início</span>
+        </a>
+        <i class="fa-solid fa-chevron-right text-[10px] text-gray-400"></i>
+        <span class="font-semibold text-gray-700">Pedidos</span>
+    </nav>
+
+    <div class="mb-5 px-1">
+        <h2 class="font-bold text-3xl text-gray-800 leading-tight">Pedidos</h2>
+        <p class="text-sm text-gray-500 mt-1">Gerencie os pedidos recebidos pelo seu catálogo online.</p>
+    </div>
+
+    @php
+        $total       = $groupedOrders->count();
+        $emAberto    = $groupedOrders->where('status', 'in_open')->count();
+        $emAndamento = $groupedOrders->where('status', 'in_progress')->count();
+        $vendidos    = $groupedOrders->where('status', 'sold')->count();
+        $cancelados  = $groupedOrders->where('status', 'canceled')->count();
+    @endphp
+
+    {{-- Filter Tabs --}}
+    <div class="flex gap-2 flex-wrap mb-4 px-1">
+        <button data-filter="all" class="filter-tab active-tab flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition border border-transparent bg-gray-800 text-white">
+            Todos <span class="bg-white/20 text-white text-xs font-bold px-1.5 py-0.5 rounded-lg">{{ $total }}</span>
+        </button>
+        <button data-filter="in_open" class="filter-tab flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition border border-gray-200 bg-white text-gray-600 hover:border-amber-300 hover:text-amber-700">
+            Em aberto @if($emAberto > 0)<span class="bg-amber-100 text-amber-700 text-xs font-bold px-1.5 py-0.5 rounded-lg">{{ $emAberto }}</span>@endif
+        </button>
+        <button data-filter="in_progress" class="filter-tab flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition border border-gray-200 bg-white text-gray-600 hover:border-blue-300 hover:text-blue-700">
+            Em andamento @if($emAndamento > 0)<span class="bg-blue-100 text-blue-700 text-xs font-bold px-1.5 py-0.5 rounded-lg">{{ $emAndamento }}</span>@endif
+        </button>
+        <button data-filter="sold" class="filter-tab flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition border border-gray-200 bg-white text-gray-600 hover:border-emerald-300 hover:text-emerald-700">
+            Vendidos @if($vendidos > 0)<span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-1.5 py-0.5 rounded-lg">{{ $vendidos }}</span>@endif
+        </button>
+        <button data-filter="canceled" class="filter-tab flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition border border-gray-200 bg-white text-gray-600 hover:border-red-300 hover:text-red-600">
+            Cancelados @if($cancelados > 0)<span class="bg-red-100 text-red-600 text-xs font-bold px-1.5 py-0.5 rounded-lg">{{ $cancelados }}</span>@endif
+        </button>
+    </div>
+
+    @if($groupedOrders->isEmpty())
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 flex flex-col items-center text-center">
+            <i class="fa-solid fa-inbox text-5xl text-gray-200 mb-4"></i>
+            <p class="font-semibold text-gray-500 text-lg">Nenhum pedido recebido ainda</p>
+            <p class="text-sm text-gray-400 mt-1 max-w-sm">Compartilhe o link do seu catálogo para que seus clientes possam fazer pedidos.</p>
+        </div>
+    @else
+
+    <div class="flex flex-col gap-3" id="requestsList">
+        @foreach($groupedOrders as $order)
+        @php
+            $sc = [
+                'in_open'     => ['label' => 'Em aberto',    'dot' => 'bg-amber-400',   'badge' => 'bg-amber-100 text-amber-700 border-amber-200'],
+                'in_progress' => ['label' => 'Em andamento', 'dot' => 'bg-blue-500',    'badge' => 'bg-blue-100 text-blue-700 border-blue-200'],
+                'sold'        => ['label' => 'Vendido',       'dot' => 'bg-emerald-500', 'badge' => 'bg-emerald-100 text-emerald-700 border-emerald-200'],
+                'canceled'    => ['label' => 'Cancelado',     'dot' => 'bg-red-400',     'badge' => 'bg-red-100 text-red-600 border-red-200'],
+            ][$order['status']] ?? ['label' => '—', 'dot' => 'bg-gray-300', 'badge' => 'bg-gray-100 text-gray-500 border-gray-200'];
+            $firstRequest = $order['items']->first();
+            $isMultiItem  = $order['items']->count() > 1;
+        @endphp
+
+        <div class="request-card bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition overflow-hidden"
+             data-status="{{ $order['status'] }}">
+
+            <div class="flex gap-3 p-4">
+
+                {{-- Thumbnails --}}
+                <div class="flex-shrink-0">
+                    @if($isMultiItem)
+                        {{-- Grid de até 4 thumbs para pedidos com múltiplos itens --}}
+                        <div class="grid grid-cols-2 gap-1 w-16">
+                            @foreach($order['items']->take(4) as $item)
+                                <div class="w-7 h-7 rounded-lg overflow-hidden bg-gray-100 border border-gray-100">
+                                    @if($item->product->images->isNotEmpty())
+                                        <img src="{{ asset('storage/' . $item->product->images->first()->url) }}" class="w-full h-full object-cover object-center">
+                                    @else
+                                        <div class="w-full h-full flex items-center justify-center text-gray-300 text-[8px]"><i class="fa-solid fa-image"></i></div>
+                                    @endif
+                                </div>
+                            @endforeach
                         </div>
-                    </div>
+                    @else
+                        <div class="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 border border-gray-100 cursor-pointer open-drawer" data-id="{{ $firstRequest->id }}">
+                            @if($firstRequest->product->images->isNotEmpty())
+                                <img src="{{ asset('storage/' . $firstRequest->product->images->first()->url) }}" class="w-full h-full object-cover object-center">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center text-gray-300"><i class="fa-solid fa-image text-xl"></i></div>
+                            @endif
+                        </div>
+                    @endif
                 </div>
 
-                {{-- <div class="flex mt-3 justify-between items-center">
-                    <div class="flex gap-2">
-                        <div class="bg-gray-200 py-1 px-4 rounded-xl shadow-sm font-medium cursor-pointer border-1 border-black">
-                            Todas
-                        </div>
-    
-                        <div class="bg-green-500 py-1 px-4 rounded-xl shadow-sm font-medium text-white cursor-pointer">
-                            Compras
-                        </div>
-    
-                        <div class="bg-sky-500 py-1 px-4 rounded-xl shadow-sm font-medium text-white cursor-pointer">
-                            Trocas
-                        </div>
-                    </div>
-
-                    <div class="flex hidden md:flex items-center bg-gray-400">
-                        Calendário
-                    </div>
-                </div> --}}
-
-
-                <div class="mt-3 mb-2">
-            
-                    <div class="grid  w-full grid-cols-1 md:grid-cols-3 rounded-xl">
-
-                        @if($requestsByStore->isEmpty())
-                            <div class="shadow-sm rounded-xl h-32 py-2 border bg-white border-gray-300 mt-3 md:mr-1">
-                                <div class="bg-slate-100 px-2 font-semibold">
-                                    Nenhum pedido encontrado
-                                </div>
-
-                                <div class="px-2 text-sm mt-2">
-                                    <span class="font-semibold">Dica:</span>
-                                    <span>Compartilhe o link do seu estabelecimento para que seus clientes possam realizar seus pedidos.</span>
-                                </div>
-                            </div>
+                {{-- Info --}}
+                <div class="flex-1 min-w-0 flex flex-col gap-2">
+                    {{-- Status + data --}}
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold border {{ $sc['badge'] }}">
+                            <span class="w-1.5 h-1.5 rounded-full {{ $sc['dot'] }}"></span>{{ $sc['label'] }}
+                        </span>
+                        @if($isMultiItem)
+                            <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700 border border-indigo-200">
+                                {{ $order['items']->count() }} produtos
+                            </span>
                         @endif
-    
-                        @foreach($requestsByStore as $request)
-                            <div class="shadow-sm rounded-xl h-32 py-2 border bg-white border-gray-300 mt-3 md:mr-1">
-                                <div class="bg-slate-100 px-2 font-semibold">
-                                    {{$request->product->name}}
-                                </div>
-                                <div class="px-2 mt-2">
-        
-                                    <div class="text-xs mt-1 justify-between flex">
-                                        <div class="flex gap-1">
-                                            <div class="px-2 text-[10px] rounded-md font-semibold {{ $request->statusColor() }}">
-                                                {{ $request->statusLabel() }}
-                                            </div>
-                                            @if($request->shift == 1)
-                                                <div class="px-2 text-[10px] rounded-md font-semibold bg-sky-500 text-white">
-                                                    Troca
-                                                </div>
-                                            @else
-                                                <div class="px-2 rounded-md text-[10px] font-semibold bg-green-500 text-white">
-                                                    Compra
-                                                </div>
-                                            @endif
-                                        </div>
-                                        {{ $request->created_at->format('d/m/Y - H:i') }}
-                                    </div>
-    
-                                    <div class="mt-1 text-sm flex justify-between">
-                                        <div>R$ {{$request->product->price}}</div>
-                                        <div class="font-semibold">{{$request->client->name}}</div>
-                                    </div>
-
-                                    
-                                </div>
-
-                                <div class="px-2 flex justify-between mt-2">
-                                    <div class="text-sm flex justify-between">
-                                        <div class="font-medium text-xs">{{$request->finance == 1 ? 'Financiado' : 'À vista'}}</div>
-                                    </div>
-
-                                    <div>
-                                        @if($request->status == 'in_open')        
-                                            <div 
-                                                data-requestid="{{$request->id}}" 
-                                                data-clientname="{{$request->client->name}}"
-                                                data-clientphone="{{$request->client->phone}}"
-                                                data-productname="{{$request->product->name}}"
-                                                data-storename="{{$request->store->store_name}}"
-                                                class="btnInitRequest bg-blue-700 text-white py-1 px-3 font-medium rounded-xl shadow-sm cursor-pointer">
-                                                Iniciar
-                                            </div>
-                                        @endif
-
-                                        @if($request->status == 'in_progress')  
-                                            <div class="flex gap-1">
-                                                <div 
-                                                    data-requestidsold="{{$request->id}}" 
-                                                    data-productIdSold="{{$request->product->id}}" 
-                                                    data-productname="{{$request->product->name}}"
-                                                    data-clientname="{{$request->client->name}}"
-                                                    onclick="showSoldConfirmationModal(event)" class="bg-blue-200 py-1 border-1 border-blue-500 px-3 text-sm font-medium rounded-xl shadow-sm cursor-pointer">
-                                                    Finalizar venda
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        @if($request->status == 'sold')  
-                                            <div class="flex gap-1">
-                                                <div 
-                                                    data-requestidsold="{{$request->id}}" 
-                                                    data-productIdSold="{{$request->product->id}}" 
-                                                    data-productname="{{$request->product->name}}"
-                                                    data-clientname="{{$request->client->name}}"
-                                                    class="py-1 text-sm font-medium text-green-500 flex items-center gap-1">
-                                                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m8.032 12 1.984 1.984 4.96-4.96m4.55 5.272.893-.893a1.984 1.984 0 0 0 0-2.806l-.893-.893a1.984 1.984 0 0 1-.581-1.403V7.04a1.984 1.984 0 0 0-1.984-1.984h-1.262a1.983 1.983 0 0 1-1.403-.581l-.893-.893a1.984 1.984 0 0 0-2.806 0l-.893.893a1.984 1.984 0 0 1-1.403.581H7.04A1.984 1.984 0 0 0 5.055 7.04v1.262c0 .527-.209 1.031-.581 1.403l-.893.893a1.984 1.984 0 0 0 0 2.806l.893.893c.372.372.581.876.581 1.403v1.262a1.984 1.984 0 0 0 1.984 1.984h1.262c.527 0 1.031.209 1.403.581l.893.893a1.984 1.984 0 0 0 2.806 0l.893-.893a1.985 1.985 0 0 1 1.403-.581h1.262a1.984 1.984 0 0 0 1.984-1.984V15.7c0-.527.209-1.031.581-1.403Z"/>
-                                                    </svg>
-                                                    Venda concluída
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                    </div>
-
-                                </div>
-                            </div>
-                        @endforeach
-
-                        <script>
-                            let btnInitRequest = $('.btnInitRequest');
-                            $(btnInitRequest).click(function(e) {
-                                e.preventDefault();
-
-                                // console.log('teste')
-                                showLoader();
-                                let clientName = $(this).data('clientname');
-                                let storeName = $(this).data('storename');
-                                let requestId = $(this).data('requestid');
-                                let clientPhone = $(this).data('clientphone');
-                                console.log(clientPhone, 'Telefone')
-                                // let phoneFormatted = clientPhone.replace(/\D/g, '');
-                                let productName = $(this).data('productname');
-
-                                $.ajax({
-                                    url: 'requests/init',
-                                    type: 'POST',
-                                    data: {
-                                        requestId: requestId
-                                    },
-                                    success: function(response) {
-                                        console.log(response);
-                                        hideLoader();
-                                    }
-                                });
-                                
-                                // Abrindo em nova janela
-                                let url = `https://api.whatsapp.com/send/?phone=55${clientPhone}&text=Ol%C3%A1+${clientName},+sou+da+loja+${storeName}+e+vi+que+voce+teve+interesse+no+veiculo+${productName}.+Gostaria+de+mais+informa%C3%A7%C3%B5es%3F&app_absent=0`;
-                                window.open(url, '_blank');
-
-                                setTimeout(() => {
-                                    window.location.reload();
-                                }, 3000);
-
-
-                            })
-                        </script>
-                        
+                        @if($order['order_ref'])
+                            <span class="text-[10px] text-gray-400 font-mono">{{ $order['order_ref'] }}</span>
+                        @endif
+                        <span class="text-[11px] text-gray-400 ml-auto flex items-center gap-1 whitespace-nowrap">
+                            <i class="fa-regular fa-clock text-[10px]"></i>
+                            {{ $order['created_at']->format('d/m/Y H:i') }}
+                        </span>
                     </div>
 
+                    {{-- Produtos --}}
+                    @if($isMultiItem)
+                        <div class="space-y-0.5">
+                            @foreach($order['items'] as $item)
+                                <p class="text-xs text-gray-700 truncate">
+                                    <span class="font-semibold">{{ $item->quantity }}x</span> {{ $item->product->name }}
+                                    <span class="text-gray-400">— R$ {{ number_format($item->product->price * $item->quantity, 2, ',', '.') }}</span>
+                                </p>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="font-bold text-gray-800 text-sm leading-tight">{{ $firstRequest->product->name }}</p>
+                    @endif
+
+                    {{-- Cliente + total --}}
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex flex-col gap-0.5 min-w-0">
+                            <span class="text-xs text-gray-600 flex items-center gap-1 truncate">
+                                <i class="fa-regular fa-user text-gray-400 text-[10px] flex-shrink-0"></i>
+                                <span class="font-semibold truncate">{{ $order['client']->name ?? '—' }}</span>
+                            </span>
+                            @if($order['client']->phone ?? false)
+                                <span class="text-xs text-gray-400 flex items-center gap-1">
+                                    <i class="fa-solid fa-phone text-[10px] flex-shrink-0"></i>
+                                    {{ $order['client']->phone }}
+                                </span>
+                            @endif
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <p class="text-base font-extrabold text-blue-700">R$ {{ number_format($order['total'], 2, ',', '.') }}</p>
+                            <p class="text-[11px] text-gray-400">{{ $order['qty_items'] }} {{ $order['qty_items'] == 1 ? 'item' : 'itens' }}</p>
+                        </div>
+                    </div>
+
+                    {{-- Ações --}}
+                    <div class="flex gap-2 flex-wrap mt-0.5">
+                        {{-- Detalhes abre drawer do primeiro request --}}
+                        <button class="open-drawer flex items-center gap-1 border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-600 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition"
+                                data-id="{{ $firstRequest->id }}">
+                            <i class="fa-solid fa-eye text-[10px]"></i> Detalhes
+                        </button>
+
+                        @php $clientPhone = preg_replace('/\D/', '', $order['client']->phone ?? ''); @endphp
+                        @php $waMsg = 'Olá ' . ($order['client']->name ?? '') . ', sou da loja ' . $order['store']->store_name . ' e estou entrando em contato sobre seu pedido.'; @endphp
+
+                        @if($order['status'] == 'in_open')
+                            <a href="https://api.whatsapp.com/send/?phone=55{{ $clientPhone }}&text={{ urlencode($waMsg) }}&app_absent=0"
+                               target="_blank" class="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg transition">
+                                <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                            </a>
+                            {{-- Iniciar todos os itens do pedido --}}
+                            <button
+                                data-orderitems="{{ $order['items']->pluck('id')->join(',') }}"
+                                data-clientname="{{ $order['client']->name ?? '' }}"
+                                data-clientphone="{{ $clientPhone }}"
+                                data-storename="{{ $order['store']->store_name }}"
+                                class="btnInitOrder flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg transition">
+                                <i class="fa-solid fa-play text-[10px]"></i> Iniciar
+                            </button>
+                        @endif
+
+                        @if($order['status'] == 'in_progress')
+                            <a href="https://api.whatsapp.com/send/?phone=55{{ $clientPhone }}&text={{ urlencode($waMsg) }}&app_absent=0"
+                               target="_blank" class="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg transition">
+                                <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                            </a>
+                            @foreach($order['items'] as $item)
+                                @if($item->status == 'in_progress')
+                                <button
+                                    data-requestidsold="{{ $item->id }}"
+                                    data-productidsold="{{ $item->product->id }}"
+                                    data-productname="{{ $item->product->name }}"
+                                    data-clientname="{{ $order['client']->name ?? '' }}"
+                                    onclick="showSoldConfirmationModal(event)"
+                                    class="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg transition">
+                                    <i class="fa-solid fa-check text-[10px]"></i>
+                                    {{ $isMultiItem ? 'Vender: ' . Str::limit($item->product->name, 15) : 'Finalizar venda' }}
+                                </button>
+                                @endif
+                            @endforeach
+                        @endif
+
+                        @if($order['status'] == 'sold')
+                            <span class="flex items-center gap-1 text-emerald-600 text-xs font-bold px-2.5 py-1.5 bg-emerald-50 rounded-lg border border-emerald-200">
+                                <i class="fa-solid fa-circle-check"></i> Venda concluída
+                            </span>
+                        @endif
+                        @if($order['status'] == 'canceled')
+                            <span class="flex items-center gap-1 text-red-500 text-xs font-bold px-2.5 py-1.5 bg-red-50 rounded-lg border border-red-200">
+                                <i class="fa-solid fa-ban"></i> Cancelado
+                            </span>
+                        @endif
+                    </div>
                 </div>
             </div>
+
+            @if($order['status'] == 'in_open')
+            <div class="bg-amber-50 border-t border-amber-100 px-4 py-2 flex items-center gap-2">
+                <i class="fa-solid fa-robot text-amber-500 text-xs"></i>
+                <span class="text-xs text-amber-700 font-medium">Agente IA disponível em breve — este pedido poderá ser tratado automaticamente via WhatsApp.</span>
+            </div>
+            @endif
         </div>
+        @endforeach
     </div>
+    @endif
 
+</div>
+</div>
 
-    <!-- Modal de confirmação de venda -->
-    <div id="soldConfirmationModalProduct" class="hidden fixed z-20 inset-0 overflow-y-auto" aria-labelledby="modal-title"
-        role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center px-4">
-
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-
-            <span class="hidden text-black" aria-hidden="true">&#8203;</span>
-           
-              
-
-            <div class="inline-block align-bottom w-full md:w-1/4 mt-[60%] md:mt-[15%] bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all"
-                role="dialog" aria-modal="true" aria-labelledby="modal-headline">
-                <div class="px-4 mb-1 py-4">
-                    <svg class="closeModal w-6 h-6 hover:bg-gray-200 cursor-pointer text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/>
-                    </svg>
-                    <div class="sm:flex sm:items-start">
-                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900 div-product-name" id="modal-headline">
-                                
-                            </h3>
-                            <div class="mt-2">
-                                <p class="text-sm text-gray-500">
-                                    Após a confirmação, o veículo será marcado como vendido ou cancelado e a solicitação será finalizada.
-                                </p>
-                            </div>
-
-                            <div class="div-client-name mt-2"></div>
+{{-- Drawer de detalhes (mantido para pedidos individuais) --}}
+<div id="drawerOverlay" class="fixed inset-0 bg-black/40 z-40 hidden" onclick="closeDrawer()"></div>
+<div id="orderDrawer" class="fixed top-0 right-0 h-full w-full max-w-lg bg-white z-50 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col overflow-hidden">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
+        <div>
+            <h2 class="font-bold text-gray-900 text-lg">Detalhes do Pedido</h2>
+            <p id="drawerOrderId" class="text-xs text-gray-400 mt-0.5"></p>
+        </div>
+        <button onclick="closeDrawer()" class="p-2 rounded-xl hover:bg-gray-100 transition text-gray-400">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+    </div>
+    <div class="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+        <div id="drawerBadges" class="flex flex-wrap gap-2"></div>
+        <div class="bg-gray-50 rounded-2xl p-4">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Produto</p>
+            <div class="flex gap-4 items-start">
+                <div id="drawerProductImg" class="w-20 h-20 rounded-xl overflow-hidden bg-gray-200 flex-shrink-0 border border-gray-100"></div>
+                <div class="flex-1 min-w-0">
+                    <p id="drawerProductName" class="font-bold text-gray-800 text-base"></p>
+                    <p id="drawerProductBrand" class="text-xs text-gray-500 mt-0.5"></p>
+                    <div class="mt-3 grid grid-cols-2 gap-2">
+                        <div class="bg-white rounded-xl p-2.5 border border-gray-100">
+                            <p class="text-[10px] text-gray-400 font-semibold uppercase">Preço unitário</p>
+                            <p id="drawerProductPrice" class="font-extrabold text-blue-700 text-base mt-0.5"></p>
+                        </div>
+                        <div class="bg-white rounded-xl p-2.5 border border-gray-100">
+                            <p class="text-[10px] text-gray-400 font-semibold uppercase">Quantidade</p>
+                            <p id="drawerProductQty" class="font-extrabold text-gray-800 text-base mt-0.5"></p>
+                        </div>
+                        <div class="bg-white rounded-xl p-2.5 border border-gray-100">
+                            <p class="text-[10px] text-gray-400 font-semibold uppercase">Subtotal</p>
+                            <p id="drawerSubtotal" class="font-extrabold text-gray-800 text-base mt-0.5"></p>
+                        </div>
+                        <div class="bg-white rounded-xl p-2.5 border border-gray-100">
+                            <p class="text-[10px] text-gray-400 font-semibold uppercase">Estoque atual</p>
+                            <p id="drawerProductStock" class="font-bold text-gray-700 text-sm mt-0.5"></p>
                         </div>
                     </div>
                 </div>
-                <div class="bg-gray-50 px-4 py-3 flex flex-col gap-2 md:flex-row justify-between">
-                    <button onclick="cancelSale()" id="cancelSaleBtn" type="button"
-                        class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-red-500 text-base font-medium text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
-                        Cancelar venda
-                    </button>
-                    <button onclick="confirmSale()" id="confirmSaleBtn" type="button"
-                        class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-green-500 text-base font-medium text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
-                        Confirmar venda
-                    </button>
-                </div>
             </div>
         </div>
+        <div class="bg-gray-50 rounded-2xl p-4">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Cliente</p>
+            <div class="space-y-2 text-sm">
+                <div class="flex items-center gap-2"><i class="fa-regular fa-user text-gray-400 w-4 text-center"></i><span id="drawerClientName" class="font-semibold text-gray-800"></span></div>
+                <div class="flex items-center gap-2"><i class="fa-solid fa-phone text-gray-400 w-4 text-center text-xs"></i><span id="drawerClientPhone" class="text-gray-600"></span></div>
+                <div class="flex items-center gap-2"><i class="fa-solid fa-envelope text-gray-400 w-4 text-center text-xs"></i><span id="drawerClientEmail" class="text-gray-600"></span></div>
+            </div>
+        </div>
+        <div class="bg-gray-50 rounded-2xl p-4">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Mensagem do cliente</p>
+            <p id="drawerMessage" class="text-sm text-gray-600 italic leading-relaxed"></p>
+        </div>
+        <div class="bg-gray-50 rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-3">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Entrega</p>
+                <span class="text-[10px] bg-orange-100 text-orange-600 font-bold px-2 py-0.5 rounded-full border border-orange-200">Em breve</span>
+            </div>
+            <p class="text-xs text-gray-500 leading-relaxed">As informações de entrega serão coletadas no catálogo em breve. Confirme com o cliente via WhatsApp.</p>
+        </div>
     </div>
-    @endsection
+    <div id="drawerFooter" class="flex-shrink-0 px-6 py-4 border-t border-gray-100 flex gap-3"></div>
+</div>
 
+{{-- Dados JSON para o drawer --}}
+<script>
+const ordersData = {
+    @foreach($allRequests as $request)
+    "{{ $request->id }}": {
+        id: {{ $request->id }},
+        status: "{{ $request->status }}",
+        statusLabel: "{{ $request->statusLabel() }}",
+        createdAt: "{{ $request->created_at->format('d/m/Y \à\s H:i') }}",
+        orderRef: @json($request->order_ref),
+        quantity: {{ $request->quantity ?? 1 }},
+        shift: {{ $request->shift }},
+        finance: {{ $request->finance }},
+        message: @json($request->message ?? ''),
+        product: {
+            id: {{ $request->product->id }},
+            name: @json($request->product->name),
+            price: {{ $request->product->price }},
+            stock: {{ $request->product->stock ?? 0 }},
+            brand: @json($request->product->brand->name ?? null),
+            color: @json($request->product->color ?? null),
+            image: "{{ $request->product->images->isNotEmpty() ? asset('storage/' . $request->product->images->first()->url) : '' }}",
+        },
+        client: {
+            name: @json($request->client->name ?? '—'),
+            phone: @json($request->client->phone ?? '—'),
+            email: @json($request->client->email ?? null),
+        },
+        store: { name: @json($request->store->store_name) }
+    },
+    @endforeach
+};
+</script>
+
+{{-- Modal confirmação de venda --}}
+<div id="soldConfirmationModalProduct" class="hidden fixed z-50 inset-0 flex items-center justify-center px-4" aria-modal="true">
+    <div class="fixed inset-0 bg-black/40" onclick="document.getElementById('soldConfirmationModalProduct').classList.add('hidden')"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 z-10">
+        <button onclick="document.getElementById('soldConfirmationModalProduct').classList.add('hidden')" class="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-gray-100 transition text-gray-400"><i class="fa-solid fa-xmark"></i></button>
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600"><i class="fa-solid fa-bag-shopping"></i></div>
+            <div><h3 class="font-bold text-gray-800 text-base div-product-name"></h3><p class="text-xs text-gray-500 div-client-name"></p></div>
+        </div>
+        <p class="text-sm text-gray-600 mb-5">Confirme o resultado desta venda. O estoque será atualizado automaticamente.</p>
+        <div class="flex gap-3">
+            <button onclick="cancelSale()" class="flex-1 flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-2.5 rounded-xl transition text-sm border border-red-200"><i class="fa-solid fa-ban text-xs"></i> Cancelar</button>
+            <button onclick="confirmSale()" class="flex-1 flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 rounded-xl transition text-sm"><i class="fa-solid fa-check text-xs"></i> Confirmar</button>
+        </div>
+    </div>
+</div>
+
+@endsection
 </x-app-layout>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script>
-
-    const inputSearchName = document.getElementById('input-search-name');
-
-    $(inputSearchName).on('input', function() {
-        const search = $(this).val().toLowerCase();
-
-        $.ajax({
-            url: 'products/search',
-            type: 'GET',
-            data: {
-                search: search
-            },
-            success: function(response) {
-                updateProductTable(response.data);
-            }
+// Filter tabs
+document.querySelectorAll('.filter-tab').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-tab').forEach(b => {
+            b.classList.remove('bg-gray-800','text-white','active-tab','border-transparent');
+            b.classList.add('bg-white','text-gray-600','border-gray-200');
+        });
+        this.classList.add('bg-gray-800','text-white','active-tab','border-transparent');
+        this.classList.remove('bg-white','text-gray-600','border-gray-200');
+        const filter = this.dataset.filter;
+        document.querySelectorAll('.request-card').forEach(card => {
+            card.style.display = (filter === 'all' || card.dataset.status === filter) ? '' : 'none';
         });
     });
+});
 
-    $(document).ready(function() {
-        $('.price-mask').mask('000.000.000.000.000,00', {reverse: true});
+// Drawer
+function openDrawer(id) {
+    const o = ordersData[id]; if (!o) return;
+    const statusColors = { in_open:'bg-amber-100 text-amber-700 border-amber-200', in_progress:'bg-blue-100 text-blue-700 border-blue-200', sold:'bg-emerald-100 text-emerald-700 border-emerald-200', canceled:'bg-red-100 text-red-600 border-red-200' };
+    const dotColors    = { in_open:'bg-amber-400', in_progress:'bg-blue-500', sold:'bg-emerald-500', canceled:'bg-red-400' };
+    document.getElementById('drawerOrderId').textContent = `Pedido #${o.id}${o.orderRef ? ' · ' + o.orderRef : ''} · ${o.createdAt}`;
+    const bc = statusColors[o.status] || 'bg-gray-100 text-gray-500 border-gray-200';
+    const dc = dotColors[o.status] || 'bg-gray-300';
+    let badges = `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${bc}"><span class="w-1.5 h-1.5 rounded-full ${dc}"></span>${o.statusLabel}</span>`;
+    if (o.shift)   badges += `<span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-700 border border-sky-200">Negociação</span>`;
+    if (o.finance) badges += `<span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200">Financiamento</span>`;
+    document.getElementById('drawerBadges').innerHTML = badges;
+    document.getElementById('drawerProductImg').innerHTML = o.product.image ? `<img src="${o.product.image}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center text-gray-300"><i class="fa-solid fa-image text-2xl"></i></div>`;
+    document.getElementById('drawerProductName').textContent = o.product.name;
+    document.getElementById('drawerProductBrand').textContent = [o.product.brand, o.product.color].filter(Boolean).join(' · ') || '—';
+    document.getElementById('drawerProductPrice').textContent = 'R$ ' + o.product.price.toLocaleString('pt-BR', {minimumFractionDigits:2});
+    document.getElementById('drawerProductQty').textContent = o.quantity + ' un.';
+    document.getElementById('drawerSubtotal').textContent = 'R$ ' + (o.product.price * o.quantity).toLocaleString('pt-BR', {minimumFractionDigits:2});
+    document.getElementById('drawerProductStock').textContent = o.product.stock > 0 ? `${o.product.stock} un.` : 'Sem estoque';
+    document.getElementById('drawerClientName').textContent  = o.client.name;
+    document.getElementById('drawerClientPhone').textContent = o.client.phone;
+    document.getElementById('drawerClientEmail').textContent = o.client.email || 'Não informado';
+    document.getElementById('drawerMessage').textContent = o.message || 'Nenhuma mensagem.';
+    const waUrl = `https://api.whatsapp.com/send/?phone=55${o.client.phone.replace(/\D/g,'')}&text=${encodeURIComponent(`Olá ${o.client.name}, sou da loja ${o.store.name} e estou entrando em contato sobre seu pedido do produto ${o.product.name}.`)}&app_absent=0`;
+    let footer = `<a href="${waUrl}" target="_blank" class="flex-1 flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition text-sm"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>`;
+    if (o.status === 'in_open')     footer += `<button onclick="initFromDrawer(${o.id})" class="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition text-sm"><i class="fa-solid fa-play text-xs"></i> Iniciar</button>`;
+    if (o.status === 'in_progress') footer += `<button onclick="openSoldFromDrawer(${o.id})" class="flex-1 flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl transition text-sm"><i class="fa-solid fa-check text-xs"></i> Finalizar</button>`;
+    document.getElementById('drawerFooter').innerHTML = footer;
+    document.getElementById('drawerOverlay').classList.remove('hidden');
+    document.getElementById('orderDrawer').classList.remove('translate-x-full');
+    document.body.style.overflow = 'hidden';
+}
+function closeDrawer() { document.getElementById('drawerOverlay').classList.add('hidden'); document.getElementById('orderDrawer').classList.add('translate-x-full'); document.body.style.overflow = ''; }
+document.querySelectorAll('.open-drawer').forEach(el => el.addEventListener('click', function(e) { e.stopPropagation(); openDrawer(this.dataset.id); }));
+
+// Init order (múltiplos requests)
+$(document).on('click', '.btnInitOrder', function(e) {
+    e.preventDefault();
+    const ids = $(this).data('orderitems').toString().split(',');
+    const clientName  = $(this).data('clientname');
+    const clientPhone = $(this).data('clientphone');
+    const storeName   = $(this).data('storename');
+    showLoader();
+    const calls = ids.map(id => $.ajax({ url: '/requests/init', type: 'POST', data: { requestId: id } }));
+    $.when(...calls).always(function() {
+        hideLoader();
+        const url = `https://api.whatsapp.com/send/?phone=55${clientPhone.replace(/\D/g,'')}&text=${encodeURIComponent(`Olá ${clientName}, sou da loja ${storeName} e vi que você fez um pedido. Gostaria de mais informações?`)}&app_absent=0`;
+        window.open(url, '_blank');
+        setTimeout(() => window.location.reload(), 2000);
     });
+});
 
-
-    // Função para mostrar o modal de confirmação
-    function showSoldConfirmationModal(event) {
-        const productId = event.target.dataset.productidsold;
-        const requestId = event.target.dataset.requestidsold;
-
-        document.querySelector('#soldConfirmationModalProduct').dataset.productId = productId;
-        document.querySelector('#soldConfirmationModalProduct').dataset.requestId = requestId;
-        document.querySelector('.div-product-name').innerText = event.target.dataset.productname;
-        document.querySelector('.div-client-name').innerHTML = `<span class="font-semibold">Cliente:</span> ${event.target.dataset.clientname}`;
-
-        document.getElementById('soldConfirmationModalProduct').classList.remove('hidden');
-    }
-
-    $('.closeModal').click(function(e) {
-        e.preventDefault();
-        document.getElementById('soldConfirmationModalProduct').classList.add('hidden');
-    })
-
-    function confirmSale(event) {
-        const modal = document.querySelector('#soldConfirmationModalProduct');
-
-        const productId = modal.dataset.productId;
-        const requestId = modal.dataset.requestId;
-
-        console.log('Confirmando venda de:', productId, requestId);
-
-        $.ajax({
-            url: 'requests/sold',
-            type: 'POST',
-            data: {
-                productId: productId,
-                requestId: requestId
-            },
-            success: function(response) {
-                console.log(response);
-                modal.classList.add('hidden');
-                toastr.success("Venda confirmada!", "Sucesso!");
-                setTimeout(() => {
-                    window.location.reload();
-                }, 2000);
-            }
-        });
-
-        modal.classList.add('hidden');
-    }
-
-
-    function cancelSale() {
-        const modal = document.querySelector('#soldConfirmationModalProduct');
-
-        const productId = modal.dataset.productId;
-        const requestId = modal.dataset.requestId;
-
-        $.ajax({
-            url: 'requests/unsold',
-            type: 'POST',
-            data: {
-                productId: productId,
-                requestId: requestId
-            },
-            success: function(response) {
-                toastr.error("Venda cancelada!");
-                setTimeout(() => {
-                    window.location.reload();
-                }, 2000);
-            }
-        });
-
-        modal.classList.add('hidden');
-    }
-
-    
+function initFromDrawer(id) {
+    const o = ordersData[id]; closeDrawer(); showLoader();
+    $.ajax({ url: '/requests/init', type: 'POST', data: { requestId: id }, complete: function() {
+        hideLoader();
+        window.open(`https://api.whatsapp.com/send/?phone=55${o.client.phone.replace(/\D/g,'')}&text=${encodeURIComponent(`Olá ${o.client.name}, sou da loja ${o.store.name} e estou entrando em contato sobre seu pedido.`)}&app_absent=0`, '_blank');
+        setTimeout(() => window.location.reload(), 2000);
+    }});
+}
+function openSoldFromDrawer(id) {
+    const o = ordersData[id]; closeDrawer();
+    const modal = document.getElementById('soldConfirmationModalProduct');
+    modal.dataset.productId = o.product.id; modal.dataset.requestId = o.id;
+    document.querySelector('.div-product-name').innerText = o.product.name;
+    document.querySelector('.div-client-name').innerText  = 'Cliente: ' + o.client.name;
+    modal.classList.remove('hidden');
+}
+function showSoldConfirmationModal(event) {
+    const btn = event.currentTarget, modal = document.getElementById('soldConfirmationModalProduct');
+    modal.dataset.productId = btn.dataset.productidsold; modal.dataset.requestId = btn.dataset.requestidsold;
+    document.querySelector('.div-product-name').innerText = btn.dataset.productname;
+    document.querySelector('.div-client-name').innerText  = 'Cliente: ' + btn.dataset.clientname;
+    modal.classList.remove('hidden');
+}
+function confirmSale() {
+    const modal = document.getElementById('soldConfirmationModalProduct'); showLoader();
+    $.ajax({ url: '/requests/sold', type: 'POST', data: { productId: modal.dataset.productId, requestId: modal.dataset.requestId },
+        success: function() { hideLoader(); modal.classList.add('hidden'); window.location.reload(); },
+        error: function() { hideLoader(); }
+    });
+}
+function cancelSale() {
+    const modal = document.getElementById('soldConfirmationModalProduct'); showLoader();
+    $.ajax({ url: '/requests/unsold', type: 'POST', data: { requestId: modal.dataset.requestId },
+        success: function() { hideLoader(); modal.classList.add('hidden'); window.location.reload(); },
+        error: function() { hideLoader(); }
+    });
+}
 </script>
-
-
-<style>
-    /* Animação de entrada */
-    @keyframes slideInRight {
-        from {
-            transform: translateX(1%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-</style>

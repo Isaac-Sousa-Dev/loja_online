@@ -49,8 +49,25 @@ class Product extends Model
         return $this->belongsTo(Brand::class, 'brand_id', 'id');
     }
 
-    // public function category()
-    // {
-    //     return $this->belongsTo(Category::class, 'category_id', 'id');
-    // }
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class)->where('active', true);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class, 'category_id', 'id');
+    }
+
+    // Retorna cores únicas disponíveis nas variantes
+    public function availableColors()
+    {
+        return $this->variants()->whereNotNull('color')->select('color', 'color_hex')->distinct()->get();
+    }
+
+    // Retorna tamanhos únicos disponíveis nas variantes
+    public function availableSizes()
+    {
+        return $this->variants()->whereNotNull('size')->pluck('size')->unique()->values();
+    }
 }

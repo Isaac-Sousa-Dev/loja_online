@@ -18,14 +18,6 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="antialiased">
-        <div class="min-h-screen flex flex-col justify-center items-center px-3 sm:pt-0 bg-gradient-to-r from-blue-500 to-sky-500">
-            {{-- <div>
-                <img src="/img/logos/logo.png" width="200" alt="">
-            </div> --}}
-
-            <div class="w-full sm:max-w-md mt-3 px-6 py-4 bg-white shadow-sm border border-gray-100 overflow-hidden rounded-2xl">
-                {{ $slot }}
-            </div>
-        </div>
+        {{ $slot }}
     </body>
 </html>

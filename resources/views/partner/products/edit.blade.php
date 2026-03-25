@@ -443,6 +443,61 @@
                     </div>
                 </div>
 
+                {{-- Painel de Variantes (Cor + Tamanho) --}}
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="font-bold text-gray-800">Variantes do produto</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">Defina combinações de cor e tamanho com estoque individual.</p>
+                        </div>
+                        <button type="button" onclick="document.getElementById('addVariantForm').classList.toggle('hidden')"
+                            class="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            Adicionar variante
+                        </button>
+                    </div>
+
+                    {{-- Form nova variante --}}
+                    <div id="addVariantForm" class="hidden bg-gray-50 rounded-xl p-4 mb-4 space-y-3">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500 mb-1">Cor</label>
+                                <input type="text" id="vColor" placeholder="Ex: Vermelho" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500 mb-1">Hex da cor</label>
+                                <div class="flex gap-2 items-center">
+                                    <input type="color" id="vColorHex" value="#3b82f6" class="w-10 h-9 rounded-lg border border-gray-200 cursor-pointer p-0.5">
+                                    <input type="text" id="vColorHexText" value="#3b82f6" placeholder="#000000" class="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500 mb-1">Tamanho</label>
+                                <input type="text" id="vSize" placeholder="Ex: M, G, 42" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500 mb-1">Estoque <span class="text-red-500">*</span></label>
+                                <input type="number" id="vStock" placeholder="0" min="0" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-xs font-semibold text-gray-500 mb-1">Preço diferenciado (opcional)</label>
+                                <input type="text" id="vPrice" placeholder="Deixe vazio para usar o preço base" class="price-mask w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="flex gap-2 justify-end">
+                            <button type="button" onclick="document.getElementById('addVariantForm').classList.add('hidden')"
+                                class="text-sm text-gray-500 hover:text-gray-700 px-4 py-2 rounded-xl border border-gray-200 transition">Cancelar</button>
+                            <button type="button" id="btnSaveVariant"
+                                class="text-sm bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl transition">Salvar variante</button>
+                        </div>
+                    </div>
+
+                    {{-- Lista de variantes --}}
+                    <div id="variantsList" class="space-y-2">
+                        <p class="text-xs text-gray-400 text-center py-4" id="noVariantsMsg">Nenhuma variante cadastrada.</p>
+                    </div>
+                </div>
+
                 {{-- Botões de ação (fixo mobile, estático desktop) --}}
                 <div
                     class="fixed bottom-0 md:rounded-2xl left-0 w-full z-20 bg-white border-t border-gray-200 p-3 md:static md:bg-transparent md:border-none md:p-0 flex md:justify-end md:mb-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-none">
@@ -467,6 +522,71 @@
 
 <!-- Fundo Opaco -->
 <div id="backdrop" class="fixed inset-0 bg-black bg-opacity-50 hidden z-40"></div>
+
+<script>
+// ---- Variantes ----
+const PRODUCT_ID_EDIT = {{ $product->id }};
+
+function loadVariants() {
+    $.get(`/products/${PRODUCT_ID_EDIT}/variants`, function(data) {
+        const list = $('#variantsList');
+        const msg  = $('#noVariantsMsg');
+        list.find('.variant-row').remove();
+        if (!data.length) { msg.show(); return; }
+        msg.hide();
+        data.forEach(v => {
+            const colorDot = v.color_hex ? `<span class="w-4 h-4 rounded-full inline-block border border-gray-200 flex-shrink-0" style="background:${v.color_hex}"></span>` : '';
+            list.append(`
+                <div class="variant-row flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">
+                    ${colorDot}
+                    <div class="flex-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                        ${v.color ? `<span class="font-semibold text-gray-700">${v.color}</span>` : ''}
+                        ${v.size  ? `<span class="text-gray-500">Tam: <strong>${v.size}</strong></span>` : ''}
+                        <span class="text-gray-500">Estoque: <strong>${v.stock}</strong></span>
+                        ${v.price_override ? `<span class="text-blue-600 font-semibold">R$ ${parseFloat(v.price_override).toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>` : ''}
+                    </div>
+                    <button type="button" onclick="deleteVariant(${v.id})" class="p-1.5 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                </div>`);
+        });
+    });
+}
+
+function deleteVariant(id) {
+    if (!confirm('Remover esta variante?')) return;
+    $.ajax({ url: `/products/variants/${id}`, type: 'DELETE', success: loadVariants });
+}
+
+// Sync color picker <-> text input
+$('#vColorHex').on('input', function() { $('#vColorHexText').val(this.value); });
+$('#vColorHexText').on('input', function() { if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) $('#vColorHex').val(this.value); });
+
+$('#btnSaveVariant').click(function() {
+    const stock = parseInt($('#vStock').val());
+    if (isNaN(stock) || stock < 0) { alert('Informe o estoque.'); return; }
+    const priceRaw = $('#vPrice').val().replace(/\./g,'').replace(',','.');
+    $.ajax({
+        url: `/products/${PRODUCT_ID_EDIT}/variants`,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            color:          $('#vColor').val() || null,
+            color_hex:      $('#vColorHexText').val() || null,
+            size:           $('#vSize').val() || null,
+            stock:          stock,
+            price_override: priceRaw ? parseFloat(priceRaw) : null,
+        }),
+        success: function() {
+            $('#vColor').val(''); $('#vSize').val(''); $('#vStock').val(''); $('#vPrice').val('');
+            document.getElementById('addVariantForm').classList.add('hidden');
+            loadVariants();
+        }
+    });
+});
+
+$(document).ready(function() { loadVariants(); });
+</script>
 
 <!-- Slider Photos of Product -->
 <div id="images-product-slider"

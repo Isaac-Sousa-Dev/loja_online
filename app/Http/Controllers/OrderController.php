@@ -122,17 +122,32 @@ class OrderController extends Controller
 
         if($store->logo != null): $this->logoStore = '/storage/'.$store->logo; endif;
 
-        $product = Product::find($productId);
-        $images = $product->images;
-        $imagesLength = count($images);
+        $product = Product::with(['images', 'brand', 'variants', 'category'])->find($productId);
+        $images  = $product->images;
+
+        // Produtos relacionados: mesma categoria ou mesma marca, excluindo o atual
+        $related = Product::with(['images'])
+            ->where('partner_id', $partner->id)
+            ->where('id', '!=', $productId)
+            ->where('stock', '>', 0)
+            ->where(function($q) use ($product) {
+                if ($product->category_id) $q->orWhere('category_id', $product->category_id);
+                if ($product->brand_id)    $q->orWhere('brand_id', $product->brand_id);
+            })
+            ->take(8)
+            ->get();
+
+        $category = $product->category;
 
         return view('orders.product-page.index', [
-            'product' => $product,
-            'images' => $images,
-            'imagesLength' => $imagesLength,
+            'product'     => $product,
+            'images'      => $images,
+            'imagesLength'=> count($images),
             'partnerLink' => $partnerLink,
-            'partner' => $partner,
-            'logoStore' => $this->logoStore,
+            'partner'     => $partner,
+            'logoStore'   => $this->logoStore,
+            'category'    => $category,
+            'related'     => $related,
         ]);
     }
 }

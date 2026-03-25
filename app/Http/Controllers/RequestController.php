@@ -24,9 +24,31 @@ class RequestController extends Controller
         } else {
             $partner = $userAuth->partner;
             $store = $partner->store;
-            $requestsByStore = $store->requests->sortByDesc('created_at');
-            // dd($requestsByStore);
-            return view('partner.requests.index', compact('requestsByStore'));
+
+            // Busca todos os requests com relacionamentos
+            $allRequests = $store->requests()
+                ->with(['client', 'product.images', 'product.brand'])
+                ->latest()
+                ->get();
+
+            // Agrupa por order_ref: pedidos com carrinho ficam juntos,
+            // pedidos antigos (sem order_ref) ficam individualmente
+            $groupedOrders = $allRequests->groupBy(function ($r) {
+                return $r->order_ref ?: 'single_' . $r->id;
+            })->map(function ($items) {
+                return [
+                    'order_ref'  => $items->first()->order_ref,
+                    'client'     => $items->first()->client,
+                    'store'      => $items->first()->store,
+                    'status'     => $items->first()->status,
+                    'created_at' => $items->first()->created_at,
+                    'items'      => $items,
+                    'total'      => $items->sum(fn($r) => $r->product->price * $r->quantity),
+                    'qty_items'  => $items->sum('quantity'),
+                ];
+            })->sortByDesc('created_at')->values();
+
+            return view('partner.requests.index', compact('groupedOrders', 'allRequests'));
         }
     }
 
@@ -73,32 +95,97 @@ class RequestController extends Controller
             $alreadyExists = $this->checkExistRequest($client->id, $request->product_id);
             if (!$alreadyExists) {
                 ModelsRequest::create([
-                    'client_id' => $client->id,
-                    'store_id' => $request->store_id,
+                    'client_id'  => $client->id,
+                    'store_id'   => $request->store_id,
                     'product_id' => $request->product_id,
-                    'shift' => $request->shift == "false" ? 0 : 1,
-                    'finance' => $request->finance == "false" ? 0 : 1,
-                    'message' => $request->message,
-                    'status' => RequestStatus::IN_OPEN,
+                    'shift'      => $request->shift == "false" ? 0 : 1,
+                    'finance'    => $request->finance == "false" ? 0 : 1,
+                    'message'    => $request->message,
+                    'status'     => RequestStatus::IN_OPEN,
+                    'quantity'   => max(1, (int) $request->quantity),
                 ]);
 
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Solicitação criada com sucesso.'
-                ], 201);
+                return response()->json(['success' => true, 'message' => 'Solicitação criada com sucesso.'], 201);
             } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Já existe uma solicitação para este produto e cliente.'
-                ], 409); // 409 Conflict
+                return response()->json(['success' => false, 'message' => 'Já existe uma solicitação para este produto e cliente.'], 409);
             }
 
         } catch(Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erro ao criar a solicitação.',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(['success' => false, 'message' => 'Erro ao criar a solicitação.', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Recebe o carrinho completo e cria uma request por item,
+     * todos vinculados ao mesmo order_ref.
+     */
+    public function storeCart(Request $request)
+    {
+        try {
+            $items    = $request->input('items', []);
+            $storeId  = $request->input('store_id');
+            $name     = $request->input('name');
+            $phone    = $request->input('phone');
+            $message  = $request->input('message', '');
+
+            if (empty($items)) {
+                return response()->json(['success' => false, 'message' => 'Carrinho vazio.'], 422);
+            }
+
+            $fakeReq = new \Illuminate\Http\Request();
+            $fakeReq->merge(['name' => $name, 'phone' => $phone]);
+
+            $client = $this->checkExistClient($phone, $fakeReq);
+            $this->checkExistClientStore($storeId, $client);
+
+            // Gera referência única para este pedido (agrupa todos os itens)
+            $orderRef = 'ORD-' . strtoupper(substr(md5(uniqid()), 0, 8));
+
+            $created = [];
+            foreach ($items as $item) {
+                $productId = $item['product_id'];
+                $quantity  = max(1, (int) ($item['quantity'] ?? 1));
+
+                // Se já existe request aberta para este produto+cliente, apenas atualiza quantidade
+                $existing = ModelsRequest::where('client_id', $client->id)
+                    ->where('product_id', $productId)
+                    ->whereIn('status', [RequestStatus::IN_OPEN->value, RequestStatus::IN_PROGRESS->value])
+                    ->first();
+
+                if ($existing) {
+                    $existing->quantity += $quantity;
+                    $existing->save();
+                    $created[] = $existing->id;
+                } else {
+                    $req = ModelsRequest::create([
+                        'client_id'          => $client->id,
+                        'store_id'           => $storeId,
+                        'product_id'         => $productId,
+                        'product_variant_id' => $item['variant_id'] ?? null,
+                        'selected_color'     => $item['color'] ?? null,
+                        'selected_size'      => $item['size'] ?? null,
+                        'payment_method'     => $request->input('payment_method'),
+                        'delivery_type'      => $request->input('delivery_type', 'pickup'),
+                        'delivery_address'   => $request->input('delivery_address'),
+                        'delivery_city'      => $request->input('delivery_city'),
+                        'delivery_state'     => $request->input('delivery_state'),
+                        'delivery_zip'       => $request->input('delivery_zip'),
+                        'delivery_complement'=> $request->input('delivery_complement'),
+                        'shift'              => 0,
+                        'finance'            => $request->input('payment_method') === 'credit_card' ? 1 : 0,
+                        'message'            => $message,
+                        'status'             => RequestStatus::IN_OPEN,
+                        'order_ref'          => $orderRef,
+                        'quantity'           => $quantity,
+                    ]);
+                    $created[] = $req->id;
+                }
+            }
+
+            return response()->json(['success' => true, 'order_ref' => $orderRef, 'created' => $created], 201);
+
+        } catch(Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
