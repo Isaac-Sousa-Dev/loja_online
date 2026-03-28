@@ -50,7 +50,7 @@
         </div>
 
         {{-- TAB 1: GERAL --}}
-        <div id="mainTab-geral" class="p-4 md:p-5">
+        <div id="mainTab-geral" class="p-3 md:p-5">
             <form id="productForm" action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="md:flex gap-6">
