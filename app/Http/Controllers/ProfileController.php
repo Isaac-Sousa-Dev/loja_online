@@ -49,9 +49,11 @@ class ProfileController extends Controller
             $request->user()->image_profile = $profileImagePath;
         }
 
-        $partner->update([
-            'initial_message' => $request->description
-        ]);
+        if ($partner !== null) {
+            $partner->update([
+                'initial_message' => $request->description,
+            ]);
+        }
 
         $request->user()->fill($request->validated());
 

@@ -7,12 +7,16 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/js/app.js',
+                'resources/js/partner/product-create-wizard.js',
             ],
             refresh: true,
         }),
     ],
     server: { // <--- ADICIONE ESTE BLOCO
         host: '0.0.0.0',
+        watch: {
+            usePolling: true,
+        },
         hmr: {
             host: 'localhost',
         },

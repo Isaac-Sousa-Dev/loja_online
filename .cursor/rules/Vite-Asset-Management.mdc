@@ -1,0 +1,8 @@
+---
+alwaysApply: false
+---
+
+⚡ Vite & Asset Management
+Vite Helper: "Use sempre o helper @vite(['resources/css/app.css', 'resources/js/app.js']) no head do HTML para garantir o Hot Module Replacement (HMR) em desenvolvimento e a versão buildada em produção."
+
+Otimização de Assets: "Configure o Vite para processar apenas o necessário. Utilize imports dinâmicos para bibliotecas pesadas de JavaScript que não são necessárias em todas as páginas."

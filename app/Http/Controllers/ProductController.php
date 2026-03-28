@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Partner\ProductRequest;
+use App\Http\Requests\Partner\StoreProductWizardRequest;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use App\Models\Modelo;
@@ -11,10 +12,13 @@ use App\Models\StoreCategories;
 use App\Services\product\ImageProductService;
 use App\Services\UploadFileService;
 use App\Services\product\ProductService;
+use App\Services\product\ProductVariantSyncService;
+use App\Services\product\ProductWizardService;
 use Illuminate\Support\Facades\Auth;
 use App\Services\PropertyService;
-use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class ProductController extends Controller
 {
@@ -28,7 +32,9 @@ class ProductController extends Controller
         UploadFileService $uploadFileService,
         ProductService $productService,
         PropertyService $propertyService,
-        ImageProductService $uploadProductService
+        ImageProductService $uploadProductService,
+        private readonly ProductWizardService $productWizardService,
+        private readonly ProductVariantSyncService $productVariantSyncService,
     ) {
         $this->uploadFileService = $uploadFileService;
         $this->productService = $productService;
@@ -63,7 +69,8 @@ class ProductController extends Controller
         $userAuth = Auth::user();
         $partner = $userAuth->partner;
 
-        $categoriesByPartner = StoreCategories::where('store_id', $partner->id)->get();
+        $storeId = $partner->store?->id ?? $partner->id;
+        $categoriesByPartner = StoreCategories::where('store_id', $storeId)->get();
 
         $models = Modelo::all();
         $brands = Brand::where('partner_id', $partner->id)->get();
@@ -76,32 +83,97 @@ class ProductController extends Controller
     }
 
 
+    /**
+     * Cadastro legado (FormRequest simples). Preferir storeWizard para o fluxo com variantes.
+     */
     public function store(ProductRequest $request)
     {
-        try {
-            $userAuth = Auth::user();
-            $partner = $userAuth->partner;
-            $products = $partner->products;
+        $userAuth = Auth::user();
+        $partner = $userAuth->partner;
+        if ($partner === null) {
+            abort(403);
+        }
 
-            if ($products->count() < 30) {
-
-                DB::beginTransaction();
-                $data = $request->all();
-                $data['partner_id'] = $partner->id;
-
-                $product = $this->productService->insert($data, $request);
-                // $this->propertyService->insert($data, $product->id);
-                DB::commit();
-
-                session()->flash('success', 'Produto cadastrado!');
-            } else {
-                DB::rollBack();
-                session()->flash('error', 'Você atingiu o limite máximo de 30 produtos cadastrados!');
+        if ($partner->products()->count() >= 30) {
+            $message = 'Você atingiu o limite máximo de 30 produtos cadastrados!';
+            if ($request->wantsJson()) {
+                return response()->json(['message' => $message], 422);
             }
-        } catch (Exception $e) {
-            dd($e->getMessage());
+
+            return redirect()->route('products.index')->with('error', $message);
+        }
+
+        try {
+            DB::beginTransaction();
+            $data = $request->all();
+            $data['partner_id'] = $partner->id;
+            $product = $this->productService->insert($data, $request);
+            DB::commit();
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'product_id' => $product->id,
+                    'message'    => 'Produto cadastrado!',
+                ], 201);
+            }
+
+            session()->flash('success', 'Produto cadastrado!');
+
+            return redirect()->route('products.index');
+        } catch (Throwable $e) {
             DB::rollBack();
+            Log::error('Product store failed', ['exception' => $e]);
+
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Erro ao cadastrar produto.'], 500);
+            }
+
             session()->flash('error', 'Erro ao cadastrar produto');
+
+            return redirect()->back();
+        }
+    }
+
+    public function storeWizard(StoreProductWizardRequest $request)
+    {
+        $userAuth = Auth::user();
+        $partner = $userAuth->partner;
+        if ($partner === null) {
+            abort(403);
+        }
+
+        if ($partner->products()->count() >= 30) {
+            $message = 'Você atingiu o limite máximo de 30 produtos cadastrados!';
+            if ($request->wantsJson()) {
+                return response()->json(['message' => $message], 422);
+            }
+
+            return redirect()->route('products.index')->with('error', $message);
+        }
+
+        try {
+            $product = $this->productWizardService->createPartnerProduct($partner, $request);
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'product_id' => $product->id,
+                    'message'    => 'Produto cadastrado!',
+                ], 201);
+            }
+
+            session()->flash('success', 'Produto cadastrado!');
+
+            return redirect()->route('products.index');
+        } catch (Throwable $e) {
+            Log::error('Product wizard store failed', ['exception' => $e]);
+
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Erro ao cadastrar produto.'], 500);
+            }
+
+            session()->flash('error', 'Erro ao cadastrar produto');
+
+            return redirect()->route('products.create');
         }
     }
 
@@ -116,7 +188,8 @@ class ProductController extends Controller
 
         $models = Modelo::all();
         $brands = Brand::all();
-        $categoriesByPartner = StoreCategories::where('store_id', $partner->id)->get();
+        $storeId = $partner->store?->id ?? $partner->id;
+        $categoriesByPartner = StoreCategories::where('store_id', $storeId)->get();
 
         return view('partner.products.edit', [
             'product' => $product,
@@ -203,40 +276,11 @@ class ProductController extends Controller
     public function syncVariants(Request $request, string $id)
     {
         $variants = $request->input('variants', []);
+        $this->productVariantSyncService->sync((int) $id, is_array($variants) ? $variants : []);
 
-        // Remove all existing active variants
-        \App\Models\ProductVariant::where('product_id', $id)->delete();
-
-        foreach ($variants as $v) {
-            \App\Models\ProductVariant::create([
-                'product_id'     => $id,
-                'color'          => $v['color'] ?? null,
-                'color_hex'      => $this->colorToHex($v['color'] ?? ''),
-                'size'           => $v['size'] ?? null,
-                'stock'          => max(0, (int) ($v['stock'] ?? 0)),
-                'price_override' => isset($v['price']) && $v['price'] !== '' ? (float) $v['price'] : null,
-                'sku'            => $v['sku'] ?? null,
-                'active'         => true,
-            ]);
-        }
-
-        // Update product total stock
         $totalStock = \App\Models\ProductVariant::where('product_id', $id)->sum('stock');
-        \App\Models\Product::where('id', $id)->update(['stock' => $totalStock]);
 
         return response()->json(['success' => true, 'total_stock' => $totalStock]);
-    }
-
-    private function colorToHex(string $color): string
-    {
-        $map = [
-            'preto'=>'#1a1a1a','negro'=>'#1a1a1a','branco'=>'#ffffff','azul'=>'#2563eb',
-            'vermelho'=>'#dc2626','verde'=>'#16a34a','amarelo'=>'#eab308','rosa'=>'#ec4899',
-            'cinza'=>'#6b7280','laranja'=>'#f97316','roxo'=>'#7c3aed','marrom'=>'#92400e',
-            'bege'=>'#d4b896','vinho'=>'#7f1d1d','navy'=>'#1e3a5f','azul marinho'=>'#1e3a5f',
-            'turquesa'=>'#0891b2','dourado'=>'#d97706','prata'=>'#9ca3af',
-        ];
-        return $map[strtolower(trim($color))] ?? '#94a3b8';
     }
 
     public function destroy(string $id)

@@ -1,0 +1,10 @@
+---
+alwaysApply: true
+---
+
+🐳 Docker Compose & Ambiente
+Isolamento de Container: "Toda a execução do projeto (PHP, Artisan, Composer, NPM) deve ocorrer dentro dos containers do Docker. Não execute comandos diretamente no host para evitar conflitos de versão."
+
+Persistência de Dados: "Certifique-se de que os volumes para o banco de dados e para a pasta storage do Laravel estejam configurados corretamente no docker-compose.yml para evitar perda de dados entre reinicializações."
+
+Sincronização de .env: "Mantenha o arquivo .env sincronizado com as variáveis definidas no docker-compose.yml (DB_HOST deve ser o nome do serviço do banco, ex: mysql ou db)."

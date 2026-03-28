@@ -1,0 +1,14 @@
+---
+alwaysApply: true
+---
+
+Arquitetura Limpa (Clean Architecture)
+O objetivo aqui é garantir que a lógica de negócio nunca se misture com detalhes de infraestrutura.
+
+Independência de Framework: "Mantenha a lógica de negócio (Use Cases e Entities) isolada de detalhes técnicos como bancos de dados, frameworks web ou APIs externas."
+
+Direção de Dependência: "As dependências devem apontar apenas para dentro. Camadas externas (Infra) podem conhecer camadas internas (Domain), mas o Domain nunca deve conhecer a Infra."
+
+Single Responsibility (SRP): "Cada classe ou módulo deve ter apenas uma razão para mudar. Se um arquivo faz 'validação' e 'salvamento no banco', ele deve ser dividido."
+
+DTOs para Fronteiras: "Use Data Transfer Objects (DTOs) para passar dados entre camadas. Nunca exponha Entidades de domínio diretamente na API."

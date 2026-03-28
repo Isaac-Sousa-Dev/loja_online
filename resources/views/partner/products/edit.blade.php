@@ -28,7 +28,7 @@
     {{-- ── TABS ── --}}
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-4 overflow-hidden">
 
-        <div class="flex border-b border-gray-100 overflow-x-auto">
+        <div class="flex border-b border-gray-100 overflow-x-auto overflow-y-hidden scrollbar-none" style="-webkit-overflow-scrolling:touch; scrollbar-width:none; -ms-overflow-style:none;">
             <button type="button" id="mainTabBtn-geral" onclick="tryGoTab('geral')"
                 class="step-tab flex items-center gap-2.5 px-5 py-4 text-sm font-semibold whitespace-nowrap border-b-2 border-blue-600 text-blue-700 transition -mb-px flex-shrink-0">
                 <span id="stepDot-geral" class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold flex-shrink-0">1</span>
@@ -86,38 +86,6 @@
                         <div>
                             <x-input-label for="description" :value="__('Descrição *')" />
                             <x-textarea id="description" class="mt-1" placeholder="Descreva o produto..." name="description">{{ $product->description }}</x-textarea>
-                        </div>
-                    </div>
-
-                    {{-- Fotos --}}
-                    <div class="border-t border-gray-100 pt-4">
-                        <div class="flex items-center gap-2 mb-3">
-                            <div class="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-camera text-xs"></i></div>
-                            <p class="font-bold text-gray-800">Fotos</p>
-                            <span class="text-xs text-gray-400 flex items-center gap-1 ml-1"><i class="fa-solid fa-circle-info text-blue-400 text-[10px]"></i> Aparecem no catálogo</span>
-                        </div>
-                        <div class="grid grid-cols-4 gap-2">
-                            <label class="cursor-pointer">
-                                <div class="OpenModalImagesProducts relative bg-blue-50 w-full aspect-square rounded-xl border-2 border-dashed border-sky-400 flex flex-col overflow-hidden hover:bg-blue-100 transition">
-                                    <div class="absolute top-1.5 left-1.5 z-10">
-                                        <span class="bg-amber-400 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1"><i class="fa-solid fa-star text-[8px]"></i> principal</span>
-                                    </div>
-                                    <div class="flex-1 flex flex-col items-center justify-center gap-1 pt-5">
-                                        <i class="fa-solid fa-plus text-sky-400 text-xl"></i>
-                                        <p class="text-[10px] font-semibold text-gray-500 text-center px-2 leading-tight">Melhor foto</p>
-                                    </div>
-                                    <img src="" style="display:none" class="previewsImagesInProductPage object-cover h-full w-full absolute inset-0 rounded-xl" alt="">
-                                </div>
-                            </label>
-                            @foreach(['Qualidade','Detalhe','Nítida'] as $hint)
-                            <label class="cursor-pointer">
-                                <div class="OpenModalImagesProducts relative bg-blue-50 w-full aspect-square rounded-xl border-2 border-dashed border-sky-400 flex flex-col items-center justify-center gap-1 overflow-hidden hover:bg-blue-100 transition">
-                                    <i class="fa-solid fa-plus text-sky-400 text-xl"></i>
-                                    <p class="text-[10px] font-semibold text-gray-500 text-center px-2 leading-tight">{{ $hint }}</p>
-                                    <img src="" style="display:none" class="previewsImagesInProductPage object-cover h-full w-full absolute inset-0 rounded-xl" alt="">
-                                </div>
-                            </label>
-                            @endforeach
                         </div>
                     </div>
 
@@ -253,10 +221,10 @@
 </x-app-layout>
 
 <!-- Fundo Opaco -->
-<div id="backdrop" class="fixed inset-0 bg-black bg-opacity-50 hidden z-40"></div>
+{{-- <div id="backdrop" class="fixed inset-0 bg-black bg-opacity-50 hidden z-40"></div> --}}
 
 <!-- Slider de Fotos -->
-<div id="images-product-slider" class="fixed top-0 right-0 h-full w-full md:w-[390px] bg-white shadow-xl transform translate-x-full transition-transform duration-300 z-50 flex flex-col">
+{{-- <div id="images-product-slider" class="fixed top-0 right-0 h-full w-full md:w-[390px] bg-white shadow-xl transform translate-x-full transition-transform duration-300 z-50 flex flex-col">
     <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
         <h3 class="text-xl font-bold text-gray-800">Fotos do produto</h3>
         <button id="close-images-product-slider" class="p-2 rounded-xl hover:bg-gray-100 transition text-gray-500"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -277,9 +245,9 @@
         </label>
         <input type="file" id="label-for-images-product" name="product-images[]" multiple class="hidden">
     </div>
-</div>
+</div> --}}
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+{{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script> --}}
 <script>
 // ── Tabs: all unlocked in edit ──
 const STEPS = ['geral','atributos','estoque'];
@@ -464,43 +432,43 @@ $(document).ready(function() {
     if (p && p.value && !p.value.includes('%')) p.value = p.value + '%';
 });
 
-$('.OpenModalImagesProducts').click(function(e) {
-    e.preventDefault();
-    $('#previewImages').empty();
-    notificationSlider.classList.remove("translate-x-full");
-    backdrop.classList.remove("hidden");
-    if (imagesArray.length < 8) inputImagesProduct.click();
-    if (imagesArray.length >= 8) labelForImagesProductEdit[0].style.display = 'none';
+// $('.OpenModalImagesProducts').click(function(e) {
+//     e.preventDefault();
+//     $('#previewImages').empty();
+//     notificationSlider.classList.remove("translate-x-full");
+//     backdrop.classList.remove("hidden");
+//     if (imagesArray.length < 8) inputImagesProduct.click();
+//     if (imagesArray.length >= 8) labelForImagesProductEdit[0].style.display = 'none';
 
-    imagesArray.forEach(image => {
-        if (image.id) {
-            $('#previewImages').append(`
-                <div class="rounded-xl relative h-32 mb-2 overflow-hidden group" data-divimageid="${image.id}">
-                    <button type="button" data-imageid="${image.id}" class="btn-remove-image-product absolute top-1.5 right-1.5 z-10 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-xs"><i class="fa-solid fa-xmark"></i></button>
-                    <img src="/storage/${image.url.replace('public/','')}" class="w-full h-32 object-cover rounded-xl">
-                </div>`);
-        } else {
-            $('#previewImages').append(`
-                <div class="rounded-xl relative h-32 mb-2 overflow-hidden group" data-indexnewfile="${image.indexNewFile}" data-divimageid="${image.index}">
-                    <button type="button" class="btn-remove-image-product absolute top-1.5 right-1.5 z-10 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-xs"><i class="fa-solid fa-xmark"></i></button>
-                    <img src="${image.url}" class="w-full h-32 object-cover rounded-xl">
-                </div>`);
-        }
-    });
-});
+//     imagesArray.forEach(image => {
+//         if (image.id) {
+//             $('#previewImages').append(`
+//                 <div class="rounded-xl relative h-32 mb-2 overflow-hidden group" data-divimageid="${image.id}">
+//                     <button type="button" data-imageid="${image.id}" class="btn-remove-image-product absolute top-1.5 right-1.5 z-10 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-xs"><i class="fa-solid fa-xmark"></i></button>
+//                     <img src="/storage/${image.url.replace('public/','')}" class="w-full h-32 object-cover rounded-xl">
+//                 </div>`);
+//         } else {
+//             $('#previewImages').append(`
+//                 <div class="rounded-xl relative h-32 mb-2 overflow-hidden group" data-indexnewfile="${image.indexNewFile}" data-divimageid="${image.index}">
+//                     <button type="button" class="btn-remove-image-product absolute top-1.5 right-1.5 z-10 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-xs"><i class="fa-solid fa-xmark"></i></button>
+//                     <img src="${image.url}" class="w-full h-32 object-cover rounded-xl">
+//                 </div>`);
+//         }
+//     });
+// });
 
-const closeSlider = () => {
-    const previews = document.querySelectorAll('.previewsImagesInProductPage');
-    imagesArray.slice(0,4).forEach((img,i) => {
-        if (previews[i]) {
-            previews[i].src = img.id ? '/storage/'+img.url.replace('public/','') : img.url;
-            previews[i].style.display = 'block';
-        }
-    });
-    for (let i = imagesArray.length; i < 4; i++) { if (previews[i]) previews[i].style.display = 'none'; }
-    notificationSlider.classList.add("translate-x-full");
-    backdrop.classList.add("hidden");
-};
+// const closeSlider = () => {
+//     const previews = document.querySelectorAll('.previewsImagesInProductPage');
+//     imagesArray.slice(0,4).forEach((img,i) => {
+//         if (previews[i]) {
+//             previews[i].src = img.id ? '/storage/'+img.url.replace('public/','') : img.url;
+//             previews[i].style.display = 'block';
+//         }
+//     });
+//     for (let i = imagesArray.length; i < 4; i++) { if (previews[i]) previews[i].style.display = 'none'; }
+//     notificationSlider.classList.add("translate-x-full");
+//     backdrop.classList.add("hidden");
+// };
 $(closeButton).click(e => { e.preventDefault(); closeSlider(); });
 $(backdrop).click(e => { e.preventDefault(); closeSlider(); });
 
@@ -532,36 +500,36 @@ $(inputImagesProduct).change(function(e) {
     }
 });
 
-$('#previewImages').on('click', '.btn-remove-image-product', function(e) {
-    e.preventDefault();
-    const imageId = $(this).data('imageid');
-    if (imageId !== undefined) {
-        imagesArray = imagesArray.filter(img => img.id !== imageId);
-        deleteFiles.push(imageId);
-        currentFiles = currentFiles.filter(id => id !== imageId);
-    } else {
-        const divId = $(this).closest('[data-divimageid]').data('divimageid');
-        const nfIdx = $(this).closest('[data-indexnewfile]').data('indexnewfile');
-        imagesArray = imagesArray.filter(img => img.index !== divId);
-        newsFiles.splice(nfIdx, 1);
-    }
-    if (imagesArray.length < 8) {
-        document.getElementById('info-max-images').style.display = 'none';
-        labelForImagesProductEdit[0].style.display = 'block';
-    }
-    $(this).closest('[data-divimageid]').remove();
-});
+// $('#previewImages').on('click', '.btn-remove-image-product', function(e) {
+//     e.preventDefault();
+//     const imageId = $(this).data('imageid');
+//     if (imageId !== undefined) {
+//         imagesArray = imagesArray.filter(img => img.id !== imageId);
+//         deleteFiles.push(imageId);
+//         currentFiles = currentFiles.filter(id => id !== imageId);
+//     } else {
+//         const divId = $(this).closest('[data-divimageid]').data('divimageid');
+//         const nfIdx = $(this).closest('[data-indexnewfile]').data('indexnewfile');
+//         imagesArray = imagesArray.filter(img => img.index !== divId);
+//         newsFiles.splice(nfIdx, 1);
+//     }
+//     if (imagesArray.length < 8) {
+//         document.getElementById('info-max-images').style.display = 'none';
+//         labelForImagesProductEdit[0].style.display = 'block';
+//     }
+//     $(this).closest('[data-divimageid]').remove();
+// });
 
-new Sortable(document.getElementById('previewImages'), {
-    animation: 150, ghostClass: 'opacity-50',
-    onSort() {
-        const newOrder = [];
-        $('#previewImages > div').each(function() {
-            const divId = $(this).data('divimageid');
-            const img = imagesArray.find(i => (i.id ?? i.index) === divId);
-            if (img) newOrder.push(img);
-        });
-        imagesArray = newOrder;
-    }
-});
+// new Sortable(document.getElementById('previewImages'), {
+//     animation: 150, ghostClass: 'opacity-50',
+//     onSort() {
+//         const newOrder = [];
+//         $('#previewImages > div').each(function() {
+//             const divId = $(this).data('divimageid');
+//             const img = imagesArray.find(i => (i.id ?? i.index) === divId);
+//             if (img) newOrder.push(img);
+//         });
+//         imagesArray = newOrder;
+//     }
+// });
 </script>

@@ -1,0 +1,12 @@
+---
+alwaysApply: true
+---
+
+🎨 Blade & TailwindCSS (Frontend)
+Componentização: "Não repita HTML. Transforme elementos de UI repetitivos (botões, inputs, cards) em Blade Components (<x-component />). Use a pasta resources/views/components."
+
+Diretivas de Layout: "Utilize @stack e @push para injetar scripts ou estilos específicos de uma página no layout principal, mantendo a estrutura limpa."
+
+Tailwind Utility-First: "Priorize o uso de classes utilitárias do Tailwind diretamente no HTML. Evite criar arquivos CSS customizados ou usar a diretiva @apply, a menos que seja estritamente necessário para componentes complexos de terceiros."
+
+Acessibilidade (a11y): "Sempre inclua atributos ARIA e alt em imagens. Certifique-se de que o contraste das cores do Tailwind atenda aos padrões WCAG."

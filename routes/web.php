@@ -103,6 +103,7 @@ Route::middleware('auth')->group(function () {
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
     Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
     Route::post('products/store', [ProductController::class, 'store'])->name('products.store');
+    Route::post('products/wizard/store', [ProductController::class, 'storeWizard'])->name('products.wizard.store');
     Route::delete('products/destroy/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
     Route::get('products/edit/{id}', [ProductController::class, 'edit'])->name('products.edit');
     Route::post('products/update/{id}', [ProductController::class, 'update'])->name('products.update');

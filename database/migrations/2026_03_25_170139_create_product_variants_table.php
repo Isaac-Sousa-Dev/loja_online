@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('size')->nullable();        // ex: "P", "M", "G", "42"
             $table->unsignedInteger('stock')->default(0);
             $table->decimal('price_override', 10, 2)->nullable(); // preço diferente do produto base
+            $table->string('sku')->nullable();
             $table->boolean('active')->default(true);
             $table->timestamps();
         });

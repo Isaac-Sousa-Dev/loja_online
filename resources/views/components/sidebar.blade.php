@@ -1,10 +1,12 @@
 <!-- Sidebar -->
 
-@if(Auth::user()->role != 'admin')
-    @php
-        $modules = Auth::user()->partner->store->plan->modules->pluck('module')->toArray();
-    @endphp
-@endif
+@php
+    $modules = [];
+    $user = Auth::user();
+    if ($user && $user->role !== 'admin' && $user->partner?->store?->plan?->modules) {
+        $modules = $user->partner->store->plan->modules->pluck('module')->toArray();
+    }
+@endphp
 
 <div id="sidebar"
      class="fixed top-0 left-0 z-40 h-full w-64 bg-[#036] transform transition-transform duration-300 -translate-x-full md:translate-x-0 md:relative md:block border-r">
@@ -14,9 +16,9 @@
         
             @if(Auth::user()->role != 'admin')
 
-                @if(Auth::user()->partner->store->logo)
+                @if(Auth::user()->partner?->store?->logo)
                     <div class="h-20 w-20 flex border-2 border-white bg-gray-300 rounded-full">
-                        <img src="/storage/{{Auth::user()->partner->store->logo}}" width="60" height="60" class="object-cover rounded-full w-full object-center" alt="">
+                        <img src="/storage/{{ Auth::user()->partner->store->logo }}" width="60" height="60" class="object-cover rounded-full w-full object-center" alt="">
                     </div>
                 @else
                     <div class="h-20 w-20 flex">
@@ -25,7 +27,7 @@
                 @endif
             
                 <div class="font-bold text-white">
-                    {{Auth::user()->partner->store->store_name}}
+                    {{ Auth::user()->partner?->store?->store_name ?? Auth::user()->name }}
                 </div>
             @else
                 <div class="p-2">

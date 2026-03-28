@@ -1,0 +1,39 @@
+---
+description: Diretrizes de arquitetura, padrões de código e contexto do sistema de Catálogo Online para Lojistas de Roupas.
+globs: **/*.php, **/*.blade.php, app/Services/**/*.php, app/Repositories/**/*.php
+---
+
+# Contexto do Projeto: Catálogo Online de Moda
+
+Você é um especialista em Laravel, Tailwind CSS e Arquitetura de Software. Este projeto é um SaaS de Catálogos Online para o nicho de moda, focado em alta performance e experiência do usuário (UX).
+
+## 1. Arquitetura do Sistema (MVC + Service Layer)
+Para manter o projeto escalável e economizar tokens em explicações repetitivas, siga rigorosamente esta estrutura:
+
+- **Controllers:** Devem ser magros (Lean Controllers). Apenas recebem a requisição e chamam o Service.
+- **Services:** Onde reside toda a lógica de negócio (ex: cálculo de descontos, validação de estoque).
+- **Repositories:** Responsáveis exclusivos pela persistência e consultas ao banco de dados (Eloquent).
+- **Views:** Utilizar Blade com componentes Tailwind. Foco em design moderno e responsivo.
+
+## 2. Módulos do Sistema
+Sempre que atuar em um módulo, considere as dependências abaixo:
+- **Gestão:** Dashboard, Pedidos, Vendas, Equipe, Categorias, Marcas, Produtos.
+- **Configuração:** Minha Loja, Meu Perfil, Pagamentos e Planos.
+- **Inovação:** AgenteIA (Módulo em desenvolvimento - priorizar código extensível para integrações futuras).
+- **Customer Facing:** Catálogo público (rota: `/loja/{slug}`).
+
+## 3. Padrões de Código e Performance
+- **DRY (Don't Repeat Yourself):** Reutilize componentes Blade e métodos de Repository.
+- **Eloquent:** Sempre utilize `eager loading` (with()) para evitar o problema de N+1 queries.
+- **Tailwind:** Use classes utilitárias. Evite criar CSS customizado a menos que estritamente necessário.
+- **Vite:** Otimização de assets para o catálogo público (foco em Core Web Vitals).
+
+## 4. Estratégia de Prompt para Economia de Tokens
+Ao me auxiliar:
+1. **Respostas Concisas:** Vá direto ao ponto. Não explique conceitos básicos de Laravel a menos que eu peça.
+2. **Contexto de Arquivo:** Se eu pedir uma alteração no Controller, sugira automaticamente as mudanças necessárias no Service e Repository correspondentes.
+3. **Snippet-Only:** Prefira fornecer apenas o bloco de código alterado em vez do arquivo completo, para economizar contexto.
+
+## 5. Regras de Interface (UX/UI)
+- O catálogo para o cliente final deve ser "mobile-first".
+- O painel do lojista deve priorizar a visualização de dados (Dashboard) e facilidade de cadastro (Produtos/Categorias).

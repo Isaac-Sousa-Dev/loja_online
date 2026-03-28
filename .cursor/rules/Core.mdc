@@ -1,0 +1,12 @@
+---
+alwaysApply: true
+---
+
+🐘 Laravel & PHP (Core)
+Form Requests para Validação: "Nunca realize validação dentro dos Controllers. Crie sempre FormRequest classes para lidar com a lógica de validação e autorização de entrada."
+
+Pattern de Services/Actions: "Mantenha os Controllers magros. Mova a lógica de negócio complexa para classes Service ou Action dedicadas, facilitando o reuso e os testes unitários."
+
+Eloquent Performance: "Evite o problema de N+1 queries. Sempre utilize eager loading com o método with() ao buscar modelos que possuem relacionamentos."
+
+Tipagem Estrita: "Use declare(strict_types=1); em todos os arquivos PHP. Defina tipos de retorno e de argumentos em todas as funções e métodos para garantir segurança em tempo de execução."

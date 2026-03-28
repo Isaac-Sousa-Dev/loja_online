@@ -25,15 +25,21 @@ class ProductService
 
     public function insert(array $data, $request = null)
     {
-        if ($request->hasFile('product-images')): $data['image_main'] = $this->uploadFileService->uploadMainImage($request)['path'];
-        endif;
-        $data['price'] = $this->formattedPrice($data['price']);
-        $data['price_promotional'] = $this->formattedPrice($data['price_promotional']);
-        $data['price_wholesale'] = $this->formattedPrice($data['price_wholesale']);
-        $data['cost'] = $this->formattedPrice($data['cost']);
+        if ($request !== null && $request->hasFile('product-images')) {
+            $main = $this->uploadFileService->uploadMainImage($request);
+            if (is_array($main) && isset($main['path'])) {
+                $data['image_main'] = $main['path'];
+            }
+        }
+        $data['price'] = $this->formattedPrice($data['price'] ?? '');
+        $data['price_promotional'] = $this->formattedPrice($data['price_promotional'] ?? null);
+        $data['price_wholesale'] = $this->formattedPrice($data['price_wholesale'] ?? null);
+        $data['cost'] = $this->formattedPrice($data['cost'] ?? null);
 
         $productCreated = $this->productRepository->create($data);
-        $this->uploadFileService->getPathAndExtension($request, $productCreated);
+        if ($request !== null) {
+            $this->uploadFileService->getPathAndExtension($request, $productCreated);
+        }
 
         return $productCreated;
     }
@@ -151,10 +157,14 @@ class ProductService
         return $dataForInsert;
     }
 
-    public function formattedPrice($price)
+    public function formattedPrice($price): ?string
     {
-        $price = str_replace('.', '', $price);
+        if ($price === null || $price === '') {
+            return null;
+        }
+        $price = str_replace('.', '', (string) $price);
         $price = str_replace(',', '.', $price);
+
         return $price;
     }
 }

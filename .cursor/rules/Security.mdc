@@ -1,0 +1,14 @@
+---
+alwaysApply: false
+---
+
+🛡️ Segurança (Security)
+Segurança não é um 'anexo', é o fundamento.
+
+Secrets Management: "Nunca escreva segredos (chaves de API, senhas) diretamente no código. Use variáveis de ambiente (.env) e verifique se elas estão no .gitignore."
+
+Sanitização de Input: "Considere todo input do usuário como malicioso. Valide e sanitize dados em todas as entradas da aplicação (API, CLI, Forms)."
+
+Princípio do Menor Privilégio: "Implemente verificações de autorização no nível de serviço/use case, e não apenas na camada de rota."
+
+Prevenção de Injeção: "Use sempre queries parametrizadas ou ORMs que evitem SQL Injection. Nunca concatene strings para formar queries."

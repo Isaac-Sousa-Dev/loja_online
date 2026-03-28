@@ -24,7 +24,7 @@
     <div class="flex flex-col gap-2">
         <label class="text-sm font-semibold text-gray-700">Link Público</label>
         
-        @if($partner->partner_link != null)
+        @if($partner && $partner->partner_link != null)
             <div class="flex flex-col gap-2">
                 <input id="partner_link" type="text" readonly
                     value="{{ request()->getSchemeAndHttpHost().'/orders/'.$user->partner->partner_link }}"

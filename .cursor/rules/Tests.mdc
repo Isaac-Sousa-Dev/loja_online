@@ -1,0 +1,14 @@
+---
+alwaysApply: false
+---
+
+🧪 Testes e Qualidade (Testing)
+Código sem teste é apenas um bug esperando para acontecer.
+
+Pirâmide de Testes: "Priorize testes unitários para lógica de negócio, seguidos por testes de integração para contratos e E2E apenas para caminhos críticos."
+
+Nomenclatura Descritiva: "Os nomes dos testes devem descrever o comportamento esperado, ex: should_return_error_when_email_is_invalid em vez de test_email."
+
+Independência de Testes: "Cada teste deve ser isolado. Não dependa da ordem de execução ou de estado global compartilhado."
+
+Mocks e Stubs: "Use mocks para serviços externos (APIs de terceiros) para garantir que o pipeline de CI seja rápido e determinístico."

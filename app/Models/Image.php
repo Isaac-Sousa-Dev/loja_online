@@ -11,9 +11,15 @@ class Image extends Model
 
     protected $fillable = [
         'product_id',
+        'variant_color',
         'index',
         'url',
         'mimeType',
+        'is_cover',
+    ];
+
+    protected $casts = [
+        'is_cover' => 'boolean',
     ];
 
 
