@@ -197,6 +197,47 @@ class ProductController extends Controller
         return response()->json(['success' => true]);
     }
 
+    /**
+     * Sync all variants for a product (delete + recreate).
+     */
+    public function syncVariants(Request $request, string $id)
+    {
+        $variants = $request->input('variants', []);
+
+        // Remove all existing active variants
+        \App\Models\ProductVariant::where('product_id', $id)->delete();
+
+        foreach ($variants as $v) {
+            \App\Models\ProductVariant::create([
+                'product_id'     => $id,
+                'color'          => $v['color'] ?? null,
+                'color_hex'      => $this->colorToHex($v['color'] ?? ''),
+                'size'           => $v['size'] ?? null,
+                'stock'          => max(0, (int) ($v['stock'] ?? 0)),
+                'price_override' => isset($v['price']) && $v['price'] !== '' ? (float) $v['price'] : null,
+                'sku'            => $v['sku'] ?? null,
+                'active'         => true,
+            ]);
+        }
+
+        // Update product total stock
+        $totalStock = \App\Models\ProductVariant::where('product_id', $id)->sum('stock');
+        \App\Models\Product::where('id', $id)->update(['stock' => $totalStock]);
+
+        return response()->json(['success' => true, 'total_stock' => $totalStock]);
+    }
+
+    private function colorToHex(string $color): string
+    {
+        $map = [
+            'preto'=>'#1a1a1a','negro'=>'#1a1a1a','branco'=>'#ffffff','azul'=>'#2563eb',
+            'vermelho'=>'#dc2626','verde'=>'#16a34a','amarelo'=>'#eab308','rosa'=>'#ec4899',
+            'cinza'=>'#6b7280','laranja'=>'#f97316','roxo'=>'#7c3aed','marrom'=>'#92400e',
+            'bege'=>'#d4b896','vinho'=>'#7f1d1d','navy'=>'#1e3a5f','azul marinho'=>'#1e3a5f',
+            'turquesa'=>'#0891b2','dourado'=>'#d97706','prata'=>'#9ca3af',
+        ];
+        return $map[strtolower(trim($color))] ?? '#94a3b8';
+    }
 
     public function destroy(string $id)
     {

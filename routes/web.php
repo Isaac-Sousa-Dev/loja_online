@@ -111,6 +111,7 @@ Route::middleware('auth')->group(function () {
     Route::get('products/{id}/variants', [ProductController::class, 'getVariants'])->name('products.variants');
     Route::post('products/{id}/variants', [ProductController::class, 'storeVariant'])->name('products.variants.store');
     Route::delete('products/variants/{variantId}', [ProductController::class, 'destroyVariant'])->name('products.variants.destroy');
+    Route::post('products/{id}/variants/sync', [ProductController::class, 'syncVariants'])->name('products.variants.sync');
     
     // Routes for Categories
     Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');

@@ -17,6 +17,7 @@ class ProductVariant extends Model
         'stock',
         'price_override',
         'active',
+        'sku',
     ];
 
     protected $casts = [
