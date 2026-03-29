@@ -11,9 +11,22 @@ function escapeHtml(text) {
 }
 
 /**
- * @param {{ wizardStoreUrl: string, productsIndexUrl: string }} cfg
+ * @param {{
+ *   wizardStoreUrl?: string,
+ *   submitUrl?: string,
+ *   productsIndexUrl: string,
+ *   defaultSuccessMessage?: string,
+ *   redirectAfterSave?: boolean,
+ *   redirectDelayMs?: number,
+ *   existingVariantsBootstrap?: boolean,
+ * }} cfg
  */
 export function initProductCreateWizard(cfg) {
+    const submitUrl = cfg.submitUrl || cfg.wizardStoreUrl;
+    if (!submitUrl) {
+        return;
+    }
+
     const STEP_BTN = {
         geral: { label: 'Próximo: Atributos', icon: 'fa-arrow-right', action: () => goNextStep('geral') },
         atributos: { label: 'Próximo: Fotos', icon: 'fa-arrow-right', action: () => goNextStep('atributos') },
@@ -279,7 +292,7 @@ export function initProductCreateWizard(cfg) {
         window.showLoader?.();
         // eslint-disable-next-line no-undef
         $.ajax({
-            url: cfg.wizardStoreUrl,
+            url: submitUrl,
             method: 'POST',
             data: formData,
             processData: false,
@@ -291,18 +304,20 @@ export function initProductCreateWizard(cfg) {
             },
             success(data) {
                 window.hideLoader?.();
+                const fallbackMsg = cfg.defaultSuccessMessage ?? 'Produto cadastrado com sucesso!';
                 const msg =
                     data && typeof data.message === 'string' && data.message.trim() !== ''
                         ? data.message
-                        : 'Produto cadastrado com sucesso!';
+                        : fallbackMsg;
                 if (typeof window.toast?.success === 'function') {
-                    // Título omitido para feedback mais limpo; duração um pouco maior que o redirect
                     window.toast.success(msg, false, 4500);
                 }
-                const redirectMs = 2000;
-                window.setTimeout(() => {
-                    window.location.href = cfg.productsIndexUrl;
-                }, redirectMs);
+                if (cfg.redirectAfterSave !== false) {
+                    const redirectMs = cfg.redirectDelayMs ?? 2000;
+                    window.setTimeout(() => {
+                        window.location.href = cfg.productsIndexUrl;
+                    }, redirectMs);
+                }
             },
             error(xhr) {
                 window.hideLoader?.();
@@ -352,6 +367,20 @@ export function initProductCreateWizard(cfg) {
             el.addEventListener('input', () => el.classList.toggle('border-red-400', !el.value.trim()));
         });
     });
+
+    if (cfg.existingVariantsBootstrap) {
+        const rows = window.VM?.skuRows;
+        if (Array.isArray(rows) && rows.length > 0) {
+            stepUnlocked.atributos = true;
+            stepUnlocked.fotos = true;
+            stepUnlocked.estoque = true;
+            setTabStyle('atributos', false, true);
+            setTabStyle('fotos', false, true);
+            setTabStyle('estoque', false, true);
+            markStepDone('geral');
+            document.dispatchEvent(new CustomEvent('variantsGenerated', { detail: { rows: rows.slice() } }));
+        }
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

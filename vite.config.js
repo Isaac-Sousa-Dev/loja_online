@@ -8,6 +8,7 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/app.js',
                 'resources/js/partner/product-create-wizard.js',
+                'resources/js/partner/product-edit-wizard.js',
             ],
             refresh: true,
         }),

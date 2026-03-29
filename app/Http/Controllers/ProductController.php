@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Partner\ProductRequest;
 use App\Http\Requests\Partner\StoreProductWizardRequest;
+use App\Http\Requests\Partner\UpdateProductWizardRequest;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use App\Models\Modelo;
@@ -14,6 +15,7 @@ use App\Services\UploadFileService;
 use App\Services\product\ProductService;
 use App\Services\product\ProductVariantSyncService;
 use App\Services\product\ProductWizardService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use App\Services\PropertyService;
 use Illuminate\Support\Facades\DB;
@@ -177,26 +179,68 @@ class ProductController extends Controller
         }
     }
 
+    public function updateWizard(UpdateProductWizardRequest $request, string $id): JsonResponse
+    {
+        $userAuth = Auth::user();
+        $partner = $userAuth->partner;
+        if ($partner === null) {
+            abort(403);
+        }
+
+        $product = Product::findOrFail($id);
+
+        try {
+            $this->productWizardService->updatePartnerProduct($partner, $product, $request);
+
+            return response()->json([
+                'message' => 'Produto atualizado!',
+            ]);
+        } catch (Throwable $e) {
+            Log::error('Product wizard update failed', ['exception' => $e]);
+
+            return response()->json(['message' => 'Erro ao atualizar produto.'], 500);
+        }
+    }
+
 
     public function edit(string $id)
     {
         $userAuth = Auth::user();
         $partner = $userAuth->partner;
-        $product = Product::find($id);
+        $product = Product::with('variants')->findOrFail($id);
 
-        $images = $product->images()->orderBy('index', 'asc')->get();
+        if ($product->partner_id !== $partner->id) {
+            abort(403);
+        }
 
         $models = Modelo::all();
-        $brands = Brand::all();
+        $brandsByPartner = Brand::where('partner_id', $partner->id)->get();
         $storeId = $partner->store?->id ?? $partner->id;
         $categoriesByPartner = StoreCategories::where('store_id', $storeId)->get();
+
+        $existingVariantsJson = $product->variants->map(fn ($v) => [
+            'id' => $v->id,
+            'color' => $v->color,
+            'size' => $v->size,
+            'stock' => $v->stock,
+            'price_override' => $v->price_override,
+            'sku' => $v->sku,
+            'color_hex' => $v->color_hex,
+        ])->toJson(JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
+
+        $genderSelect = match ($product->gender) {
+            'masculine' => 'M',
+            'feminine' => 'F',
+            default => '',
+        };
 
         return view('partner.products.edit', [
             'product' => $product,
             'models' => $models,
-            'brands' => $brands,
-            'images' => $images,
-            'categoriesByPartner' => $categoriesByPartner
+            'brandsByPartner' => $brandsByPartner,
+            'categoriesByPartner' => $categoriesByPartner,
+            'existingVariantsJson' => $existingVariantsJson,
+            'genderSelect' => $genderSelect,
         ]);
     }
 

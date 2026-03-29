@@ -57,6 +57,37 @@ class ProductService
         $this->productRepository->update($dataForUpdate);
     }
 
+    /**
+     * Atualiza campos do catálogo de moda vindos do wizard (paridade com cadastro).
+     *
+     * @param array<string, mixed> $data
+     */
+    public function applyWizardAttributesToExistingProduct(array $data, Product $product): void
+    {
+        $update = [
+            'name' => $data['name'],
+            'description' => $data['description'],
+            'price' => $this->formattedPrice($data['price'] ?? '') ?? $product->price,
+            'price_wholesale' => $this->formattedPrice($data['price_wholesale'] ?? null),
+            'price_promotional' => $this->formattedPrice($data['price_promotional'] ?? null),
+            'cost' => $this->formattedPrice($data['cost'] ?? null),
+            'brand_id' => $data['brand_id'],
+            'category_id' => $data['category_id'],
+            'gender' => $data['gender'] ?? null,
+            'weight' => $data['weight'] ?? null,
+            'width' => $data['width'] ?? null,
+            'height' => $data['height'] ?? null,
+            'length' => $data['length'] ?? null,
+            'installments' => $data['installments'] ?? null,
+            'discount_pix' => $data['discount_pix'] ?? null,
+        ];
+        if (array_key_exists('profit', $data)) {
+            $update['profit'] = $data['profit'];
+        }
+
+        $product->update($update);
+    }
+
     public function updatePricePromotional($data)
     {
         $data['pricePromotional'] = explode(',', $data['pricePromotional'])[0];
