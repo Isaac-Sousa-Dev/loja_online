@@ -36,14 +36,13 @@ class OrderController extends Controller
         //     }
         // }
 
-        $products = $partner->products;
-        // dd($products);
+        $products = $partner->publishedProducts;
 
         $productWithStock = [];
-        foreach($products as $product) {            
-            if($product->stock > 0) {
+        foreach ($products as $product) {
+            if ($product->stock > 0) {
                 $productWithStock[] = $product;
-            }            
+            }
         }
 
         $qtdProducts = count($productWithStock);
@@ -63,13 +62,13 @@ class OrderController extends Controller
     {
         $partnerLink = explode('/', $_SERVER['HTTP_REFERER'])[4];
         $partner = Partner::where('partner_link', $partnerLink)->first();
-        $products = $partner->products;
+        $products = $partner->publishedProducts;
 
         $productWithStock = [];
-        foreach($products as $product) {            
-            if($product->stock > 0) {
+        foreach ($products as $product) {
+            if ($product->stock > 0) {
                 $productWithStock[] = $product;
-            }            
+            }
         }
 
         foreach ($productWithStock as $key => $product) {
@@ -91,6 +90,7 @@ class OrderController extends Controller
                             ->join('subcategories', 'products.subcategory_id', '=', 'subcategories.id')
                             ->where('products.name', 'like', '%' . $searchTerm . '%')
                             ->where('products.partner_id', $partner->id)
+                            ->where('products.is_active', true)
                             ->orderBy('products.id', 'desc')
                             ->paginate(4);
         
@@ -106,6 +106,7 @@ class OrderController extends Controller
     {
         $products = Product::where('category_id', $category_id)
                             ->where('stock', '>', 0)
+                            ->where('is_active', true)
                             ->orderBy('id', 'desc')
                             ->paginate(4);
         foreach ($products as $key => $product) {
@@ -122,17 +123,30 @@ class OrderController extends Controller
 
         if($store->logo != null): $this->logoStore = '/storage/'.$store->logo; endif;
 
-        $product = Product::with(['images', 'brand', 'variants', 'category'])->find($productId);
-        $images  = $product->images;
+        $product = Product::with(['images', 'brand', 'variants', 'category'])
+            ->where('partner_id', $partner->id)
+            ->where('is_active', true)
+            ->find($productId);
+
+        if ($product === null) {
+            abort(404);
+        }
+
+        $images = $product->images;
 
         // Produtos relacionados: mesma categoria ou mesma marca, excluindo o atual
         $related = Product::with(['images'])
             ->where('partner_id', $partner->id)
             ->where('id', '!=', $productId)
             ->where('stock', '>', 0)
-            ->where(function($q) use ($product) {
-                if ($product->category_id) $q->orWhere('category_id', $product->category_id);
-                if ($product->brand_id)    $q->orWhere('brand_id', $product->brand_id);
+            ->where('is_active', true)
+            ->where(function ($q) use ($product) {
+                if ($product->category_id) {
+                    $q->orWhere('category_id', $product->category_id);
+                }
+                if ($product->brand_id) {
+                    $q->orWhere('brand_id', $product->brand_id);
+                }
             })
             ->take(8)
             ->get();

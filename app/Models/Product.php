@@ -31,7 +31,12 @@ class Product extends Model
         'height',
         'length',
         'weight',
-        'size'
+        'size',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     public function images()
@@ -52,6 +57,11 @@ class Product extends Model
     public function variants()
     {
         return $this->hasMany(ProductVariant::class)->where('active', true);
+    }
+
+    public function allVariants()
+    {
+        return $this->hasMany(ProductVariant::class);
     }
 
     public function category()

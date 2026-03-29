@@ -57,6 +57,7 @@ class UpdateProductWizardRequest extends FormRequest
             'length'        => ['nullable', 'numeric'],
             'installments'  => ['nullable', 'integer', 'min:1', 'max:12'],
             'discount_pix'  => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'is_active'     => ['nullable', 'boolean'],
             'variants_payload' => ['required', 'string'],
             'color_photos_flat' => ['nullable', 'string'],
             'color_photo_files' => ['nullable', 'array'],
@@ -114,6 +115,7 @@ class UpdateProductWizardRequest extends FormRequest
             'discount_pix',
         ]);
         $attrs['gender'] = $this->mapGender($this->input('gender'));
+        $attrs['is_active'] = $this->boolean('is_active');
 
         return $attrs;
     }

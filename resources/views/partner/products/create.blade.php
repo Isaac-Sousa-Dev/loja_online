@@ -135,6 +135,15 @@
                                     <option value="U">Unissex</option>
                                 </select>
                             </div>
+                            <div class="mt-4 pt-3 border-t border-gray-200">
+                                <input type="hidden" name="is_active" value="0" />
+                                <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+                                    <input type="checkbox" name="is_active" value="1" class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
+                                        @checked((string) old('is_active', '1') === '1') />
+                                    <span class="text-sm font-medium text-gray-700">Produto ativo no catálogo</span>
+                                </label>
+                                <p class="text-xs text-gray-500 mt-1">Desmarque para salvar como rascunho (invisível até você ativar).</p>
+                            </div>
                         </div>
 
                         <div class="bg-gray-50 rounded-xl border border-gray-100 p-4">

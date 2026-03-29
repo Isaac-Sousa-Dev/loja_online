@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Partner\DuplicateProductRequest;
+use App\Http\Requests\Partner\IndexProductsRequest;
 use App\Http\Requests\Partner\ProductRequest;
 use App\Http\Requests\Partner\StoreProductWizardRequest;
+use App\Http\Requests\Partner\UpdateProductVisibilityRequest;
 use App\Http\Requests\Partner\UpdateProductWizardRequest;
 use App\Models\Brand;
 use Illuminate\Http\Request;
@@ -12,6 +15,8 @@ use App\Models\Product;
 use App\Models\StoreCategories;
 use App\Services\product\ImageProductService;
 use App\Services\UploadFileService;
+use App\Services\product\PartnerProductListingService;
+use App\Services\product\ProductDuplicateService;
 use App\Services\product\ProductService;
 use App\Services\product\ProductVariantSyncService;
 use App\Services\product\ProductColorImageService;
@@ -39,6 +44,8 @@ class ProductController extends Controller
         private readonly ProductWizardService $productWizardService,
         private readonly ProductVariantSyncService $productVariantSyncService,
         private readonly ProductColorImageService $productColorImageService,
+        private readonly PartnerProductListingService $partnerProductListingService,
+        private readonly ProductDuplicateService $productDuplicateService,
     ) {
         $this->uploadFileService = $uploadFileService;
         $this->productService = $productService;
@@ -46,13 +53,29 @@ class ProductController extends Controller
         $this->imageProductService = $uploadProductService;
     }
 
-    public function index()
+    public function index(IndexProductsRequest $request)
     {
         $userAuth = Auth::user();
         $partner = $userAuth->partner;
         $mainImageProduct = '';
+        $filters = $request->filters();
 
-        $productsPaginator = $partner->products()->orderBy('id', 'desc')->paginate(4);
+        $storeId = $partner->store?->id ?? $partner->id;
+
+        $query = Product::query()
+            ->where('partner_id', $partner->id)
+            ->with([
+                'images' => static function ($q): void {
+                    $q->orderBy('index')->orderBy('id');
+                },
+                'brand',
+                'category',
+            ])
+            ->orderByDesc('id');
+
+        $this->partnerProductListingService->applyFilters($query, $filters);
+
+        $productsPaginator = $query->paginate(4)->withQueryString();
         $products = $productsPaginator->getCollection();
 
         if ($products->isNotEmpty()) {
@@ -64,7 +87,56 @@ class ProductController extends Controller
             }
         }
 
-        return view('partner.products.index', ['products' => $products, 'mainImageProduct' => $mainImageProduct, 'productsPaginator' => $productsPaginator]);
+        $categoriesByPartner = StoreCategories::where('store_id', $storeId)->with('category')->get();
+        $brandsByPartner = Brand::where('partner_id', $partner->id)->orderBy('name')->get();
+
+        return view('partner.products.index', [
+            'products' => $products,
+            'mainImageProduct' => $mainImageProduct,
+            'productsPaginator' => $productsPaginator,
+            'categoriesByPartner' => $categoriesByPartner,
+            'brandsByPartner' => $brandsByPartner,
+            'filters' => $filters,
+        ]);
+    }
+
+    public function duplicate(DuplicateProductRequest $request, Product $product)
+    {
+        $partner = Auth::user()->partner;
+        if ($partner === null) {
+            abort(403);
+        }
+
+        if ($partner->products()->count() >= 30) {
+            return redirect()
+                ->route('products.index')
+                ->with('error', 'Você atingiu o limite máximo de 30 produtos cadastrados.');
+        }
+
+        try {
+            $newProduct = $this->productDuplicateService->duplicateForPartner($partner, $product);
+
+            return redirect()
+                ->route('products.edit', $newProduct->id)
+                ->with('success', 'Produto duplicado. Ajuste o nome e os detalhes e ative quando estiver pronto.');
+        } catch (Throwable $e) {
+            Log::error('Product duplicate failed', ['exception' => $e]);
+
+            return redirect()
+                ->route('products.index')
+                ->with('error', 'Não foi possível duplicar o produto. Tente novamente.');
+        }
+    }
+
+    public function updateVisibility(UpdateProductVisibilityRequest $request, Product $product)
+    {
+        $product->update(['is_active' => $request->boolean('is_active')]);
+
+        $message = $request->boolean('is_active')
+            ? 'Produto ativado no catálogo.'
+            : 'Produto desativado no catálogo.';
+
+        return redirect()->back()->with('success', $message);
     }
 
 

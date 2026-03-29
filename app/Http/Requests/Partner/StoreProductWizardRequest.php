@@ -47,6 +47,7 @@ class StoreProductWizardRequest extends FormRequest
             'length'        => ['nullable', 'numeric'],
             'installments'  => ['nullable', 'integer', 'min:1', 'max:12'],
             'discount_pix'  => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'is_active'     => ['nullable', 'boolean'],
             'variants_payload' => ['required', 'string'],
             'color_photos_flat' => ['nullable', 'string'],
             'color_photo_files' => ['nullable', 'array'],
@@ -70,14 +71,18 @@ class StoreProductWizardRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $this->merge([
+        $merge = [
             'name' => $this->input('name'),
             'profit' => $this->normalizeProfit($this->input('profit')),
             'price' => $this->normalizePriceString($this->input('price')),
             'price_wholesale' => $this->normalizePriceString($this->input('price_wholesale')),
             'price_promotional' => $this->normalizePriceString($this->input('price_promotional')),
             'cost' => $this->normalizePriceString($this->input('cost')),
-        ]);
+        ];
+        if (! $this->has('is_active')) {
+            $merge['is_active'] = true;
+        }
+        $this->merge($merge);
     }
 
     /**
@@ -104,6 +109,7 @@ class StoreProductWizardRequest extends FormRequest
             'discount_pix',
         ]);
         $attrs['gender'] = $this->mapGender($this->input('gender'));
+        $attrs['is_active'] = $this->boolean('is_active');
 
         return $attrs;
     }

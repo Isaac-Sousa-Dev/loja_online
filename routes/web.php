@@ -101,6 +101,8 @@ Route::middleware('auth')->group(function () {
 
     // Routes for Products
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
+    Route::post('products/{product}/duplicate', [ProductController::class, 'duplicate'])->name('products.duplicate');
+    Route::post('products/{product}/visibility', [ProductController::class, 'updateVisibility'])->name('products.visibility');
     Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
     Route::post('products/store', [ProductController::class, 'store'])->name('products.store');
     Route::post('products/wizard/store', [ProductController::class, 'storeWizard'])->name('products.wizard.store');

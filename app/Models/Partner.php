@@ -44,6 +44,12 @@ class Partner extends Model
         return $this->hasMany(Product::class, 'partner_id', 'id');
     }
 
+    /** Catálogo público: apenas produtos marcados como ativos. */
+    public function publishedProducts()
+    {
+        return $this->hasMany(Product::class, 'partner_id', 'id')->where('products.is_active', true);
+    }
+
     public function requests()
     {
         return $this->hasMany(Request::class, 'store_id', 'store_id');

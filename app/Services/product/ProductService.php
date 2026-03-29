@@ -84,6 +84,9 @@ class ProductService
         if (array_key_exists('profit', $data)) {
             $update['profit'] = $data['profit'];
         }
+        if (array_key_exists('is_active', $data)) {
+            $update['is_active'] = (bool) $data['is_active'];
+        }
 
         $product->update($update);
     }
