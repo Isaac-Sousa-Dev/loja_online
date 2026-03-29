@@ -30,6 +30,46 @@ export function buildColorPhotosUploadPayload() {
     return { flat, files };
 }
 
+/**
+ * Metadados do wizard para persistir remoções e capas de fotos já salvas no servidor.
+ *
+ * @returns {{ removedIds: number[], coverByColor: Record<string, number> }}
+ */
+export function buildColorPhotosWizardMeta() {
+    const removed = window._cpRemovedServerIds || [];
+    const state = window._cpState || {};
+    const colors = window._cpColors || [];
+    /** @type {Record<string, number>} */
+    const coverByColor = {};
+    for (const c of colors) {
+        const photos = state[c.id] || [];
+        const capa = photos.find((p) => p.isCapa);
+        if (capa && capa.serverImageId) {
+            coverByColor[c.id] = capa.serverImageId;
+        }
+    }
+    return { removedIds: [...new Set(removed)], coverByColor };
+}
+
+function cloneCpState(st) {
+    const out = {};
+    for (const k of Object.keys(st || {})) {
+        out[k] = (st[k] || []).map((p) => ({ ...p }));
+    }
+    return out;
+}
+
+function ensureSingleCapaLocal(photos) {
+    if (!photos.length) {
+        return;
+    }
+    const idx = photos.findIndex((p) => p.isCapa);
+    const capaIdx = idx >= 0 ? idx : 0;
+    photos.forEach((p, i) => {
+        p.isCapa = i === capaIdx;
+    });
+}
+
 function getHexCP(hex) {
     return hex || '#94a3b8';
 }
@@ -181,7 +221,12 @@ function cpSetCapa(idx) {
 
 function cpRemove(idx) {
     const photos = window._cpState[cpActiveColorId];
-    const wasCapa = photos[idx].isCapa;
+    const removed = photos[idx];
+    if (removed?.serverImageId) {
+        window._cpRemovedServerIds = window._cpRemovedServerIds || [];
+        window._cpRemovedServerIds.push(removed.serverImageId);
+    }
+    const wasCapa = !!removed?.isCapa;
     photos.splice(idx, 1);
     photos.forEach((p, i) => (p.posicao = i + 1));
     if (wasCapa && photos.length > 0) photos[0].isCapa = true;
@@ -222,10 +267,31 @@ function cpDragEnd(e) {
  */
 export function initColorPhotosForWizard(wrapper, colors) {
     if (!wrapper) return;
+
+    const serverByColor = window.__wizardServerColorPhotos || {};
+    const previousState = cloneCpState(window._cpState || {});
+
     window._cpColors = colors;
     window._cpState = {};
     colors.forEach((c) => {
-        window._cpState[c.id] = [];
+        const id = c.id;
+        const fromPrev = previousState[id];
+        if (Array.isArray(fromPrev) && fromPrev.length > 0) {
+            window._cpState[id] = fromPrev;
+            ensureSingleCapaLocal(window._cpState[id]);
+        } else if (Array.isArray(serverByColor[id]) && serverByColor[id].length > 0) {
+            window._cpState[id] = serverByColor[id].map((item) => ({
+                id: `srv_${item.serverImageId}`,
+                serverImageId: item.serverImageId,
+                previewUrl: item.previewUrl,
+                isCapa: !!item.isCapa,
+                posicao: item.posicao,
+                label: item.label || 'foto',
+            }));
+            ensureSingleCapaLocal(window._cpState[id]);
+        } else {
+            window._cpState[id] = [];
+        }
     });
     cpActiveColorId = colors.length ? colors[0].id : null;
 

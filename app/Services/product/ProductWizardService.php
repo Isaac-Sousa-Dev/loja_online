@@ -46,6 +46,8 @@ class ProductWizardService
         }
 
         return DB::transaction(function () use ($product, $request): Product {
+            $this->colorImageService->deleteRemovedWizardImages($product, $request);
+
             $data = $request->getProductAttributes();
             $this->productService->applyWizardAttributesToExistingProduct($data, $product);
 
@@ -54,7 +56,15 @@ class ProductWizardService
                 $this->variantSyncService->sync($product->id, $variants);
             }
 
+            $this->colorImageService->applyWizardCoverSelection(
+                $product->id,
+                $request->input('color_photos_cover_by_color') !== null
+                    ? (string) $request->input('color_photos_cover_by_color')
+                    : null
+            );
+
             $this->colorImageService->storeWizardUploads($product->fresh(), $request);
+            $this->colorImageService->normalizeCoverFlagsPerVariantColor($product->id);
             $this->colorImageService->syncProductMainImageFromGallery($product->id);
 
             return $product->fresh();

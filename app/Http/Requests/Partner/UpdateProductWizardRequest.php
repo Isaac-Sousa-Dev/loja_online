@@ -61,6 +61,8 @@ class UpdateProductWizardRequest extends FormRequest
             'color_photos_flat' => ['nullable', 'string'],
             'color_photo_files' => ['nullable', 'array'],
             'color_photo_files.*' => ['nullable', 'file', 'max:5120'],
+            'color_photos_removed_ids' => ['nullable', 'string'],
+            'color_photos_cover_by_color' => ['nullable', 'string'],
         ];
     }
 

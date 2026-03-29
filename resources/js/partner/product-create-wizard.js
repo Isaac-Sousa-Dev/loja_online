@@ -1,4 +1,4 @@
-import { initColorPhotosForWizard, buildColorPhotosUploadPayload } from './product-color-photos';
+import { initColorPhotosForWizard, buildColorPhotosUploadPayload, buildColorPhotosWizardMeta } from './product-color-photos';
 
 const STEPS = ['geral', 'atributos', 'fotos', 'estoque'];
 let stepUnlocked = { geral: true, atributos: false, fotos: false, estoque: false };
@@ -19,6 +19,7 @@ function escapeHtml(text) {
  *   redirectAfterSave?: boolean,
  *   redirectDelayMs?: number,
  *   existingVariantsBootstrap?: boolean,
+ *   existingColorPhotos?: Record<string, unknown>,
  * }} cfg
  */
 export function initProductCreateWizard(cfg) {
@@ -26,6 +27,13 @@ export function initProductCreateWizard(cfg) {
     if (!submitUrl) {
         return;
     }
+
+    try {
+        window.__wizardServerColorPhotos = JSON.parse(JSON.stringify(cfg.existingColorPhotos || {}));
+    } catch {
+        window.__wizardServerColorPhotos = {};
+    }
+    window._cpRemovedServerIds = [];
 
     const STEP_BTN = {
         geral: { label: 'Próximo: Atributos', icon: 'fa-arrow-right', action: () => goNextStep('geral') },
@@ -247,6 +255,9 @@ export function initProductCreateWizard(cfg) {
                     <p class="text-xs text-gray-300 mt-1">Volte para Atributos e defina cores e tamanhos.</p>
                 </div>`;
         }
+        window._cpState = {};
+        window._cpColors = [];
+        window._cpRemovedServerIds = [];
     }
 
     document.addEventListener('variantsGenerated', function (e) {
@@ -320,6 +331,14 @@ export function initProductCreateWizard(cfg) {
         if (flat.length) {
             formData.append('color_photos_flat', JSON.stringify(flat));
             files.forEach((file) => formData.append('color_photo_files[]', file));
+        }
+
+        const photoMeta = buildColorPhotosWizardMeta();
+        if (photoMeta.removedIds.length > 0) {
+            formData.append('color_photos_removed_ids', JSON.stringify(photoMeta.removedIds));
+        }
+        if (Object.keys(photoMeta.coverByColor).length > 0) {
+            formData.append('color_photos_cover_by_color', JSON.stringify(photoMeta.coverByColor));
         }
 
         window.showLoader?.();

@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         submitUrl: c.updateUrl,
         productsIndexUrl: c.productsIndexUrl,
         existingVariantsBootstrap: true,
+        existingColorPhotos: c.existingColorPhotos && typeof c.existingColorPhotos === 'object' ? c.existingColorPhotos : {},
         defaultSuccessMessage: 'Produto atualizado com sucesso!',
     });
 });

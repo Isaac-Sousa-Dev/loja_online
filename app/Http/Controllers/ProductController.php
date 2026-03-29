@@ -14,6 +14,7 @@ use App\Services\product\ImageProductService;
 use App\Services\UploadFileService;
 use App\Services\product\ProductService;
 use App\Services\product\ProductVariantSyncService;
+use App\Services\product\ProductColorImageService;
 use App\Services\product\ProductWizardService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -37,6 +38,7 @@ class ProductController extends Controller
         ImageProductService $uploadProductService,
         private readonly ProductWizardService $productWizardService,
         private readonly ProductVariantSyncService $productVariantSyncService,
+        private readonly ProductColorImageService $productColorImageService,
     ) {
         $this->uploadFileService = $uploadFileService;
         $this->productService = $productService;
@@ -207,7 +209,7 @@ class ProductController extends Controller
     {
         $userAuth = Auth::user();
         $partner = $userAuth->partner;
-        $product = Product::with('variants')->findOrFail($id);
+        $product = Product::with(['variants', 'images'])->findOrFail($id);
 
         if ($product->partner_id !== $partner->id) {
             abort(403);
@@ -228,6 +230,8 @@ class ProductController extends Controller
             'color_hex' => $v->color_hex,
         ])->toJson(JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
 
+        $existingColorPhotosForWizard = $this->productColorImageService->buildWizardExistingPhotosByColor((int) $product->id);
+
         $genderSelect = match ($product->gender) {
             'masculine' => 'M',
             'feminine' => 'F',
@@ -240,6 +244,7 @@ class ProductController extends Controller
             'brandsByPartner' => $brandsByPartner,
             'categoriesByPartner' => $categoriesByPartner,
             'existingVariantsJson' => $existingVariantsJson,
+            'existingColorPhotosForWizard' => $existingColorPhotosForWizard,
             'genderSelect' => $genderSelect,
         ]);
     }

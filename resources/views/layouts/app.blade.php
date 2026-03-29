@@ -146,7 +146,7 @@
         }
 
         .toast-error .toast-title {
-            color: #b91c1c;
+            color: #fff;
         }
 
         .toast-warning .toast-title {
@@ -169,7 +169,7 @@
         }
 
         .toast-error .toast-message {
-            color: #450a0a;
+            color: #fff;
         }
 
         .toast-warning .toast-message {

@@ -247,6 +247,7 @@
 window.productEditWizardConfig = {
     updateUrl: @json(route('products.wizard.update', $product->id)),
     productsIndexUrl: @json(route('products.index')),
+    existingColorPhotos: @json($existingColorPhotosForWizard ?? []),
 };
 </script>
 @vite(['resources/js/partner/product-edit-wizard.js'])
