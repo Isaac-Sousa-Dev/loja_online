@@ -11,7 +11,7 @@
                     </h2>
                 </div>
 
-                <div class="overflow-auto md:overflow-hidden rounded-lg mt-3">
+                {{-- <div class="overflow-auto md:overflow-hidden rounded-lg mt-3">
 
                     <div class="flex flex-col items-center justify-center text-center p-8 bg-white rounded-lg border border-dashed border-gray-300">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -21,9 +21,9 @@
                         <p class="text-gray-500 text-lg">Estamos trabalhando para trazer esta funcionalidade em breve para você!</p>
                     </div>
                     
-                </div>
+                </div> --}}
 
-                {{-- <div class="mt-3 mb-2">
+                <div class="mt-3 mb-2">
             
                     <div class="grid  w-full grid-cols-1 md:grid-cols-3 rounded-xl">
 
@@ -78,7 +78,7 @@
                         
                     </div>
 
-                </div> --}}
+                </div>
             </div>
         </div>
     </div>

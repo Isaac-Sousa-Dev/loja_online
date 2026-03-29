@@ -62,7 +62,7 @@
                 <div class="flex gap-6 items-center">
                     <img src="/img/logos/logo.png" width="100" alt="">
                 </div>
-                <a href="/register-new-store"
+                <a href="{{ route('request.plan.form', ['plan' => 'essencial']) }}"
                     class="text-white font-medium flex items-center gap-2 rounded-xl bg-blue-700 px-5 py-2">
                     <div>Voltar</div>
                 </a>

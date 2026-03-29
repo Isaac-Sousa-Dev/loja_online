@@ -4,7 +4,13 @@ import Alpine from 'alpinejs';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
-AOS.init();
+AOS.init({
+    once: true,
+    duration: 800,
+    easing: 'ease-out-cubic',
+    offset: 48,
+    disable: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+});
 
 import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';

@@ -43,18 +43,14 @@
         </div>
     </div>
 
-    {{-- Footer --}}
-    <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between flex-wrap gap-3">
+    {{-- Footer — variantes atualizam ao adicionar/remover cor ou tamanho --}}
+    <div class="mt-4 pt-4 border-t border-gray-100 flex items-center flex-wrap gap-3">
         <p class="text-sm text-gray-500">
             <span class="font-bold text-gray-800" id="colorCount">0</span> cores ×
             <span class="font-bold text-gray-800" id="sizeCount">0</span> tamanhos =
             <span class="font-extrabold text-violet-700 text-base" id="totalVariants">0</span> variantes
+            <span class="text-gray-400 font-normal ml-1">(atualizado automaticamente)</span>
         </p>
-        <button type="button" id="btnGenerateVariants"
-            class="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition shadow-sm">
-            <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
-            Gerar variantes
-        </button>
     </div>
 </div>
 
@@ -105,6 +101,30 @@
         }));
     }
 
+    function rebuildVariantRowsAndDispatch() {
+        if (!colors.length || !sizes.length) {
+            VM.skuRows = [];
+            document.dispatchEvent(new CustomEvent('variantsGenerated', { detail: { rows: [] } }));
+            return;
+        }
+        const newRows = [];
+        colors.forEach((color) =>
+            sizes.forEach((size) => {
+                const ex = VM.skuRows.find((r) => r.color === color && r.size === size);
+                newRows.push({
+                    color,
+                    size,
+                    sku: ex?.sku || VM.generateSku(color, size),
+                    price: ex?.price ?? '',
+                    stock: ex?.stock ?? 0,
+                    id: ex?.id || null,
+                });
+            })
+        );
+        VM.skuRows = newRows;
+        document.dispatchEvent(new CustomEvent('variantsGenerated', { detail: { rows: newRows } }));
+    }
+
     function renderTags() {
         const ct = document.getElementById('colorTags');
         const st = document.getElementById('sizeTags');
@@ -126,6 +146,7 @@
         document.getElementById('colorCount').textContent    = colors.length;
         document.getElementById('sizeCount').textContent     = sizes.length;
         document.getElementById('totalVariants').textContent = colors.length * sizes.length;
+        rebuildVariantRowsAndDispatch();
     }
 
     window.addColor = () => {
@@ -149,25 +170,6 @@
 
     document.getElementById('colorInput').addEventListener('keydown', e => { if(e.key==='Enter'){e.preventDefault();addColor();} });
     document.getElementById('sizeInput').addEventListener('keydown',  e => { if(e.key==='Enter'){e.preventDefault();addSize();}  });
-
-    document.getElementById('btnGenerateVariants').addEventListener('click', () => {
-        if (!colors.length || !sizes.length) {
-            alert('Adicione pelo menos uma cor e um tamanho.');
-            return;
-        }
-        const newRows = [];
-        colors.forEach(color => sizes.forEach(size => {
-            const ex = VM.skuRows.find(r => r.color===color && r.size===size);
-            newRows.push({ color, size,
-                sku:   ex?.sku   || VM.generateSku(color, size),
-                price: ex?.price ?? '',
-                stock: ex?.stock ?? 0,
-                id:    ex?.id    || null,
-            });
-        }));
-        VM.skuRows = newRows;
-        document.dispatchEvent(new CustomEvent('variantsGenerated', { detail: { rows: newRows } }));
-    });
 
     window.saveAllVariants = () => {
         const productId = document.getElementById('variantProductId').value;
@@ -203,8 +205,5 @@
     };
 
     renderTags();
-    if (VM.skuRows.length) {
-        document.dispatchEvent(new CustomEvent('variantsGenerated', { detail: { rows: VM.skuRows } }));
-    }
 })();
 </script>

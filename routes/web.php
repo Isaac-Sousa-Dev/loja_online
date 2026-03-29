@@ -229,7 +229,11 @@ Route::post('/payment/card',    'CheckoutController@cardPayment');
 
 Route::post('/webhook/mercadopago', 'WebhookController@handle');
 
-Route::post('new-request-plan', [RequestPlanController::class, 'newRequestPlan'])->name('new.request.plan');
+Route::get('/solicitar-acesso/{plan?}', [RequestPlanController::class, 'showRequestForm'])
+    ->where('plan', 'essencial|profissional')
+    ->name('request.plan.form');
+
+Route::post('/solicitar-acesso', [RequestPlanController::class, 'storeRequest'])->name('request.plan.store');
 
 Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout.show');
 

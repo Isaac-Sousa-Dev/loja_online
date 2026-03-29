@@ -136,9 +136,14 @@ export function initProductCreateWizard(cfg) {
             markStepDone('geral');
             stepUnlocked.atributos = true;
             switchMainTab('atributos');
+            if (window.VM?.skuRows?.length) {
+                document.dispatchEvent(new CustomEvent('variantsGenerated', { detail: { rows: window.VM.skuRows.slice() } }));
+            } else {
+                resetWizardAfterEmptyVariants();
+            }
         } else if (from === 'atributos') {
             if (!stepUnlocked.estoque) {
-                window.toast.warning('Gere as variantes antes de continuar.');
+                window.toast.warning('Adicione pelo menos uma cor e um tamanho para gerar variantes.');
                 return;
             }
             markStepDone('atributos');
@@ -224,40 +229,68 @@ export function initProductCreateWizard(cfg) {
         }
     }
 
-    document.addEventListener('variantsGenerated', function (e) {
-        const rows = e.detail?.rows || [];
-        if (!rows.length) return;
-        stepUnlocked.estoque = true;
-        setTabStyle('estoque', false, true);
-        const skuBadge = document.getElementById('skuCountBadge');
-        if (skuBadge) {
-            skuBadge.textContent = rows.length;
-            skuBadge.classList.remove('hidden');
-        }
-        renderSkuTable(rows);
-
-        const seen = new Set();
-        const colors = [];
-        rows.forEach((r) => {
-            if (r.color && !seen.has(r.color)) {
-                seen.add(r.color);
-                colors.push({
-                    id: r.color,
-                    nome: r.color,
-                    hex: (window.VM?.getHex || (() => '#94a3b8'))(r.color),
-                });
-            }
-        });
+    function resetWizardAfterEmptyVariants() {
+        stepUnlocked.estoque = false;
+        stepUnlocked.fotos = false;
+        setTabStyle('estoque', false, false);
+        setTabStyle('fotos', false, false);
+        document.getElementById('skuCountBadge')?.classList.add('hidden');
+        document.getElementById('fotosCountBadge')?.classList.add('hidden');
+        document.getElementById('skuTableSection')?.classList.add('hidden');
+        document.getElementById('estoqueEmpty')?.classList.remove('hidden');
         const wrapper = document.getElementById('colorPhotosWrapper');
         if (wrapper) {
-            stepUnlocked.fotos = true;
-            setTabStyle('fotos', false, true);
-            const fb = document.getElementById('fotosCountBadge');
-            if (fb) {
-                fb.textContent = colors.length;
-                fb.classList.remove('hidden');
+            wrapper.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-12 text-center">
+                    <i class="fa-solid fa-palette text-gray-200 text-4xl mb-3" aria-hidden="true"></i>
+                    <p class="font-semibold text-gray-400 text-sm">Nenhuma cor cadastrada ainda</p>
+                    <p class="text-xs text-gray-300 mt-1">Volte para Atributos e defina cores e tamanhos.</p>
+                </div>`;
+        }
+    }
+
+    document.addEventListener('variantsGenerated', function (e) {
+        const rows = e.detail?.rows || [];
+        if (!rows.length) {
+            resetWizardAfterEmptyVariants();
+            if (currentTab === 'atributos') updatePrimaryBtn();
+            return;
+        }
+
+        const downstreamOk = stepUnlocked.atributos === true;
+        if (downstreamOk) {
+            stepUnlocked.estoque = true;
+            setTabStyle('estoque', false, true);
+            const skuBadge = document.getElementById('skuCountBadge');
+            if (skuBadge) {
+                skuBadge.textContent = rows.length;
+                skuBadge.classList.remove('hidden');
             }
-            initColorPhotosForWizard(wrapper, colors);
+            renderSkuTable(rows);
+
+            const seen = new Set();
+            const colors = [];
+            rows.forEach((r) => {
+                if (r.color && !seen.has(r.color)) {
+                    seen.add(r.color);
+                    colors.push({
+                        id: r.color,
+                        nome: r.color,
+                        hex: (window.VM?.getHex || (() => '#94a3b8'))(r.color),
+                    });
+                }
+            });
+            const wrapper = document.getElementById('colorPhotosWrapper');
+            if (wrapper) {
+                stepUnlocked.fotos = true;
+                setTabStyle('fotos', false, true);
+                const fb = document.getElementById('fotosCountBadge');
+                if (fb) {
+                    fb.textContent = colors.length;
+                    fb.classList.remove('hidden');
+                }
+                initColorPhotosForWizard(wrapper, colors);
+            }
         }
 
         if (currentTab === 'atributos') updatePrimaryBtn();

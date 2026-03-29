@@ -58,4 +58,25 @@ class ProductColorImageService
             ]);
         }
     }
+
+    /**
+     * Define products.image_main a partir da galeria (capa marcada ou primeira imagem por índice).
+     */
+    public function syncProductMainImageFromGallery(int $productId): void
+    {
+        $product = Product::find($productId);
+        if ($product === null) {
+            return;
+        }
+
+        $cover = Image::where('product_id', $productId)->where('is_cover', true)->orderBy('index')->first();
+        if ($cover === null) {
+            $cover = Image::where('product_id', $productId)->orderBy('index')->first();
+        }
+        if ($cover === null) {
+            return;
+        }
+
+        $product->update(['image_main' => $cover->url]);
+    }
 }

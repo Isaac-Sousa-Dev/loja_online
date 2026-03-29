@@ -184,7 +184,7 @@
                 <div class="flex flex-col items-center justify-center py-12 text-center">
                     <i class="fa-solid fa-palette text-gray-200 text-4xl mb-3" aria-hidden="true"></i>
                     <p class="font-semibold text-gray-400 text-sm">Nenhuma cor cadastrada ainda</p>
-                    <p class="text-xs text-gray-300 mt-1">Volte para Atributos e gere as variantes primeiro.</p>
+                    <p class="text-xs text-gray-300 mt-1">Volte para Atributos e defina cores e tamanhos.</p>
                 </div>
             </div>
         </div>
@@ -194,7 +194,7 @@
             <div id="estoqueEmpty" class="flex flex-col items-center justify-center py-14 text-center px-6">
                 <div class="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mb-3"><i class="fa-solid fa-table-list text-gray-300 text-2xl" aria-hidden="true"></i></div>
                 <p class="font-semibold text-gray-500 text-sm">Nenhuma variante gerada</p>
-                <p class="text-xs text-gray-400 mt-1 mb-4">Vá para Atributos e clique em "Gerar variantes".</p>
+                <p class="text-xs text-gray-400 mt-1 mb-4">Vá para Atributos e defina cores e tamanhos.</p>
                 <button type="button" onclick="tryGoTab('atributos')" class="text-xs font-bold text-violet-600 border border-violet-200 hover:border-violet-400 px-4 py-2 rounded-xl transition">Ir para Atributos →</button>
             </div>
             <div id="skuTableSection" class="hidden">

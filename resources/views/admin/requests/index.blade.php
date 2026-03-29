@@ -62,7 +62,19 @@
                                 </div>
                                 
                                 <div class="flex items-center text-sm md:text-md font-medium">
-                                    <span>{{$requestPlan->payment_method == 'pix' ? 'Pix' : 'Crédito'}}</span>
+                                    @switch($requestPlan->payment_method)
+                                        @case('pix')
+                                            <span>Pix</span>
+                                            @break
+                                        @case('credit')
+                                            <span>Crédito</span>
+                                            @break
+                                        @case('pendente')
+                                            <span>A combinar</span>
+                                            @break
+                                        @default
+                                            <span>{{ $requestPlan->payment_method ?: '—' }}</span>
+                                    @endswitch
                                 </div>
 
                                 <div class="flex items-center gap-2">

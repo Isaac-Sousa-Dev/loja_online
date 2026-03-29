@@ -33,6 +33,7 @@ class ProductWizardService
             }
 
             $this->colorImageService->storeWizardUploads($product, $request);
+            $this->colorImageService->syncProductMainImageFromGallery($product->id);
 
             return $product->fresh();
         });
@@ -54,6 +55,7 @@ class ProductWizardService
             }
 
             $this->colorImageService->storeWizardUploads($product->fresh(), $request);
+            $this->colorImageService->syncProductMainImageFromGallery($product->id);
 
             return $product->fresh();
         });

@@ -16,7 +16,8 @@ class RequestPlan extends Model
         'store_name',
         'qtd_vehicles_in_stock',
         'plan_slug',
-        'payment_method'
+        'payment_method',
+        'notes',
     ];
 
     public function plan()
