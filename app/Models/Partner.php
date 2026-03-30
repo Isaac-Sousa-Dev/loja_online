@@ -51,14 +51,14 @@ class Partner extends Model
         return $this->hasMany(Product::class, 'partner_id', 'id')->where('products.is_active', true);
     }
 
-    public function requests()
+    public function orders()
     {
-        return $this->hasMany(Request::class, 'store_id', 'store_id');
-    }   
+        return $this->hasMany(Order::class, 'store_id', 'store_id');
+    }  
 
-    public function sellers()
+    public function brands()
     {
-        return $this->hasMany(Seller::class, 'store_id', 'store_id');
+        return $this->hasMany(Brand::class, 'partner_id', 'id');
     }
 
 }

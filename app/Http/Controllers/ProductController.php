@@ -316,6 +316,7 @@ class ProductController extends Controller
     public function update(ProductRequest $request, string $id)
     {
         $data = $request->all();
+        dd($data);
         $product = Product::find($id);
 
         if ($request->hasFile('crlv')): $data['crlv'] = $this->uploadFileService->getPathAndExtensionTest($request->file('crlv'), 'documents')['path'];

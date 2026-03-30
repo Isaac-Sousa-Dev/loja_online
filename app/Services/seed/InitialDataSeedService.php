@@ -172,9 +172,9 @@ final class InitialDataSeedService
                 'brand_id' => $brands[$spec['brand']]->id,
                 'category_id' => $categories[$spec['category']]->id,
                 'partner_id' => $partner->id,
-                'gender' => $spec['category'] === 1 ? 'masculine' : 'feminine',
-                'image_main' => 'https://picsum.photos/seed/moda' . $spec['brand'] . '/500/500',
-                'color' => 'black',
+                'gender' => $spec['category'] === 1 ? 'M' : 'F',
+                'image_main' => 'https://picsum.photos/seed/mo  da' . $spec['brand'] . '/500/500',
+                'color' => 'Preto',
                 'is_active' => true,
             ]);
         }

@@ -23,19 +23,6 @@ class OrderController extends Controller
         if($store->banner): $bannerStore = '/storage/'.$store->banner; endif;
 
         $categoriesByPartner = StoreCategories::where('store_id', $partner->store->id)->get();
-
-        $currentHour = date('H:i:s');
-        $currentDay = date('w');
-        $storeHours = StoreHour::where('day_of_week', $currentDay)->where('store_id', $store->id)->first();
-        // dd($storeHours);
-
-        // $itsOpen = false;
-        // if($storeHours->is_open) {
-        //     if($currentHour >= $storeHours->open_time && $currentHour <= $storeHours->close_time) {
-        //         $itsOpen = true;
-        //     }
-        // }
-
         $products = $partner->publishedProducts;
 
         $productWithStock = [];
@@ -124,7 +111,20 @@ class OrderController extends Controller
             abort(404);
         }
 
+
         $images = $product->images;
+        $variantsByColor = collect($product->variants)
+            ->groupBy('color')
+            ->map(function ($variants, $color) use ($images) {
+                return [
+                    'variants' => $variants,
+                    'images'   => $images->where('variant_color', $color)->values(),
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        // dd($variantsByColor[0]['variants'][0]->size);
 
         // Produtos relacionados: mesma categoria ou mesma marca, excluindo o atual
         $related = Product::with(['images'])
@@ -147,6 +147,7 @@ class OrderController extends Controller
 
         return view('orders.product-page.index', [
             'product'     => $product,
+            'variantsByColor' => $variantsByColor,
             'images'      => $images,
             'imagesLength'=> count($images),
             'partnerLink' => $partnerLink,

@@ -382,6 +382,7 @@ export function initProductCreateWizard(cfg) {
                     switchMainTab('geral');
                     window.toast.error('Corrija os erros no formulário.');
                 } else {
+                    console.log(xhr);
                     window.toast.error(xhr.responseJSON?.message || 'Erro ao salvar produto.');
                 }
             },

@@ -50,6 +50,7 @@ class DashboardController extends Controller
 
         $store = $partner->store;
         $categoriesByStore = $store->categoriesByStore;
+        $brands = $partner->brands;
         $clientsByStore = ClientStore::where('store_id', $store->id)->orderBy('created_at', 'desc')->get();
 
         $ordersByStore = $store->orders()->with(['client', 'product'])->latest()->get();
@@ -65,6 +66,7 @@ class DashboardController extends Controller
         $data['user'] = $userAuth;
         $data['store'] = $store;
         $data['categoriesByStore'] = $categoriesByStore;
+        $data['brands'] = $brands;
 
         return $data;
     }

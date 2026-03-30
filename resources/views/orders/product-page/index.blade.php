@@ -85,10 +85,10 @@
     <div>
         <div class="main-swiper swiper swiper-main shadow-sm">
             <div class="swiper-wrapper">
-                @if($images->isEmpty())
+                @if(empty($variantsByColor[0]['images']))
                     <div class="swiper-slide"><img src="/img/image-not-found.png" alt="Sem imagem"></div>
                 @else
-                    @foreach($images as $image)
+                    @foreach($variantsByColor[0]['images'] as $image)
                         <div class="swiper-slide"><img src="{{ asset('storage/' . str_replace('public/', '', $image->url)) }}" alt="{{ $product->name }}"></div>
                     @endforeach
                 @endif
@@ -97,10 +97,10 @@
             <div class="swiper-button-prev"></div>
             <div class="swiper-pagination"></div>
         </div>
-        @if(!$images->isEmpty() && $images->count() > 1)
+        @if(!empty($variantsByColor[0]['images']) && $variantsByColor[0]['images']->count() > 1)
         <div class="thumb-swiper swiper mt-3 px-1">
             <div class="swiper-wrapper">
-                @foreach($images as $image)
+                @foreach($variantsByColor[0]['images'] as $image)
                     <div class="swiper-slide thumb-slide w-auto">
                         <img src="{{ asset('storage/' . str_replace('public/', '', $image->url)) }}" alt="">
                     </div>
@@ -160,8 +160,9 @@
                 <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Cor: <span id="selectedColorLabel" class="text-gray-800 normal-case font-semibold"></span></p>
                 <div class="flex flex-wrap gap-2" id="colorSwatches">
                     @foreach($colors as $v)
+
                         <button type="button"
-                            class="color-swatch"
+                            class="color-swatch @selected($v->color === $variantsByColor[0]['variants'][0]->color)"
                             data-color="{{ $v->color }}"
                             data-hex="{{ $v->color_hex ?? '#cccccc' }}"
                             style="background-color: {{ $v->color_hex ?? '#cccccc' }}"
@@ -181,7 +182,7 @@
                 <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Tamanho</p>
                 <div class="flex flex-wrap gap-2" id="sizeButtons">
                     @foreach($sizes as $sz)
-                        <button type="button" class="variant-btn" data-size="{{ $sz }}">{{ $sz }}</button>
+                        <button type="button" class="variant-btn @selected($sz == $variantsByColor[0]['variants'][0]->size)" data-size="{{ $sz }}">{{ $sz }}</button>
                     @endforeach
                 </div>
                 <p id="errSize" class="hidden text-xs text-red-500 mt-1">Selecione um tamanho</p>
@@ -196,7 +197,7 @@
                 <div class="grid grid-cols-1 gap-2" id="paymentOptions">
                     @if($product->discount_pix && $product->discount_pix > 0)
                         @php $pixPrice = $basePrice * (1 - $product->discount_pix / 100); @endphp
-                        <button type="button" class="payment-btn" data-method="pix">
+                        <button type="button" class="payment-btn selected" data-method="pix">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
                                     <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24"><path d="M11.9 2C6.4 2 2 6.4 2 11.9s4.4 9.9 9.9 9.9 9.9-4.4 9.9-9.9S17.4 2 11.9 2zm4.3 13.4l-2.4-2.4c-.3.1-.6.2-.9.2s-.6-.1-.9-.2l-2.4 2.4c-.2.2-.4.3-.7.3s-.5-.1-.7-.3c-.4-.4-.4-1 0-1.4l2.4-2.4c-.1-.3-.2-.6-.2-.9s.1-.6.2-.9L8.2 7.4c-.4-.4-.4-1 0-1.4s1-.4 1.4 0l2.4 2.4c.3-.1.6-.2.9-.2s.6.1.9.2l2.4-2.4c.4-.4 1-.4 1.4 0s.4 1 0 1.4l-2.4 2.4c.1.3.2.6.2.9s-.1.6-.2.9l2.4 2.4c.4.4.4 1 0 1.4-.2.2-.4.3-.7.3s-.5-.1-.7-.3z"/></svg>

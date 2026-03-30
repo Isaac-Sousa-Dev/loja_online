@@ -23,7 +23,7 @@ return new class extends Migration
             $table->unsignedBigInteger('partner_id')->nullable();
             $table->unsignedBigInteger('brand_id')->nullable();
             $table->unsignedBigInteger('category_id')->nullable();
-            $table->enum('gender', ['feminine', 'masculine'])->nullable();
+            $table->enum('gender', ['F', 'M', 'U'])->nullable();
             $table->integer('stock')->nullable();
             $table->string('image_main')->nullable();
             $table->string('color')->nullable();

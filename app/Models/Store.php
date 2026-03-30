@@ -39,9 +39,9 @@ class Store extends Model
         return $this->hasMany(StoreCategories::class);
     }
 
-    public function subcategoriesByStore()
+    public function brands()
     {
-        return $this->hasMany(StoreSubcategories::class);
+        return $this->hasMany(Brand::class);
     }
 
     public function plan()
