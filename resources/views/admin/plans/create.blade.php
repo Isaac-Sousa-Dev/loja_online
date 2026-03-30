@@ -59,47 +59,47 @@
 
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-1">
 
-                            <div class="mt-2 flex py-1 px-2 bg-blue-50 rounded-lg items-center gap-1">
+                            <div class="mt-2 flex py-1 px-2 bg-[#EDE9FE]/60 rounded-lg border border-[#6A2BBA]/10 items-center gap-1">
                                 <input id="dashboard" checked name="dashboard" type="checkbox" class="module rounded-sm border-gray-300">
                                 <label for="dashboard" class="font-medium text-gray-700">Dashboard</label>
                             </div>
-                            <div class="mt-2 flex py-1 px-2 bg-blue-50 rounded-lg items-center gap-1">
+                            <div class="mt-2 flex py-1 px-2 bg-[#EDE9FE]/60 rounded-lg border border-[#6A2BBA]/10 items-center gap-1">
                                 <input id="analytics" name="analytics" type="checkbox" class="module rounded-sm border-gray-300">
                                 <label for="analytics" class="font-medium text-gray-700">Analytics</label>
                             </div>
-                            <div class="mt-2 flex py-1 px-2 bg-blue-50 rounded-lg items-center gap-1">
+                            <div class="mt-2 flex py-1 px-2 bg-[#EDE9FE]/60 rounded-lg border border-[#6A2BBA]/10 items-center gap-1">
                                 <input id="motivados" name="motivados" type="checkbox" class="module rounded-sm border-gray-300">
                                 <label for="motivados" class="font-medium text-gray-700">Motivados</label>
                             </div>
-                            <div class="mt-2 flex py-1 px-2 bg-blue-50 rounded-lg items-center gap-1">
+                            <div class="mt-2 flex py-1 px-2 bg-[#EDE9FE]/60 rounded-lg border border-[#6A2BBA]/10 items-center gap-1">
                                 <input id="plans" name="plans" type="checkbox" class="module rounded-sm border-gray-300">
                                 <label for="plans" class="font-medium text-gray-700">Planos</label>
                             </div>
-                            <div class="mt-2 flex py-1 px-2 bg-blue-50 rounded-lg items-center gap-1">
+                            <div class="mt-2 flex py-1 px-2 bg-[#EDE9FE]/60 rounded-lg border border-[#6A2BBA]/10 items-center gap-1">
                                 <input id="requests" checked name="requests" type="checkbox" class="module rounded-sm border-gray-300">
                                 <label for="requests" class="font-medium text-gray-700">Solicitações</label>
                             </div>
-                            <div class="mt-2 flex py-1 px-2 bg-blue-50 rounded-lg items-center gap-1">
+                            <div class="mt-2 flex py-1 px-2 bg-[#EDE9FE]/60 rounded-lg border border-[#6A2BBA]/10 items-center gap-1">
                                 <input id="agenteia" name="agenteia" type="checkbox" class="module rounded-sm border-gray-300">
                                 <label for="agenteia" class="font-medium text-gray-700">Agente IA</label>
                             </div>
-                            <div class="mt-2 flex py-1 px-2 bg-blue-50 rounded-lg items-center gap-1">
+                            <div class="mt-2 flex py-1 px-2 bg-[#EDE9FE]/60 rounded-lg border border-[#6A2BBA]/10 items-center gap-1">
                                 <input id="sales" name="sales" type="checkbox" class="module rounded-sm border-gray-300">
                                 <label for="sales" class="font-medium text-gray-700">Vendas</label>
                             </div>
-                            <div class="mt-2 flex py-1 px-2 bg-blue-50 rounded-lg items-center gap-1">
+                            <div class="mt-2 flex py-1 px-2 bg-[#EDE9FE]/60 rounded-lg border border-[#6A2BBA]/10 items-center gap-1">
                                 <input id="team" name="team" type="checkbox" class="module rounded-sm border-gray-300">
                                 <label for="team" class="font-medium text-gray-700">Equipe</label>
                             </div>
-                            {{-- <div class="mt-2 flex py-1 px-2 bg-blue-50 rounded-lg items-center gap-1">
+                            {{-- <div class="mt-2 flex py-1 px-2 bg-[#EDE9FE]/60 rounded-lg border border-[#6A2BBA]/10 items-center gap-1">
                                 <input id="categories" checked name="categories" type="checkbox" class="rounded-sm border-gray-300">
                                 <label for="categories" class="font-medium text-gray-700">Categorias</label>
                             </div> --}}
-                            {{-- <div class="mt-2 flex py-1 px-2 bg-blue-50 rounded-lg items-center gap-1">
+                            {{-- <div class="mt-2 flex py-1 px-2 bg-[#EDE9FE]/60 rounded-lg border border-[#6A2BBA]/10 items-center gap-1">
                                 <input id="subcategories" checked name="subcategories" type="checkbox" class="rounded-sm border-gray-300">
                                 <label for="subcategories" class="font-medium text-gray-700">Marcas</label>
                             </div> --}}
-                            <div class="mt-2 flex py-1 px-2 bg-blue-50 rounded-lg items-center gap-1">
+                            <div class="mt-2 flex py-1 px-2 bg-[#EDE9FE]/60 rounded-lg border border-[#6A2BBA]/10 items-center gap-1">
                                 <input id="vehicles" checked name="vehicles" type="checkbox" class="module rounded-sm border-gray-300">
                                 <label for="vehicles" class="font-medium text-gray-700">Produtos</label>
                             </div>

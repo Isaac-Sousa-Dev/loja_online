@@ -26,11 +26,6 @@ class Store extends Model
         return $this->belongsTo(Partner::class);
     }
 
-    public function sellers()
-    {
-        return $this->hasMany(Seller::class);
-    }
-
     public function clients()
     {
         return $this->belongsToMany(Client::class)
@@ -64,8 +59,8 @@ class Store extends Model
         return $this->hasMany(StoreHour::class);
     }
 
-    public function requests()
+    public function orders()
     {
-        return $this->hasMany(Request::class);
+        return $this->hasMany(Order::class);
     } 
 }

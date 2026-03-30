@@ -25,11 +25,6 @@ class Sale extends Model
         'observations',
     ];
 
-    public function seller()
-    {
-        return $this->belongsTo(Seller::class);
-    }
-
     public function store()
     {
         return $this->belongsTo(Store::class);
@@ -45,8 +40,8 @@ class Sale extends Model
         return $this->belongsTo(Client::class);
     }
 
-    public function request()
+    public function order()
     {
-        return $this->belongsTo(Request::class);
+        return $this->belongsTo(Order::class);
     }
 }

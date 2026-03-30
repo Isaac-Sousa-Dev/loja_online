@@ -6,100 +6,100 @@
         <div class="md:flex md:max-w-[1200px] flex-col w-full ml-2 mr-2">
 
             {{-- Breadcrumb --}}
-            <nav class="flex items-center gap-1.5 text-sm text-gray-500 mt-4 mb-2 px-1" aria-label="breadcrumb">
-                <a href="{{ route('dashboard') }}" class="flex items-center gap-1 hover:text-blue-600 transition-colors">
+            <nav class="flex items-center gap-1.5 text-sm text-[#33363B]/55 mt-4 mb-2 px-1" aria-label="breadcrumb">
+                <a href="{{ route('dashboard') }}" class="flex items-center gap-1 hover:text-[#6A2BBA] transition-colors">
                     <i class="fa-solid fa-house text-xs"></i>
                     <span>Início</span>
                 </a>
-                <i class="fa-solid fa-chevron-right text-[10px] text-gray-400"></i>
-                <span class="font-semibold text-gray-700">Visão Geral</span>
+                <i class="fa-solid fa-chevron-right text-[10px] text-[#33363B]/35"></i>
+                <span class="font-semibold text-[#33363B]">Visão Geral</span>
             </nav>
 
-            <h2 class="font-semibold text-3xl mb-4 mt-1 text-gray-800 leading-tight px-1">
+            <h2 class="font-display font-semibold text-3xl mb-4 mt-1 text-[#33363B] leading-tight px-1">
                 {{ __('Dashboard') }}
             </h2>
 
             {{-- Onboarding Messages --}}
             @if ($user->first_login == 1 && $store->configured_store == 0)
                 <div
-                    class="bg-green-50 border border-green-200 text-green-800 rounded-2xl p-4 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+                    class="bg-[#EDE9FE]/50 border border-[#6A2BBA]/20 text-[#33363B] rounded-2xl p-4 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
                     <div class="flex gap-4 items-start">
                         <div
-                            class="mt-1 w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 flex-shrink-0">
+                            class="mt-1 w-10 h-10 rounded-full bg-gradient-to-br from-[#6A2BBA] to-[#D131A3] flex items-center justify-center text-white flex-shrink-0 shadow-md">
                             <i class="fa-solid fa-flag-checkered"></i>
                         </div>
                         <div>
                             <p class="font-bold text-lg">Bem-vindo(a) ao sistema!</p>
-                            <p class="text-sm mt-1 text-green-700">Você está no seu primeiro acesso. Para começar a usar o
+                            <p class="text-sm mt-1 text-[#33363B]/75">Você está no seu primeiro acesso. Para começar a usar o
                                 sistema, configure os dados essenciais da sua loja.</p>
                         </div>
                     </div>
                     <div>
-                        <button id="configuredStore" data-storeid="{{ $store->id }}"
-                            class="w-full md:w-auto bg-green-600 text-white font-medium px-5 py-2.5 rounded-xl hover:bg-green-700 transition shadow-sm whitespace-nowrap">
+                        <button id="configuredStore" data-storeid="{{ $store->id }}" type="button"
+                            class="w-full md:w-auto bg-gradient-to-r from-[#6A2BBA] to-[#D131A3] text-white font-semibold px-5 py-2.5 rounded-xl hover:brightness-105 transition shadow-md shadow-[#6A2BBA]/25 whitespace-nowrap">
                             Configurar Loja
                         </button>
                     </div>
                 </div>
             @elseif($categoriesByStore->isEmpty())
                 <div
-                    class="bg-blue-50 border border-blue-200 text-blue-800 rounded-2xl p-4 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+                    class="bg-white border border-[#6A2BBA]/15 text-[#33363B] rounded-2xl p-4 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm ring-1 ring-[#33363B]/5">
                     <div class="flex gap-4 items-start">
                         <div
-                            class="mt-1 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0">
+                            class="mt-1 w-10 h-10 rounded-full bg-[#EDE9FE] flex items-center justify-center text-[#6A2BBA] flex-shrink-0">
                             <i class="fa-solid fa-layer-group"></i>
                         </div>
                         <div>
                             <p class="font-bold text-lg">Vamos para o próximo passo!</p>
-                            <p class="text-sm mt-1 text-blue-700">Cadastre uma ou mais categorias para organizar o seu
+                            <p class="text-sm mt-1 text-[#33363B]/70">Cadastre uma ou mais categorias para organizar o seu
                                 catálogo (ex: Celulares, Tênis, Moveis).</p>
                         </div>
                     </div>
                     <div>
                         <a href="{{ route('categories.create') }}"
-                            class="block w-full text-center md:w-auto bg-blue-600 text-white font-medium px-5 py-2.5 rounded-xl hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
+                            class="block w-full text-center md:w-auto bg-gradient-to-r from-[#6A2BBA] to-[#8B3DC7] text-white font-semibold px-5 py-2.5 rounded-xl hover:brightness-105 transition shadow-md shadow-[#6A2BBA]/20 whitespace-nowrap">
                             Cadastrar Categoria
                         </a>
                     </div>
                 </div>
             @elseif($subcategoriesByStore->isEmpty())
                 <div
-                    class="bg-purple-50 border border-purple-200 text-purple-800 rounded-2xl p-4 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+                    class="bg-[#FCE7F3]/40 border border-[#D131A3]/25 text-[#33363B] rounded-2xl p-4 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
                     <div class="flex gap-4 items-start">
                         <div
-                            class="mt-1 w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 flex-shrink-0">
+                            class="mt-1 w-10 h-10 rounded-full bg-gradient-to-br from-[#D131A3]/20 to-[#FF914D]/25 flex items-center justify-center text-[#D131A3] flex-shrink-0">
                             <i class="fa-solid fa-copyright"></i>
                         </div>
                         <div>
                             <p class="font-bold text-lg">Cadastrar Marca de Produtos!</p>
-                            <p class="text-sm mt-1 text-purple-700">Cadastre as marcas que compõem o seu estoque (ex: Nike,
+                            <p class="text-sm mt-1 text-[#33363B]/70">Cadastre as marcas que compõem o seu estoque (ex: Nike,
                                 Adidas, Zara).</p>
                         </div>
                     </div>
                     <div>
                         <a href="{{ route('brands.create') }}"
-                            class="block w-full text-center md:w-auto bg-purple-600 text-white font-medium px-5 py-2.5 rounded-xl hover:bg-purple-700 transition shadow-sm whitespace-nowrap">
+                            class="block w-full text-center md:w-auto bg-gradient-to-r from-[#D131A3] to-[#FF914D] text-white font-semibold px-5 py-2.5 rounded-xl hover:brightness-105 transition shadow-md whitespace-nowrap">
                             Cadastrar Marca
                         </a>
                     </div>
                 </div>
             @elseif($quantityStockProducts <= 0)
                 <div
-                    class="bg-orange-50 border border-orange-200 text-orange-800 rounded-2xl p-4 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+                    class="bg-[#FFF7ED] border border-[#FF914D]/30 text-[#33363B] rounded-2xl p-4 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
                     <div class="flex gap-4 items-start">
                         <div
-                            class="mt-1 w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 flex-shrink-0">
+                            class="mt-1 w-10 h-10 rounded-full bg-[#FF914D]/20 flex items-center justify-center text-[#FF914D] flex-shrink-0">
                             <i class="fa-solid fa-car-side"></i>
                         </div>
                         <div>
                             <p class="font-bold text-lg">Finalizando nosso Tour!</p>
-                            <p class="text-sm mt-1 text-orange-700">Cadastre seu primeiro produto para que seus clientes o
+                            <p class="text-sm mt-1 text-[#33363B]/70">Cadastre seu primeiro produto para que seus clientes o
                                 vejam online no seu catálogo público.</p>
                         </div>
                     </div>
                     <div>
                         <a href="{{ route('products.create') }}"
-                            class="block w-full text-center md:w-auto bg-orange-600 text-white font-medium px-5 py-2.5 rounded-xl hover:bg-orange-700 transition shadow-sm whitespace-nowrap">
+                            class="block w-full text-center md:w-auto bg-[#FF914D] text-[#33363B] font-semibold px-5 py-2.5 rounded-xl hover:brightness-105 transition shadow-md whitespace-nowrap">
                             Cadastrar Produto
                         </a>
                     </div>
@@ -111,12 +111,12 @@
 
                 {{-- Estoque --}}
                 <div
-                    class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition duration-300">
+                    class="bg-white rounded-2xl p-4 shadow-sm border border-[#33363B]/8 flex items-center justify-between hover:shadow-md transition duration-300">
                     <div>
-                        <p class="text-sm font-semibold text-gray-500 mb-1">Produtos no estoque</p>
-                        <p class="text-3xl font-bold text-gray-800">{{ $quantityStockProducts }}</p>
+                        <p class="text-sm font-semibold text-[#33363B]/55 mb-1">Produtos no estoque</p>
+                        <p class="text-3xl font-bold text-[#33363B]">{{ $quantityStockProducts }}</p>
                     </div>
-                    <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
+                    <div class="w-12 h-12 rounded-full bg-[#EDE9FE] flex items-center justify-center text-[#6A2BBA]">
                         <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"
                             fill="currentColor"><!--!Font Awesome Free 6.6.0...-->
                             <path
@@ -127,12 +127,12 @@
 
                 {{-- Vendas --}}
                 <div
-                    class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition duration-300">
+                    class="bg-white rounded-2xl p-4 shadow-sm border border-[#33363B]/8 flex items-center justify-between hover:shadow-md transition duration-300">
                     <div>
-                        <p class="text-sm font-semibold text-gray-500 mb-1">Vendas Concluídas</p>
-                        <p class="text-3xl font-bold text-gray-800">{{ $quantitySales }}</p>
+                        <p class="text-sm font-semibold text-[#33363B]/55 mb-1">Vendas Concluídas</p>
+                        <p class="text-3xl font-bold text-[#33363B]">{{ $quantityOrders }}</p>
                     </div>
-                    <div class="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
+                    <div class="w-12 h-12 rounded-full bg-[#ecfdf5] flex items-center justify-center text-emerald-600">
                         <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"
                             fill="currentColor"><!--!Font Awesome Free 6.6.0...-->
                             <path
@@ -143,12 +143,12 @@
 
                 {{-- Solicitações --}}
                 <div
-                    class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition duration-300">
+                    class="bg-white rounded-2xl p-4 shadow-sm border border-[#33363B]/8 flex items-center justify-between hover:shadow-md transition duration-300">
                     <div>
-                        <p class="text-sm font-semibold text-gray-500 mb-1">Novos Pedidos</p>
-                        <p class="text-3xl font-bold text-gray-800">{{ $quantityRequests }}</p>
+                        <p class="text-sm font-semibold text-[#33363B]/55 mb-1">Novos Pedidos</p>
+                        <p class="text-3xl font-bold text-[#33363B]">{{ $quantityOrders }}</p>
                     </div>
-                    <div class="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
+                    <div class="w-12 h-12 rounded-full bg-[#FFF8E7] flex items-center justify-center text-[#FF914D]">
                         <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"
                             fill="currentColor"><!--!Font Awesome Free 6.6.0...-->
                             <path
@@ -159,12 +159,12 @@
 
                 {{-- Clientes --}}
                 <div
-                    class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition duration-300">
+                    class="bg-white rounded-2xl p-4 shadow-sm border border-[#33363B]/8 flex items-center justify-between hover:shadow-md transition duration-300">
                     <div>
-                        <p class="text-sm font-semibold text-gray-500 mb-1">Meus Clientes</p>
-                        <p class="text-3xl font-bold text-gray-800">{{ $quantityClients }}</p>
+                        <p class="text-sm font-semibold text-[#33363B]/55 mb-1">Meus Clientes</p>
+                        <p class="text-3xl font-bold text-[#33363B]">{{ $quantityClients }}</p>
                     </div>
-                    <div class="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-purple-500">
+                    <div class="w-12 h-12 rounded-full bg-[#FCE7F3]/60 flex items-center justify-center text-[#D131A3]">
                         <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
                             viewBox="0 0 24 24">
                             <path fill-rule="evenodd"
@@ -182,17 +182,17 @@
                 <div class="flex flex-col h-full">
                     <div class="flex items-center justify-between mb-1 px-1">
                         <div class="flex gap-2 items-center">
-                            <i class="fa-solid fa-list-ol text-gray-700"></i>
-                            <h3 class="font-semibold text-lg text-gray-800">Últimos Pedidos</h3>
+                            <i class="fa-solid fa-list-ol text-[#33363B]/70"></i>
+                            <h3 class="font-semibold text-lg text-[#33363B]">Últimos Pedidos</h3>
                         </div>
-                        <a href="{{ route('requests.index') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-700 transition px-1">
+                        <a href="{{ route('requests.index') }}" class="text-xs font-semibold text-[#6A2BBA] hover:text-[#D131A3] transition px-1">
                             Ver todos →
                         </a>
                     </div>
-                    <p class="text-sm text-gray-500 mb-3 px-1">Pedidos recentes recebidos pelo catálogo.</p>
+                    <p class="text-sm text-[#33363B]/55 mb-3 px-1">Pedidos recentes recebidos pelo catálogo.</p>
 
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex-1 overflow-hidden">
-                        @if ($requestsByStore->count() == 0)
+                    <div class="bg-white rounded-2xl shadow-sm border border-[#33363B]/8 flex-1 overflow-hidden">
+                        @if ($ordersByStore->count() == 0)
                             <div class="flex flex-col items-center justify-center p-10 text-gray-400">
                                 <i class="fa-solid fa-inbox text-4xl mb-3 opacity-40"></i>
                                 <span class="font-medium text-sm">Nenhum pedido recebido ainda.</span>
@@ -200,7 +200,7 @@
                             </div>
                         @else
                             <div class="divide-y divide-gray-50">
-                                @foreach ($requestsByStore as $request)
+                                @foreach ($ordersByStore as $order)
                                     <div class="px-4 py-3.5 hover:bg-gray-50 transition">
                                         <div class="flex items-start justify-between gap-2">
 
@@ -208,44 +208,44 @@
                                             <div class="flex flex-wrap gap-1.5 items-center">
                                                 @php
                                                     $statusMap = [
-                                                        'in_open'     => ['label' => 'Em aberto',    'class' => 'bg-amber-100 text-amber-700 border-amber-200'],
-                                                        'in_progress' => ['label' => 'Em andamento', 'class' => 'bg-blue-100 text-blue-700 border-blue-200'],
+                                                        'in_open'     => ['label' => 'Em aberto',    'class' => 'bg-[#FFF8E7] text-[#b45309] border-[#FF914D]/30'],
+                                                        'in_progress' => ['label' => 'Em andamento', 'class' => 'bg-[#EDE9FE] text-[#6A2BBA] border-[#6A2BBA]/25'],
                                                         'sold'        => ['label' => 'Vendido',       'class' => 'bg-emerald-100 text-emerald-700 border-emerald-200'],
                                                         'canceled'    => ['label' => 'Cancelado',     'class' => 'bg-red-100 text-red-600 border-red-200'],
                                                     ];
-                                                    $s = $statusMap[$request->status] ?? ['label' => 'Desconhecido', 'class' => 'bg-gray-100 text-gray-500 border-gray-200'];
+                                                    $s = $statusMap[$order->status] ?? ['label' => 'Desconhecido', 'class' => 'bg-gray-100 text-gray-500 border-gray-200'];
                                                 @endphp
                                                 <span class="px-2 py-0.5 rounded-full text-xs font-semibold border {{ $s['class'] }}">
                                                     {{ $s['label'] }}
                                                 </span>
 
-                                                @if ($request->shift == 1)
-                                                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-700 border border-sky-200">Negociação</span>
+                                                @if ($order->shift == 1)
+                                                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-[#E0E7FF] text-[#4338ca] border border-[#6366f1]/25">Negociação</span>
                                                 @endif
-                                                @if ($request->finance == 1)
-                                                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200">Financiamento</span>
+                                                @if ($order->finance == 1)
+                                                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-[#FCE7F3] text-[#D131A3] border border-[#D131A3]/25">Financiamento</span>
                                                 @endif
                                             </div>
 
                                             <span class="text-xs text-gray-400 whitespace-nowrap flex-shrink-0 mt-0.5">
                                                 <i class="fa-regular fa-clock mr-0.5"></i>
-                                                {{ $request->created_at->format('d/m/Y H:i') }}
+                                                {{ $order->created_at->format('d/m/Y H:i') }}
                                             </span>
                                         </div>
 
                                         <div class="mt-2 flex items-center justify-between gap-2">
                                             <div class="min-w-0">
-                                                <p class="font-bold text-gray-800 text-sm truncate">{{ $request->product->name }}</p>
+                                                <p class="font-bold text-gray-800 text-sm truncate">{{ $order->product->name }}</p>
                                                 <div class="flex items-center gap-3 mt-0.5">
-                                                    @if ($request->client)
+                                                    @if ($order->client)
                                                         <span class="text-xs text-gray-500 flex items-center gap-1">
                                                             <i class="fa-regular fa-user text-[10px]"></i>
-                                                            {{ $request->client->name }}
+                                                            {{ $order->client->name }}
                                                         </span>
-                                                        @if ($request->client->phone)
+                                                        @if ($order->client->phone)
                                                             <span class="text-xs text-gray-400 flex items-center gap-1">
                                                                 <i class="fa-solid fa-phone text-[10px]"></i>
-                                                                {{ $request->client->phone }}
+                                                                {{ $order->client->phone }}
                                                             </span>
                                                         @endif
                                                     @else
@@ -255,9 +255,9 @@
                                             </div>
 
                                             {{-- Preço do produto --}}
-                                            @if ($request->product->price)
-                                                <span class="text-sm font-extrabold text-blue-700 flex-shrink-0">
-                                                    R$ {{ number_format($request->product->price, 2, ',', '.') }}
+                                            @if ($order->product->price)
+                                                <span class="text-sm font-extrabold text-[#6A2BBA] flex-shrink-0">
+                                                    R$ {{ number_format($order->product->price, 2, ',', '.') }}
                                                 </span>
                                             @endif
                                         </div>
@@ -272,21 +272,21 @@
                 <div class="flex flex-col h-full">
                     <div class="flex items-center justify-between mb-1 px-1">
                         <div class="flex gap-2 items-center">
-                            <i class="fa-solid fa-layer-group text-gray-700"></i>
-                            <h3 class="font-semibold text-lg text-gray-800">Produtos Recentes</h3>
+                            <i class="fa-solid fa-layer-group text-[#33363B]/70"></i>
+                            <h3 class="font-semibold text-lg text-[#33363B]">Produtos Recentes</h3>
                         </div>
-                        <a href="{{ route('products.index') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-700 transition px-1">
+                        <a href="{{ route('products.index') }}" class="text-xs font-semibold text-[#6A2BBA] hover:text-[#D131A3] transition px-1">
                             Ver todos →
                         </a>
                     </div>
-                    <p class="text-sm text-gray-500 mb-3 px-1">Últimos produtos adicionados ao catálogo.</p>
+                    <p class="text-sm text-[#33363B]/55 mb-3 px-1">Últimos produtos adicionados ao catálogo.</p>
 
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex-1 overflow-hidden">
+                    <div class="bg-white rounded-2xl shadow-sm border border-[#33363B]/8 flex-1 overflow-hidden">
                         @if ($latestProducts->count() == 0)
                             <div class="flex flex-col items-center justify-center p-10 text-gray-400">
                                 <i class="fa-solid fa-box-open text-4xl mb-3 opacity-40"></i>
                                 <span class="font-medium text-sm">Nenhum produto cadastrado.</span>
-                                <a href="{{ route('products.create') }}" class="mt-3 text-xs font-semibold text-blue-600 hover:underline">
+                                <a href="{{ route('products.create') }}" class="mt-3 text-xs font-semibold text-[#6A2BBA] hover:text-[#D131A3] hover:underline">
                                     Cadastrar primeiro produto →
                                 </a>
                             </div>
@@ -330,7 +330,7 @@
 
                                         {{-- Price --}}
                                         <div class="text-right flex-shrink-0">
-                                            <p class="text-sm font-extrabold text-blue-700">
+                                            <p class="text-sm font-extrabold text-[#6A2BBA]">
                                                 R$ {{ number_format($product->price, 2, ',', '.') }}
                                             </p>
                                             @if ($product->price < $product->old_price && $product->old_price > 0)

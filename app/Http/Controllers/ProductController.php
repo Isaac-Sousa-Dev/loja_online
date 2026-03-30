@@ -9,8 +9,7 @@ use App\Http\Requests\Partner\StoreProductWizardRequest;
 use App\Http\Requests\Partner\UpdateProductVisibilityRequest;
 use App\Http\Requests\Partner\UpdateProductWizardRequest;
 use App\Models\Brand;
-use Illuminate\Http\Request;
-use App\Models\Modelo;
+use Illuminate\Http\Request;        
 use App\Models\Product;
 use App\Models\StoreCategories;
 use App\Services\product\ImageProductService;
@@ -23,7 +22,6 @@ use App\Services\product\ProductColorImageService;
 use App\Services\product\ProductWizardService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use App\Services\PropertyService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -33,13 +31,11 @@ class ProductController extends Controller
 
     protected $uploadFileService;
     private $productService;
-    public $propertyService;
     protected $imageProductService;
 
     public function __construct(
         UploadFileService $uploadFileService,
         ProductService $productService,
-        PropertyService $propertyService,
         ImageProductService $uploadProductService,
         private readonly ProductWizardService $productWizardService,
         private readonly ProductVariantSyncService $productVariantSyncService,
@@ -49,7 +45,6 @@ class ProductController extends Controller
     ) {
         $this->uploadFileService = $uploadFileService;
         $this->productService = $productService;
-        $this->propertyService = $propertyService;
         $this->imageProductService = $uploadProductService;
     }
 
@@ -148,12 +143,10 @@ class ProductController extends Controller
         $storeId = $partner->store?->id ?? $partner->id;
         $categoriesByPartner = StoreCategories::where('store_id', $storeId)->get();
 
-        $models = Modelo::all();
         $brands = Brand::where('partner_id', $partner->id)->get();
 
         return view('partner.products.create', [
             'brandsByPartner' => $brands,
-            'models' => $models,
             'categoriesByPartner' => $categoriesByPartner
         ]);
     }
@@ -287,7 +280,6 @@ class ProductController extends Controller
             abort(403);
         }
 
-        $models = Modelo::all();
         $brandsByPartner = Brand::where('partner_id', $partner->id)->get();
         $storeId = $partner->store?->id ?? $partner->id;
         $categoriesByPartner = StoreCategories::where('store_id', $storeId)->get();
@@ -312,7 +304,6 @@ class ProductController extends Controller
 
         return view('partner.products.edit', [
             'product' => $product,
-            'models' => $models,
             'brandsByPartner' => $brandsByPartner,
             'categoriesByPartner' => $categoriesByPartner,
             'existingVariantsJson' => $existingVariantsJson,
@@ -335,7 +326,6 @@ class ProductController extends Controller
         endif;
 
         $this->imageProductService->initUpdate($data, $product);
-        $this->propertyService->update($data, $id);
         $this->productService->update($data, $product);
 
         session()->flash('success', 'Produto atualizado!');

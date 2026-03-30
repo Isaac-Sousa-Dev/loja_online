@@ -11,7 +11,8 @@ class Partner extends Model
 
     protected $fillable = [
         'user_id',
-        'partner_link'
+        'partner_link',
+        'is_testing',
     ];
 
     public function user()

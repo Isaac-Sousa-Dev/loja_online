@@ -118,68 +118,6 @@
 
                         <div class="-mx-3 md:flex mb-6">
 
-                            <div class="md:w-1/3 px-3 mb-5">
-                                <label class="block uppercase tracking-wide text-blue-700 text-xs font-bold mb-2"
-                                    for="grid-last-name">
-                                    Propriedades
-                                </label>
-
-                                <div class="flex flex-col gap-2">
-
-                                    <div class="flex gap-1 w-full">
-                                        <div>
-                                            <label class="block uppercase tracking-wide text-grey-darker text-[9px] font-bold mb-1"
-                                                for="grid-first-name">
-                                                Ano
-                                            </label>
-                                            <input type="text" placeholder="Ano" class="w-full rounded-md" name="year" value="{{$product->properties->year}}">
-                                        </div>
-                                        <div>
-                                            <label class="block uppercase tracking-wide text-grey-darker text-[9px] font-bold mb-1"
-                                                for="grid-first-name">
-                                                Combustível
-                                            </label>
-                                            <input type="text" placeholder="Combustível" class="w-full rounded-md" name="fuel" value="{{$product->properties->fuel}}">
-                                        </div>
-                                        <div>
-                                            <label class="block uppercase tracking-wide text-grey-darker text-[9px] font-bold mb-1"
-                                                for="grid-first-name">
-                                                Placa final
-                                            </label>
-                                            <input type="text" placeholder="Placa final" class="w-full rounded-md" name="end_plate" value="{{$product->properties->end_plate}}">
-                                        </div>
-                                    </div>
-
-                                    <div class="flex gap-1 w-full">
-
-                                        <div>
-                                            <label class="block uppercase tracking-wide text-grey-darker text-[9px] font-bold mb-1"
-                                                for="grid-first-name">
-                                                KM
-                                            </label>
-                                            <input type="text" placeholder="KM" class="w-full rounded-md" name="km" value="{{$product->properties->km}}">
-                                        </div>
-                                        <div>
-                                            <label class="block uppercase tracking-wide text-grey-darker text-[9px] font-bold mb-1"
-                                                for="grid-first-name">
-                                                Câmbio
-                                            </label>
-                                            <input type="text" placeholder="Câmbio" class="w-full rounded-md" name="exchange" value="{{$product->properties->exchange}}">
-                                        </div>
-                                        <div>
-                                            <label class="block uppercase tracking-wide text-grey-darker text-[9px] font-bold mb-1"
-                                                for="grid-first-name">
-                                                Variação/Detalhes
-                                            </label>
-                                            <input type="text" placeholder="Variação/Detalhes" class="w-full rounded-md" name="bodywork" value="{{$product->properties->bodywork}}">
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
                             <div class="md:w-1/3 px-3 mb-6 md:mb-0">
                                 <label class="block uppercase tracking-wide text-blue-700 text-xs font-bold mb-2"
                                     for="grid-first-name">

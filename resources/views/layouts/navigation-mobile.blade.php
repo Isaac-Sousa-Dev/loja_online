@@ -1,4 +1,4 @@
-<div class="sidebarMenu z-40 w-[250px] overflow-auto bg-[#036] text-white">
+<div class="sidebarMenu z-40 w-[250px] overflow-auto bg-[#33363B] text-white border-r border-[#6A2BBA]/20">
 
      <!-- Botão de fechar (visível apenas no mobile) -->
      <div class="flex justify-end p-2 cursor-pointer">
@@ -9,12 +9,12 @@
         </button>
     </div>
 
-    <div class="flex flex-col bg-[#036] gap-2 mt-0 items-center h-32 justify-center">
+    <div class="flex flex-col bg-[#33363B] gap-2 mt-0 items-center h-32 justify-center">
         
         @if(Auth::user()->role != 'admin')
 
             @if(Auth::user()->partner->store->logo)
-                <div class="h-20 w-20 flex border-2 border-white bg-gray-300 rounded-full">
+                <div class="h-20 w-20 flex border-2 border-[#6A2BBA]/50 bg-gray-300 rounded-full">
                     {{-- <img src="/storage/{{Auth::user()->partner->store->logo}}" width="60" height="60" class="object-cover rounded-full w-full object-center" alt=""> --}}
                     <img src="/storage/{{Auth::user()->partner->store->logo}}" width="60" height="60" class="object-cover rounded-full w-full object-center" alt="">
                 </div>
@@ -46,7 +46,7 @@
                    
     
                     <div>
-                        <div class="uppercase font-bold text-xs text-gray-300 px-3 mt-2 flex gap-1 bg-blue-900 py-1 w-3/5 rounded-r-md">
+                        <div class="uppercase font-bold text-xs text-white/90 px-3 mt-2 flex gap-1 bg-[#6A2BBA]/35 py-1 w-3/5 rounded-r-md">
                             Início
                         </div>
                         <!-- Navigation Links -->
@@ -67,7 +67,7 @@
                                   
                                   
                                 {{ __('Analytics') }}
-                                <span class="text-xs bg-green-600 p-1 rounded-md">Em breve</span>
+                                <span class="text-xs font-bold bg-[#FF914D] text-[#33363B] px-1.5 py-0.5 rounded-md">Em breve</span>
                             </x-nav-link>
         
                             @if (Auth::user()->role == 'admin')
@@ -90,7 +90,7 @@
 
 
                         @if(Auth::user()->role != 'admin')
-                            <div class="uppercase font-bold text-xs justify-between items-center text-gray-300 px-3 mt-2 flex gap-1 bg-blue-900 py-1 w-3/5 rounded-r-md">
+                            <div class="uppercase font-bold text-xs justify-between items-center text-white/90 px-3 mt-2 flex gap-1 bg-[#6A2BBA]/35 py-1 w-3/5 rounded-r-md">
                                 <span>Atendimento</span>
                             </div>
                             <!-- Navigation Links -->
@@ -117,14 +117,14 @@
                                     </svg>
                                       
                                     {{ __('Agente IA') }}
-                                    <span class="text-xs bg-green-600 p-1 rounded-md">Em breve</span>
+                                    <span class="text-xs font-bold bg-[#FF914D] text-[#33363B] px-1.5 py-0.5 rounded-md">Em breve</span>
                                 </x-nav-link>
                             </div>
                         @endif
 
 
                         @if(Auth::user()->role != 'admin')
-                            <div class="uppercase font-bold text-xs justify-between items-center text-gray-300 px-3 mt-2 flex gap-1 bg-blue-900 py-1 w-3/5 rounded-r-md">
+                            <div class="uppercase font-bold text-xs justify-between items-center text-white/90 px-3 mt-2 flex gap-1 bg-[#6A2BBA]/35 py-1 w-3/5 rounded-r-md">
                                 <span>Gestão</span>
                             </div>
                             <!-- Navigation Links -->
@@ -136,7 +136,7 @@
                                         </svg>                                          
                                         
                                         {{ __('Vendas') }}
-                                        <span class="text-xs bg-green-600 p-1 rounded-md">Em breve</span>
+                                        <span class="text-xs font-bold bg-[#FF914D] text-[#33363B] px-1.5 py-0.5 rounded-md">Em breve</span>
                                     </x-nav-link>
                                     {{-- <x-nav-link :href="route('clients.index')" :active="request()->routeIs('clients.index') || request()->routeIs('clients.create') || request()->routeIs('clients.edit')">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
@@ -152,14 +152,14 @@
                                         
                                         
                                         {{ __('Equipe') }}
-                                        <span class="text-xs bg-green-600 p-1 rounded-md">Em breve</span>
+                                        <span class="text-xs font-bold bg-[#FF914D] text-[#33363B] px-1.5 py-0.5 rounded-md">Em breve</span>
                                     </x-nav-link>
                                 @endif
                             </div>
                         @endif        
         
                         @if(Auth::user()->role != 'admin')
-                        <div class="uppercase font-bold text-xs justify-between items-center text-gray-300 px-3 mt-2 flex gap-1 bg-blue-900 py-1 w-3/5 rounded-r-md">
+                        <div class="uppercase font-bold text-xs justify-between items-center text-white/90 px-3 mt-2 flex gap-1 bg-[#6A2BBA]/35 py-1 w-3/5 rounded-r-md">
                             <span>Catálogo</span>
                         </div>
                         <!-- Navigation Links -->

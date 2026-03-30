@@ -72,7 +72,6 @@ class OrderController extends Controller
         }
 
         foreach ($productWithStock as $key => $product) {
-            $product->properties = $product->properties;
             $product->images = $product->images;
         }
 
@@ -94,10 +93,6 @@ class OrderController extends Controller
                             ->orderBy('products.id', 'desc')
                             ->paginate(4);
         
-        foreach ($products as $key => $product) {
-            $product->properties = $product->properties;
-        }
-
         return response()->json($products);
     }
 
@@ -109,9 +104,6 @@ class OrderController extends Controller
                             ->where('is_active', true)
                             ->orderBy('id', 'desc')
                             ->paginate(4);
-        foreach ($products as $key => $product) {
-            $product->properties = $product->properties;
-        }
         return response()->json($products);
     }
 

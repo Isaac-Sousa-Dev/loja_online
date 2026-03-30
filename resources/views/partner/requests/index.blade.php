@@ -297,32 +297,32 @@
 {{-- Dados JSON para o drawer --}}
 <script>
 const ordersData = {
-    @foreach($allRequests as $request)
-    "{{ $request->id }}": {
-        id: {{ $request->id }},
-        status: "{{ $request->status }}",
-        statusLabel: "{{ $request->statusLabel() }}",
-        createdAt: "{{ $request->created_at->format('d/m/Y \à\s H:i') }}",
-        orderRef: @json($request->order_ref),
-        quantity: {{ $request->quantity ?? 1 }},
-        shift: {{ $request->shift }},
-        finance: {{ $request->finance }},
-        message: @json($request->message ?? ''),
+    @foreach($allOrders as $order)
+    "{{ $order->id }}": {
+        id: {{ $order->id }},
+        status: "{{ $order->status }}",
+        statusLabel: "{{ $order->statusLabel() }}",
+        createdAt: "{{ $order->created_at->format('d/m/Y \à\s H:i') }}",
+        orderRef: @json($order->order_ref),
+        quantity: {{ $order->quantity ?? 1 }},
+        shift: {{ $order->shift }},
+        finance: {{ $order->finance }},
+        message: @json($order->message ?? ''),
         product: {
-            id: {{ $request->product->id }},
-            name: @json($request->product->name),
-            price: {{ $request->product->price }},
-            stock: {{ $request->product->stock ?? 0 }},
-            brand: @json($request->product->brand->name ?? null),
-            color: @json($request->product->color ?? null),
-            image: "{{ $request->product->images->isNotEmpty() ? asset('storage/' . $request->product->images->first()->url) : '' }}",
+            id: {{ $order->product->id }},
+            name: @json($order->product->name),
+            price: {{ $order->product->price }},
+            stock: {{ $order->product->stock ?? 0 }},
+            brand: @json($order->product->brand->name ?? null),
+            color: @json($order->product->color ?? null),
+            image: "{{ $order->product->images->isNotEmpty() ? asset('storage/' . $order->product->images->first()->url) : '' }}",
         },
         client: {
-            name: @json($request->client->name ?? '—'),
-            phone: @json($request->client->phone ?? '—'),
-            email: @json($request->client->email ?? null),
+            name: @json($order->client->name ?? '—'),
+            phone: @json($order->client->phone ?? '—'),
+            email: @json($order->client->email ?? null),
         },
-        store: { name: @json($request->store->store_name) }
+        store: { name: @json($order->store->store_name) }
     },
     @endforeach
 };

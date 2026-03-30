@@ -1,30 +1,30 @@
 <div class="flex items-center justify-between w-full md:mx-4">
     <!-- Left (toggle + title) -->
     <div class="flex items-center gap-3">
-        <button id="toggleSidebar" class="md:hidden p-2 text-gray-600 focus:outline-none">
+        <button id="toggleSidebar" class="md:hidden p-2 text-[#33363B]/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6A2BBA] rounded-lg" type="button">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
                  viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
         </button>
-        <h1 class="text-xl font-semibold text-gray-700">Painel</h1>
+        <h1 class="font-display text-xl font-semibold text-[#33363B]">Painel</h1>
     </div>
 
     <!-- Right (user info) -->
     <div class="flex items-center gap-4">
 
         <div class="flex items-center gap-2">
-            <div class="float-end">
-                <div>
+            <div class="float-end text-right">
+                <div class="font-semibold text-[#33363B]">
                     {{ Auth::user()->name }}
                 </div>
-                <div class="text-xs">
+                <div class="text-xs text-[#33363B]/60">
                     {{Auth::user()->email}}
                 </div>
             </div>
             <!-- Botão de ativação do dropdown -->
            <button id="menu-button" class="flex items-center gap-2 focus:outline-none">
-               <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}" class="w-10 h-10 rounded-full border-2 border-gray-300" alt="Avatar">
+               <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=ede9fe&color=6A2BBA" class="w-10 h-10 rounded-full border-2 border-[#6A2BBA]/25" alt="Avatar">
            </button>
         </div>
 

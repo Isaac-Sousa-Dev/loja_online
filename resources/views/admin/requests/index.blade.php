@@ -78,7 +78,7 @@
                                 </div>
 
                                 <div class="flex items-center gap-2">
-                                    <button data-requestplan="{{$requestPlan}}" class="btnCompleteRegistration text-sm py-1 md:text-md bg-blue-700 hover:bg-blue-800 transition ease-in-out duration-200 px-3 rounded-md font-medium text-white">Concluir Cadastro</button>
+                                    <button type="button" data-requestplan="{{$requestPlan}}" class="btnCompleteRegistration text-sm py-1 md:text-md bg-gradient-to-r from-[#6A2BBA] to-[#D131A3] hover:brightness-105 transition ease-in-out duration-200 px-3 rounded-md font-semibold text-white shadow-sm">Concluir Cadastro</button>
                                 </div>
                             </div>
                             @endforeach
@@ -122,7 +122,7 @@
                                             <div class="flex flex-col">
                                                 <span class="spanPlanName">Advanced</span>
                                             </div>
-                                            <div class="bg-blue-100 rounded-xl px-2 py-1 flex justify-center">
+                                            <div class="bg-[#EDE9FE] rounded-xl px-2 py-1 flex justify-center text-[#6A2BBA]">
                                                 <div class="text-lg font-semibold">
                                                     <span class="text-xs font-semibold">R$</span>
                                                     <span class="spanPlanPrice price-mask"></span>

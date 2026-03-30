@@ -8,7 +8,6 @@ use App\Models\Image;
 use App\Models\Partner;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\Property;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -23,7 +22,7 @@ class ProductDuplicateService
     }
 
     /**
-     * Clona produto (dados, variantes, imagens em disco, propriedades legadas). A cópia nasce inativa para revisão.
+     * Clona produto (dados, variantes, imagens em disco). A cópia nasce inativa para revisão.
      */
     public function duplicateForPartner(Partner $partner, Product $source): Product
     {
@@ -32,7 +31,7 @@ class ProductDuplicateService
         }
 
         return DB::transaction(function () use ($partner, $source): Product {
-            $source->load(['allVariants', 'images', 'properties']);
+            $source->load(['allVariants', 'images']);
 
             $copyName = $this->buildCopyName((string) $source->name);
 
@@ -61,13 +60,6 @@ class ProductDuplicateService
             }
 
             $this->colorImageService->syncProductMainImageFromGallery($newProduct->id);
-
-            $prop = $source->properties;
-            if ($prop !== null) {
-                $row = collect($prop->getAttributes())->only((new Property())->getFillable())->all();
-                unset($row['id'], $row['created_at'], $row['updated_at']);
-                Property::create(array_merge($row, ['product_id' => $newProduct->id]));
-            }
 
             return $newProduct->fresh(['images', 'brand', 'category']);
         });

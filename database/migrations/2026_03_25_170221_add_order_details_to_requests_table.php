@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('requests', function (Blueprint $table) {
+        Schema::table('orders', function (Blueprint $table) {
             // Variante escolhida
             $table->foreignId('product_variant_id')->nullable()->after('product_id')->constrained('product_variants')->nullOnDelete();
             $table->string('selected_color')->nullable()->after('product_variant_id');
@@ -29,7 +29,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('requests', function (Blueprint $table) {
+        Schema::table('orders', function (Blueprint $table) {
             $table->dropForeign(['product_variant_id']);
             $table->dropColumn([
                 'product_variant_id', 'selected_color', 'selected_size',

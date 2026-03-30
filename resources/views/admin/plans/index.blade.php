@@ -10,7 +10,7 @@
                 <div class="flex items-center md:justify-between mt-4">
 
                     <div class="flex items-center justify-between">
-                        <h2 class="font-semibold text-2xl mb-3 mt-3 text-gray-800">
+                        <h2 class="font-display font-semibold text-2xl mb-3 mt-3 text-[#33363B]">
                             {{ __('Planos') }}
                         </h2>
                     </div>
@@ -20,8 +20,8 @@
                         <div class="w-full flex justify-between items-center">
                             <button class="flex" href="javascript:void(0)">
                                 <a href="{{ route('plans.create') }}"
-                                    class="inline-flex md:items-center gap-1 md:gap-2 px-4 py-[11px] md:px-2 md:py-[10px] border border-transparent text-sm leading-5 font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-500 focus:outline-none focus:border-blue-700 focus:shadow-outline-blue active:bg-blue-700 transition ease-in-out duration-150">
-                                    <svg class="w-5 h-5 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                    class="inline-flex md:items-center gap-1 md:gap-2 px-4 py-[11px] md:px-2 md:py-[10px] border border-transparent text-sm leading-5 font-semibold rounded-xl text-white bg-gradient-to-r from-[#6A2BBA] to-[#D131A3] hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6A2BBA] focus-visible:ring-offset-2 transition ease-in-out duration-150 shadow-md shadow-[#6A2BBA]/25">
+                                    <svg class="w-5 h-5 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7.757v8.486M7.757 12h8.486M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                                       </svg>                                      
                                     {{ __('Novo Plano') }}
@@ -34,13 +34,13 @@
 
 
                 <!-- component -->
-                <div class="overflow-auto rounded-lg border border-gray-200 shadow-md mt-8">
+                <div class="overflow-auto rounded-lg border border-[#33363B]/10 shadow-md mt-8 ring-1 ring-[#33363B]/5">
                     <div class="hidden md:block">
-                        <div class="px-4 py-2 bg-gray-100 shadow-sm grid grid-cols-4 gap-4">
-                            <div class="font-semibold">Dados</div>
-                            <div class="font-semibold">Preço</div>
-                            <div class="font-semibold">Combo</div>
-                            <div class="font-semibold text-right">Ações</div>
+                        <div class="px-4 py-2 bg-[#F8F9FC] border-b border-[#6A2BBA]/10 shadow-sm grid grid-cols-4 gap-4">
+                            <div class="font-semibold text-[#33363B]">Dados</div>
+                            <div class="font-semibold text-[#33363B]">Preço</div>
+                            <div class="font-semibold text-[#33363B]">Combo</div>
+                            <div class="font-semibold text-right text-[#33363B]">Ações</div>
                         </div>
                     </div>
                 
@@ -53,10 +53,10 @@
                             </div>
                         @else
                             @foreach ($allPlans as $plan)
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 px-4 py-2 border-b border-gray-200 hover:bg-gray-50">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 px-4 py-2 border-b border-[#33363B]/8 hover:bg-[#F8F9FC]/80">
                                 <div class="flex items-center">
                                     <div>
-                                        <div class="font-bold text-blue-600 hover:text-blue-900">
+                                        <div class="font-bold text-[#6A2BBA] hover:text-[#D131A3]">
                                             <a href="#">{{ $plan->name }}</a>
                                         </div>
                                         <div class="text-xs @if($plan->status == 'active') text-green-600 @else text-red-500 @endif font-semibold"> 
@@ -72,7 +72,7 @@
                                         <span class="px-1 font-semibold rounded-md text-xs">Nenhum módulo encontrado</span>
                                     @else
                                         @foreach($plan->modules as $module)
-                                            <span class="bg-blue-700 text-white px-1 font-semibold rounded-md text-xs">{{ $module->module }}</span>
+                                            <span class="bg-[#6A2BBA] text-white px-1.5 py-0.5 font-semibold rounded-md text-xs">{{ $module->module }}</span>
                                         @endforeach
                                     @endif
                                 </div>

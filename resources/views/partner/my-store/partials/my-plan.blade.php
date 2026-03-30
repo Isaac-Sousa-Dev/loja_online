@@ -1,15 +1,15 @@
-<div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100">
+<div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-[#33363B]/8">
     <div class="flex items-center gap-2 mb-1">
-        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+        <div class="w-8 h-8 rounded-full bg-[#EDE9FE] flex items-center justify-center text-[#6A2BBA]">
             <i class="fa-solid fa-crown text-sm"></i>
         </div>
-        <h2 class="font-semibold text-lg text-gray-800">Minha Assinatura</h2>
+        <h2 class="font-semibold text-lg text-[#33363B]">Minha Assinatura</h2>
     </div>
 
     <div class="py-1 rounded-lg mt-2">
         @if ($partner->subscription->status == 'active')
             <div
-                class="font-semibold text-green-400 text-md bg-green-50 p-2 flex justify-between items-center rounded-lg">
+                class="font-semibold text-sm bg-[#ecfdf5] text-emerald-800 p-2 flex justify-between items-center rounded-xl border border-emerald-200/80">
                 <div>
                     Assinatura Ativa
                 </div>
@@ -19,12 +19,12 @@
                 </div>  --}}
             </div>
         @else
-            <div class="font-semibold text-red-400 text-md bg-red-50 p-2 flex justify-between items-center rounded-lg">
+            <div class="font-semibold text-sm bg-red-50 text-red-700 p-2 flex justify-between items-center rounded-xl border border-red-100">
                 <div>
                     Assinatura Inativa
                 </div>
 
-                <button class="text-white text-sm bg-blue-600 px-4 py-1 rounded-xl">
+                <button type="button" class="text-white text-sm bg-gradient-to-r from-[#6A2BBA] to-[#D131A3] px-4 py-1.5 rounded-xl font-semibold shadow-sm">
                     Reativar
                 </button>
             </div>
@@ -40,32 +40,32 @@
     </div>
 
     <div class="grid grid-cols-2 gap-2">
-        <div class="bg-blue-50 mt-2 gap-2 px-4 p-2 rounded-lg">
-            <div class="font-semibold text-blue-700 text-xl">
+        <div class="bg-[#EDE9FE]/70 mt-2 gap-2 px-4 p-2 rounded-xl border border-[#6A2BBA]/15">
+            <div class="font-semibold text-[#6A2BBA] text-xl">
                 {{ $partner->subscription->plan->name }}
             </div>
-            <div class="font-semibold text-gray-700 text-sm md:text-md">
+            <div class="font-semibold text-[#33363B] text-sm md:text-md">
                 R$ {{ number_format($partner->subscription->plan->price, 2, ',', '.') }}
                 @if ($partner->subscription->appellant)
                     /mês
                 @endif
             </div>
         </div>
-        <div class="bg-gray-200 mt-2 gap-2 px-4 p-2 rounded-lg">
-            <div class="font-semibold text-gray-700 text-sm">
+        <div class="bg-[#F8F9FC] mt-2 gap-2 px-4 p-2 rounded-xl border border-[#33363B]/8">
+            <div class="font-semibold text-[#33363B]/70 text-sm">
                 Inicio
             </div>
-            <div class="font-semibold text-gray-700 text-xl md:text-2xl">
+            <div class="font-semibold text-[#33363B] text-xl md:text-2xl">
                 {{ \Carbon\Carbon::parse($partner->subscription->start_date)->format('d/m/Y') }}
             </div>
         </div>
     </div>
 
     <div class="mt-2">
-        <div class="text-gray-600 font-medium text-center flex flex-col gap-2">
+        <div class="text-[#33363B]/75 font-medium text-center flex flex-col gap-2">
 
-            <div class="flex gap-1 items-center text-sm">
-                <svg class="w-4 h-4 text-gray-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+            <div class="flex gap-1 items-center text-sm justify-center">
+                <svg class="w-4 h-4 shrink-0 text-[#6A2BBA]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                     viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -73,8 +73,8 @@
                 1 Usuário
             </div>
 
-            <div class="flex gap-1 items-center text-sm">
-                <svg class="w-4 h-4 text-gray-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+            <div class="flex gap-1 items-center text-sm justify-center">
+                <svg class="w-4 h-4 shrink-0 text-[#6A2BBA]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                     height="24" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -82,8 +82,8 @@
                 Gestão de Produtos
             </div>
 
-            <div class="line-through flex gap-1 text-sm items-center">
-                <svg class="w-4 h-4 text-gray-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+            <div class="line-through flex gap-1 text-sm items-center justify-center text-[#33363B]/45">
+                <svg class="w-4 h-4 shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                     height="24" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="m15 9-6 6m0-6 6 6m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -92,8 +92,8 @@
                 CRM Dedicado
             </div>
 
-            <div class="flex gap-1 items-center text-sm">
-                <svg class="w-4 h-4 text-gray-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+            <div class="flex gap-1 items-center text-sm justify-center">
+                <svg class="w-4 h-4 shrink-0 text-[#6A2BBA]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                     height="24" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -101,8 +101,8 @@
                 Gestão de Vendas
             </div>
 
-            <div class="flex gap-1 items-center text-sm">
-                <svg class="w-4 h-4 text-gray-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+            <div class="flex gap-1 items-center text-sm justify-center">
+                <svg class="w-4 h-4 shrink-0 text-[#6A2BBA]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                     height="24" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -110,8 +110,8 @@
                 Site Profissional
             </div>
 
-            <div class="flex gap-1 items-center line-through text-sm">
-                <svg class="w-4 h-4 text-gray-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+            <div class="flex gap-1 items-center line-through text-sm justify-center text-[#33363B]/45">
+                <svg class="w-4 h-4 shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                     height="24" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="m15 9-6 6m0-6 6 6m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -119,8 +119,8 @@
                 Indique e Ganhe
             </div>
 
-            <div class="flex gap-1 items-center text-sm">
-                <svg class="w-4 h-4 text-gray-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+            <div class="flex gap-1 items-center text-sm justify-center">
+                <svg class="w-4 h-4 shrink-0 text-[#6A2BBA]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                     height="24" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M8.5 11.5 11 14l4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />

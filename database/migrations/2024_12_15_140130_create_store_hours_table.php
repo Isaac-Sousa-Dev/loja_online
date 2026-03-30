@@ -14,10 +14,12 @@ return new class extends Migration
         Schema::create('store_hours', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('store_id');
-            $table->string('day_of_week');
-            $table->time('open_time')->nullable();
-            $table->time('close_time')->nullable();
-            $table->boolean('is_open')->default(true);
+            $table->time('open_in_weekdays')->nullable();
+            $table->time('close_in_weekdays')->nullable();
+            $table->time('open_saturday')->nullable();
+            $table->time('close_saturday')->nullable();
+            $table->time('open_sunday')->nullable();
+            $table->time('close_sunday')->nullable();
 
             $table->foreign('store_id')->references('id')->on('stores')->onDelete('cascade');
             $table->timestamps();

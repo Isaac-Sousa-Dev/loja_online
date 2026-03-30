@@ -7,18 +7,18 @@
             <div class="flex flex-col w-full max-w-[1200px]">
 
                 {{-- Breadcrumb --}}
-                <nav class="flex items-center gap-1.5 text-sm text-gray-500 mt-4 mb-2 px-1" aria-label="breadcrumb">
-                    <a href="{{ route('dashboard') }}" class="flex items-center gap-1 hover:text-blue-600 transition-colors">
+                <nav class="flex items-center gap-1.5 text-sm text-[#33363B]/55 mt-4 mb-2 px-1" aria-label="breadcrumb">
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-1 hover:text-[#6A2BBA] transition-colors">
                         <i class="fa-solid fa-house text-xs"></i>
                         <span>Dashboard</span>
                     </a>
-                    <i class="fa-solid fa-chevron-right text-[10px] text-gray-400"></i>
-                    <span class="font-semibold text-gray-700">Minha Loja</span>
+                    <i class="fa-solid fa-chevron-right text-[10px] text-[#33363B]/35"></i>
+                    <span class="font-semibold text-[#33363B]">Minha Loja</span>
                 </nav>
 
                 {{-- Title --}}
                 <div class="flex items-center gap-2 mt-2 mb-4 px-1">
-                    <h2 class="font-semibold text-3xl text-gray-800 leading-tight">
+                    <h2 class="font-display font-semibold text-3xl text-[#33363B] leading-tight">
                         {{ __('Minha Loja') }}
                     </h2>
                 </div>

@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 }
 
 #globalLoader {

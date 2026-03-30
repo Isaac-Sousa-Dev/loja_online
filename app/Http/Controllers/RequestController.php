@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\RequestStatus;
+use App\Enums\OrderStatus;
 use App\Models\Client;
 use App\Models\ClientStore;
+use App\Models\Order;
 use App\Models\Product;
-use App\Models\Request as ModelsRequest;
 use App\Models\RequestPlan;
 use Exception;
 use Illuminate\Http\Request;
@@ -26,14 +26,14 @@ class RequestController extends Controller
             $store = $partner->store;
 
             // Busca todos os requests com relacionamentos
-            $allRequests = $store->requests()
+            $allOrders = $store->orders()
                 ->with(['client', 'product.images', 'product.brand'])
                 ->latest()
                 ->get();
 
             // Agrupa por order_ref: pedidos com carrinho ficam juntos,
             // pedidos antigos (sem order_ref) ficam individualmente
-            $groupedOrders = $allRequests->groupBy(function ($r) {
+            $groupedOrders = $allOrders->groupBy(function ($r) {
                 return $r->order_ref ?: 'single_' . $r->id;
             })->map(function ($items) {
                 return [
@@ -48,7 +48,7 @@ class RequestController extends Controller
                 ];
             })->sortByDesc('created_at')->values();
 
-            return view('partner.requests.index', compact('groupedOrders', 'allRequests'));
+            return view('partner.requests.index', compact('groupedOrders', 'allOrders'));
         }
     }
 
@@ -66,15 +66,6 @@ class RequestController extends Controller
         return $existClient;
     }
 
-    private function checkExistRequest($clientId, $productId)
-    {
-        $existRequest = ModelsRequest::where('client_id', $clientId)->where('product_id', $productId)->first();
-        if($existRequest == null) {
-            return false;
-        }
-        return true;
-    }
-
     private function checkExistClientStore($storeId, $client)
     {
         $existClientStore = ClientStore::where('store_id', $storeId)->where('client_id', $client->id)->first();
@@ -83,35 +74,6 @@ class RequestController extends Controller
                 'store_id' => $storeId,
                 'client_id' => $client->id
             ]);
-        }
-    }
-
-    public function store(Request $request)
-    {
-        try {
-            $client = $this->checkExistClient($request->phone, $request);
-            $this->checkExistClientStore($request->store_id, $client);
-
-            $alreadyExists = $this->checkExistRequest($client->id, $request->product_id);
-            if (!$alreadyExists) {
-                ModelsRequest::create([
-                    'client_id'  => $client->id,
-                    'store_id'   => $request->store_id,
-                    'product_id' => $request->product_id,
-                    'shift'      => $request->shift == "false" ? 0 : 1,
-                    'finance'    => $request->finance == "false" ? 0 : 1,
-                    'message'    => $request->message,
-                    'status'     => RequestStatus::IN_OPEN,
-                    'quantity'   => max(1, (int) $request->quantity),
-                ]);
-
-                return response()->json(['success' => true, 'message' => 'Solicitação criada com sucesso.'], 201);
-            } else {
-                return response()->json(['success' => false, 'message' => 'Já existe uma solicitação para este produto e cliente.'], 409);
-            }
-
-        } catch(Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Erro ao criar a solicitação.', 'error' => $e->getMessage()], 500);
         }
     }
 
@@ -147,9 +109,9 @@ class RequestController extends Controller
                 $quantity  = max(1, (int) ($item['quantity'] ?? 1));
 
                 // Se já existe request aberta para este produto+cliente, apenas atualiza quantidade
-                $existing = ModelsRequest::where('client_id', $client->id)
+                $existing = Order::where('client_id', $client->id)
                     ->where('product_id', $productId)
-                    ->whereIn('status', [RequestStatus::IN_OPEN->value, RequestStatus::IN_PROGRESS->value])
+                    ->whereIn('status', [OrderStatus::PENDING->value, OrderStatus::PAID->value])
                     ->first();
 
                 if ($existing) {
@@ -157,7 +119,7 @@ class RequestController extends Controller
                     $existing->save();
                     $created[] = $existing->id;
                 } else {
-                    $req = ModelsRequest::create([
+                    $req = Order::create([
                         'client_id'          => $client->id,
                         'store_id'           => $storeId,
                         'product_id'         => $productId,
@@ -171,10 +133,8 @@ class RequestController extends Controller
                         'delivery_state'     => $request->input('delivery_state'),
                         'delivery_zip'       => $request->input('delivery_zip'),
                         'delivery_complement'=> $request->input('delivery_complement'),
-                        'shift'              => 0,
-                        'finance'            => $request->input('payment_method') === 'credit_card' ? 1 : 0,
                         'message'            => $message,
-                        'status'             => RequestStatus::IN_OPEN,
+                        'status'             => OrderStatus::PENDING->value,
                         'order_ref'          => $orderRef,
                         'quantity'           => $quantity,
                     ]);
@@ -193,8 +153,8 @@ class RequestController extends Controller
     public function init(Request $request)
     {
         $requestId = $request->requestId;
-        $solicitation = ModelsRequest::find($requestId);
-        $solicitation->status = RequestStatus::IN_PROGRESS->value;
+        $solicitation = Order::find($requestId);
+        $solicitation->status = OrderStatus::PAID->value;
         $solicitation->save();
     }
 
@@ -208,16 +168,16 @@ class RequestController extends Controller
         $currentProduct->save();
 
         $requestId = $request->requestId;
-        $solicitation = ModelsRequest::find($requestId);
-        $solicitation->status = RequestStatus::COMPLETED->value;
+        $solicitation = Order::find($requestId);
+        $solicitation->status = OrderStatus::SOLD->value;
         $solicitation->save();
 
         $newProduct = Product::find($productId);
         // removendo todas as outras solicitações caso o estoque desse produto for zerado
         if($newProduct->stock == 0){
-            $requestByProduct = ModelsRequest::where('product_id', $productId)->get();
+            $requestByProduct = Order::where('product_id', $productId)->get();
             foreach($requestByProduct as $request){
-                if($request->status == RequestStatus::IN_OPEN->value || $request->status == RequestStatus::IN_PROGRESS->value && $request->status != RequestStatus::COMPLETED->value){
+                if($request->status == OrderStatus::PENDING->value || $request->status == OrderStatus::PAID->value && $request->status != OrderStatus::SOLD->value){
                     // Remove a solicitação
                     $request->delete();
                 }
@@ -226,29 +186,11 @@ class RequestController extends Controller
         
     }
 
-
     public function unsold(Request $request)
     {
         $requestId = $request->requestId;
-        $solicitation = ModelsRequest::find($requestId);
+        $solicitation = Order::find($requestId);
         $solicitation->delete(); 
     }
 
-
-    public function show(string $id)
-    {
-        //
-    }
-
-  
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-   
-    public function destroy(string $id)
-    {
-        //
-    }
 }

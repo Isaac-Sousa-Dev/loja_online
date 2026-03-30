@@ -5,15 +5,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="theme-color" content="#036">
+    <meta name="theme-color" content="#6A2BBA">
 
     <title>{{ config('app.name', 'Motiv') }}</title>
 
-    <!-- FONTS -->
+    <!-- FONTS (alinhado à landing welcome) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- JQUERY -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -310,10 +309,10 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="h-full bg-gray-100 overflow-hidden">
+<body class="font-jakarta h-full overflow-hidden bg-[#F8F9FC] text-[#33363B] antialiased">
     <div id="global-loader" class=" flex justify-center items-center"
         style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; background: rgba(255, 255, 255, 0.8); justify-content: center; align-items: center; z-index: 9999;">
-        <svg class="size-10 animate-spin" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <svg class="size-10 animate-spin text-[#6A2BBA]" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
             <path d="M32 64a32 32 0 1 1 32-32h-4a28 28 0 1 0-28 28z" fill="currentColor" />
             <path d="M32 0a32 32 0 0 1 32 32h-4a28 28 0 0 0-28-28z" fill="currentColor" />
         </svg>
@@ -346,7 +345,7 @@
 
             <!-- Navbar -->
             <div
-                class="bg-white h-16 flex items-center justify-between px-2 md:px-4 border-b shadow-sm fixed top-0 z-30 w-full md:left-64 md:w-[calc(100%-16rem)]">
+                class="bg-white/95 backdrop-blur-sm h-16 flex items-center justify-between px-2 md:px-4 border-b border-[#6A2BBA]/10 shadow-sm fixed top-0 z-30 w-full md:left-64 md:w-[calc(100%-16rem)]">
                 @include('components.navbar')
             </div>
 

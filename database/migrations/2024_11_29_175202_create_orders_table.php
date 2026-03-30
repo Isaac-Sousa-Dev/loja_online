@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('requests', function (Blueprint $table) {
+        Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('store_id');
             $table->unsignedBigInteger('client_id');
             $table->unsignedBigInteger('product_id');
             $table->unsignedBigInteger('seller_id')->nullable();
-            $table->enum('status', ['in_open', 'in_progress', 'canceled', 'sold'])->nullable();
+            $table->enum('status', ['pending', 'paid', 'canceled', 'sold'])->nullable();
             $table->text('message')->nullable();
             $table->boolean('shift')->default(false);
             $table->boolean('finance')->default(false);

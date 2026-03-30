@@ -16,7 +16,7 @@
                         </div>
                         <button class="btn-sm" href="javascript:void(0)">
                             <a href="{{ route('partners.create') }}"
-                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm leading-5 font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-500 focus:outline-none focus:border-blue-700 focus:shadow-outline-blue active:bg-blue-700 transition ease-in-out duration-150">
+                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm leading-5 font-semibold rounded-xl text-white bg-gradient-to-r from-[#6A2BBA] to-[#D131A3] hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6A2BBA] focus-visible:ring-offset-2 transition ease-in-out duration-150 shadow-md shadow-[#6A2BBA]/20">
                                 {{ __('Novo Motivado') }}
                             </a>
                         </button>
@@ -77,7 +77,7 @@
                                             <div class="bg-gray-500 rounded-md text-white text-center px-2 font-medium w-2/3">
                                                 {{$user->partner->subscription->plan->name}}
                                             </div>
-                                            <div class="bg-blue-700 rounded-md text-white text-center px-2 font-medium w-1/3">
+                                            <div class="bg-[#6A2BBA] rounded-md text-white text-center px-2 font-medium w-1/3">
                                                 <span class="mr-1">R$</span><span class="price-mask">{{$user->partner->subscription->plan->price}}</span>
                                             </div>
                                         </div>

@@ -9,7 +9,7 @@
 @endphp
 
 <div id="sidebar"
-     class="fixed top-0 left-0 z-40 h-full w-64 bg-[#036] transform transition-transform duration-300 -translate-x-full md:translate-x-0 md:relative md:block border-r">
+     class="fixed top-0 left-0 z-40 h-full w-64 bg-[#33363B] transform transition-transform duration-300 -translate-x-full md:translate-x-0 md:relative md:block border-r border-[#6A2BBA]/20 shadow-[inset_-1px_0_0_rgba(106,43,186,0.12)]">
     <div class="h-full overflow-y-auto">
 
         <div class="flex flex-col gap-2 items-center h-32 justify-center">
@@ -17,7 +17,7 @@
             @if(Auth::user()->role != 'admin')
 
                 @if(Auth::user()->partner?->store?->logo)
-                    <div class="h-20 w-20 flex border-2 border-white bg-gray-300 rounded-full">
+                    <div class="h-20 w-20 flex border-2 border-[#6A2BBA]/50 bg-gray-300 rounded-full">
                         <img src="/storage/{{ Auth::user()->partner->store->logo }}" width="60" height="60" class="object-cover rounded-full w-full object-center" alt="">
                     </div>
                 @else
@@ -47,7 +47,7 @@
                     
         
                         <div>
-                            <div class="uppercase font-bold text-xs text-gray-300 px-3 mt-2 flex gap-1 bg-blue-900 py-1 w-3/5 rounded-r-md">
+                            <div class="uppercase font-bold text-xs text-white/90 px-3 mt-2 flex gap-1 bg-[#6A2BBA]/35 py-1 w-3/5 rounded-r-md">
                                 Início
                             </div>
 
@@ -68,7 +68,7 @@
                                         
                                         {{ __('Dashboard') }}
                                         @if(!in_array('dashboard', $modules))
-                                            <span class="text-[10px] bg-purple-600 px-1 rounded-md">Upgrade</span>
+                                            <span class="text-[10px] font-bold bg-[#6A2BBA] text-white px-1.5 py-0.5 rounded-md">Upgrade</span>
                                         @endif
                                     </x-nav-link>
 
@@ -86,9 +86,9 @@
                                         
                                         {{ __('Analytics') }}
                                         @if(!in_array('analytics', $modules))
-                                            <span class="text-[10px] bg-purple-600 px-1 rounded-md">Upgrade</span>
+                                            <span class="text-[10px] font-bold bg-[#6A2BBA] text-white px-1.5 py-0.5 rounded-md">Upgrade</span>
                                         @endif
-                                        <span class="text-[10px] bg-green-600 px-1 rounded-md">Em breve</span>
+                                        <span class="text-[10px] font-bold bg-[#FF914D] text-[#33363B] px-1.5 py-0.5 rounded-md">Em breve</span>
                                     </x-nav-link> --}}
                 
                                     @if (Auth::user()->role == 'admin')
@@ -111,7 +111,7 @@
                             @endif
 
 
-                            <div class="uppercase font-bold text-xs justify-between items-center text-gray-300 px-3 mt-2 flex gap-1 bg-blue-900 py-1 w-3/5 rounded-r-md">
+                            <div class="uppercase font-bold text-xs justify-between items-center text-white/90 px-3 mt-2 flex gap-1 bg-[#6A2BBA]/35 py-1 w-3/5 rounded-r-md">
                                 <span>Atendimento</span>
                             </div>
                         
@@ -134,13 +134,13 @@
                                     </svg>
                                     
                                     {{ __('Agente IA') }}
-                                    <span class="text-[10px] bg-green-600 px-1 rounded-md">Em breve</span>
+                                    <span class="text-[10px] font-bold bg-[#FF914D] text-[#33363B] px-1.5 py-0.5 rounded-md">Em breve</span>
                                 </x-nav-link>
                             </div>
 
 
                             @if(Auth::user()->role != 'admin')
-                                <div class="uppercase font-bold text-xs justify-between items-center text-gray-300 px-3 mt-2 flex gap-1 bg-blue-900 py-1 w-3/5 rounded-r-md">
+                                <div class="uppercase font-bold text-xs justify-between items-center text-white/90 px-3 mt-2 flex gap-1 bg-[#6A2BBA]/35 py-1 w-3/5 rounded-r-md">
                                     <span>Gestão</span>
                                 </div>
                                 <!-- Navigation Links -->
@@ -158,7 +158,7 @@
                                             </svg>
                                             {{ __('Pedidos') }}
                                             @if(!in_array('requests', $modules))
-                                                <span class="text-[10px] bg-purple-600 px-1 rounded-md">Upgrade</span>
+                                                <span class="text-[10px] font-bold bg-[#6A2BBA] text-white px-1.5 py-0.5 rounded-md">Upgrade</span>
                                             @endif
                                         </x-nav-link>
 
@@ -174,9 +174,9 @@
                                             
                                             {{ __('Vendas') }}
                                             @if(!in_array('sales', $modules))
-                                                <span class="text-[10px] bg-purple-600 px-1 rounded-md">Upgrade</span>
+                                                <span class="text-[10px] font-bold bg-[#6A2BBA] text-white px-1.5 py-0.5 rounded-md">Upgrade</span>
                                             @endif
-                                            {{-- <span class="text-[10px] bg-green-600 px-1 rounded-md">Em breve</span> --}}
+                                            {{-- <span class="text-[10px] font-bold bg-[#FF914D] text-[#33363B] px-1.5 py-0.5 rounded-md">Em breve</span> --}}
                                         </x-nav-link>
                                         {{-- <x-nav-link :href="route('clients.index')" :active="request()->routeIs('clients.index') || request()->routeIs('clients.create') || request()->routeIs('clients.edit')">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
@@ -199,16 +199,16 @@
                                             
                                             {{ __('Equipe') }}
                                             @if(!in_array('team', $modules))
-                                                <span class="text-[10px] bg-purple-600 px-1 rounded-md">Upgrade</span>
+                                                <span class="text-[10px] font-bold bg-[#6A2BBA] text-white px-1.5 py-0.5 rounded-md">Upgrade</span>
                                             @endif
-                                            {{-- <span class="text-[10px] bg-green-600 px-1 rounded-md">Em breve</span> --}}
+                                            {{-- <span class="text-[10px] font-bold bg-[#FF914D] text-[#33363B] px-1.5 py-0.5 rounded-md">Em breve</span> --}}
                                         </x-nav-link>
                                     @endif
                                 </div>
                             @endif        
             
                             @if(Auth::user()->role != 'admin')
-                            <div class="uppercase font-bold text-xs justify-between items-center text-gray-300 px-3 mt-2 flex gap-1 bg-blue-900 py-1 w-3/5 rounded-r-md">
+                            <div class="uppercase font-bold text-xs justify-between items-center text-white/90 px-3 mt-2 flex gap-1 bg-[#6A2BBA]/35 py-1 w-3/5 rounded-r-md">
                                 <span>Catálogo</span>
                             </div>
                             <!-- Navigation Links -->
@@ -227,7 +227,7 @@
                                         
                                         {{ __('Categorias') }}
                                         @if(!in_array('categories', $modules))
-                                            <span class="text-[10px] bg-purple-600 px-1 rounded-md">Upgrade</span>
+                                            <span class="text-[10px] font-bold bg-[#6A2BBA] text-white px-1.5 py-0.5 rounded-md">Upgrade</span>
                                         @endif
                                     </x-nav-link>
 
@@ -241,7 +241,7 @@
                                         <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path fill="rgb(255, 255, 255)" d="M341.5 45.1C337.4 37.1 329.1 32 320.1 32C311.1 32 302.8 37.1 298.7 45.1L225.1 189.3L65.2 214.7C56.3 216.1 48.9 222.4 46.1 231C43.3 239.6 45.6 249 51.9 255.4L166.3 369.9L141.1 529.8C139.7 538.7 143.4 547.7 150.7 553C158 558.3 167.6 559.1 175.7 555L320.1 481.6L464.4 555C472.4 559.1 482.1 558.3 489.4 553C496.7 547.7 500.4 538.8 499 529.8L473.7 369.9L588.1 255.4C594.5 249 596.7 239.6 593.9 231C591.1 222.4 583.8 216.1 574.8 214.7L415 189.3L341.5 45.1z"/></svg>
                                         {{ __('Marcas') }}
                                         @if(!in_array('brands', $modules))
-                                            <span class="text-[10px] bg-purple-600 px-1 rounded-md">Upgrade</span>
+                                            <span class="text-[10px] font-bold bg-[#6A2BBA] text-white px-1.5 py-0.5 rounded-md">Upgrade</span>
                                         @endif
                                     </x-nav-link>
 
@@ -256,7 +256,7 @@
                                         
                                         {{ __('Produtos') }}
                                         @if(!in_array('vehicles', $modules))
-                                            <span class="text-[10px] bg-purple-600 px-1 rounded-md">Upgrade</span>
+                                            <span class="text-[10px] font-bold bg-[#6A2BBA] text-white px-1.5 py-0.5 rounded-md">Upgrade</span>
                                         @endif
                                     </x-nav-link>
                                 @endif
