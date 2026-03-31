@@ -23,6 +23,26 @@
         @csrf
         @method('PUT')
 
+        @php
+            $acceptedPaymentMethods = (array) old('accepted_payment_methods', $store->accepted_payment_methods ?? []);
+            $acceptedCardBrands = (array) old('accepted_card_brands', $store->accepted_card_brands ?? []);
+            $paymentMethodOptions = [
+                'pix' => ['label' => 'Pix', 'hint' => 'Pagamento instantaneo'],
+                'cash' => ['label' => 'Dinheiro', 'hint' => 'Pagamento no ato'],
+                'credit_card' => ['label' => 'Cartao de credito', 'hint' => 'Parcelado ou a vista'],
+                'debit_card' => ['label' => 'Cartao de debito', 'hint' => 'Aprovacao imediata'],
+                'boleto' => ['label' => 'Boleto', 'hint' => 'Pagamento bancario'],
+            ];
+            $cardBrandOptions = [
+                'visa' => 'Visa',
+                'mastercard' => 'Mastercard',
+                'elo' => 'Elo',
+                'amex' => 'American Express',
+                'hipercard' => 'Hipercard',
+                'diners' => 'Diners Club',
+            ];
+        @endphp
+
         {{-- Banner & Logo Section --}}
         <div>
             <div class="text-sm font-semibold text-gray-700 mb-2">Imagens da Loja</div>
@@ -124,6 +144,62 @@
                     <x-input-label for="state" :value="__('Estado')" />
                     <x-text-input id="state" name="state" type="text" class="mt-1 block w-full bg-gray-50 bg-opacity-50" :value="old('state', optional($store->addressStore)->state)" placeholder="SP" />
                     <x-input-error class="mt-2" :messages="$errors->get('state')" />
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="text-sm font-semibold text-gray-700 mb-3 border-b border-gray-100 pb-2">Pagamentos aceitos na vitrine</div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="rounded-2xl border border-gray-100 bg-gray-50/80 p-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <h3 class="text-sm font-semibold text-gray-800">Formas de pagamento</h3>
+                            <p class="mt-1 text-xs text-gray-500">Essas informacoes aparecerao no final do catalogo.</p>
+                        </div>
+                        <div class="rounded-full bg-blue-100 px-2.5 py-1 text-[11px] font-semibold text-blue-700">
+                            Vitrine
+                        </div>
+                    </div>
+
+                    <div class="mt-4 grid grid-cols-1 gap-3">
+                        @foreach ($paymentMethodOptions as $value => $option)
+                            <label class="flex cursor-pointer items-start gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 transition hover:border-blue-300 hover:bg-blue-50/50">
+                                <input type="checkbox" name="accepted_payment_methods[]" value="{{ $value }}"
+                                    class="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    @checked(in_array($value, $acceptedPaymentMethods, true))>
+                                <span class="flex-1">
+                                    <span class="block text-sm font-semibold text-gray-800">{{ $option['label'] }}</span>
+                                    <span class="mt-0.5 block text-xs text-gray-500">{{ $option['hint'] }}</span>
+                                </span>
+                            </label>
+                        @endforeach
+                    </div>
+
+                    <x-input-error class="mt-3" :messages="$errors->get('accepted_payment_methods')" />
+                    <x-input-error class="mt-2" :messages="$errors->get('accepted_payment_methods.*')" />
+                </div>
+
+                <div class="rounded-2xl border border-gray-100 bg-gray-50/80 p-4">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-800">Bandeiras de cartao</h3>
+                        <p class="mt-1 text-xs text-gray-500">Selecione as bandeiras que sua loja trabalha.</p>
+                    </div>
+
+                    <div class="mt-4 grid grid-cols-2 gap-3">
+                        @foreach ($cardBrandOptions as $value => $label)
+                            <label class="flex cursor-pointer items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 transition hover:border-blue-300 hover:bg-blue-50/50">
+                                <input type="checkbox" name="accepted_card_brands[]" value="{{ $value }}"
+                                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    @checked(in_array($value, $acceptedCardBrands, true))>
+                                <span class="text-sm font-semibold text-gray-800">{{ $label }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+
+                    <x-input-error class="mt-3" :messages="$errors->get('accepted_card_brands')" />
+                    <x-input-error class="mt-2" :messages="$errors->get('accepted_card_brands.*')" />
                 </div>
             </div>
         </div>

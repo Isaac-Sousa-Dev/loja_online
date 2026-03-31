@@ -4,20 +4,27 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use Carbon\CarbonImmutable;
+use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Pagination\LengthAwarePaginator;
 use App\Models\Partner;
 use App\Models\Product;
 use App\Models\StoreCategories;
 
 class CatalogController extends Controller
 {
+    private const PRODUCTS_PER_PAGE = 12;
+
     public ?string $logoStore = null;
 
-    public function index(string $partner_link): \Illuminate\Contracts\View\View
+    public function index(string $partner_link): View
     {
         date_default_timezone_set('America/Sao_Paulo');
 
         $partner = Partner::where('partner_link', $partner_link)->firstOrFail();
-        $store = $partner->store;
+        $store = $partner->store()->with(['addressStore', 'storeHours'])->firstOrFail();
 
         $logoStore = null;
         $bannerStore = null;
@@ -28,95 +35,79 @@ class CatalogController extends Controller
             $bannerStore = '/storage/'.$store->banner;
         }
 
-        $categoriesByPartner = StoreCategories::where('store_id', $partner->store->id)->get();
-        $products = $partner->publishedProducts;
+        $categoriesByPartner = StoreCategories::with('category')
+            ->where('store_id', $store->id)
+            ->get();
 
-        $productWithStock = [];
-        foreach ($products as $product) {
-            if ($product->stock > 0) {
-                $productWithStock[] = $product;
-            }
-        }
-
-        $qtdProducts = count($productWithStock);
+        $qtdProducts = $partner->publishedProducts()
+            ->where('products.stock', '>', 0)
+            ->count();
 
         return view('orders.catalog.index', [
             'partner' => $partner,
             'store' => $store,
             'logoStore' => $logoStore,
-            'itsOpen' => true,
+            'itsOpen' => $this->isStoreOpen($store),
             'bannerStore' => $bannerStore,
             'categories' => $categoriesByPartner,
             'qtdProducts' => $qtdProducts,
         ]);
     }
 
-    public function getAllProductByPartner(): \Illuminate\Http\JsonResponse
+    public function getAllProductByPartner(): JsonResponse
     {
-        $partnerLink = $this->partnerLinkFromReferer();
-        if ($partnerLink === null) {
-            return response()->json([], 400);
-        }
-
-        $partner = Partner::where('partner_link', $partnerLink)->first();
+        $partner = $this->resolvePartner();
         if ($partner === null) {
             return response()->json([], 404);
         }
 
-        $products = $partner->publishedProducts;
-
-        $productWithStock = [];
-        foreach ($products as $product) {
-            if ($product->stock > 0) {
-                $productWithStock[] = $product;
-            }
-        }
-
-        foreach ($productWithStock as $product) {
-            $product->images = $product->images;
-        }
-
-        return response()->json($productWithStock);
+        return response()->json(
+            $this->paginateCatalogProducts(
+                $partner,
+                request()->query('search'),
+                request()->query('category_id'),
+            ),
+        );
     }
 
-    public function search(): \Illuminate\Http\JsonResponse
+    public function search(): JsonResponse
     {
+        $partner = $this->resolvePartner();
         $searchTerm = request()->query('search');
-        $partnerLink = $this->partnerLinkFromReferer();
-        if ($partnerLink === null || $searchTerm === null) {
-            return response()->json(['data' => []]);
+        if ($partner === null || ! is_string($searchTerm) || trim($searchTerm) === '') {
+            return response()->json([]);
         }
 
-        $partner = Partner::where('partner_link', $partnerLink)->first();
+        return response()->json(
+            $this->paginateCatalogProducts(
+                $partner,
+                $searchTerm,
+                request()->query('category_id'),
+            ),
+        );
+    }
+
+    public function getProductsByCategory(int|string $category_id): JsonResponse
+    {
+        $partner = $this->resolvePartner();
         if ($partner === null) {
-            return response()->json(['data' => []]);
+            return response()->json([]);
         }
 
-        $products = Product::select('products.*', 'subcategories.name as subcategory_name')
-            ->join('subcategories', 'products.subcategory_id', '=', 'subcategories.id')
-            ->where('products.name', 'like', '%'.$searchTerm.'%')
-            ->where('products.partner_id', $partner->id)
-            ->where('products.is_active', true)
-            ->orderBy('products.id', 'desc')
-            ->paginate(4);
-
-        return response()->json($products);
+        return response()->json(
+            $this->paginateCatalogProducts(
+                $partner,
+                request()->query('search'),
+                $category_id,
+            ),
+        );
     }
 
-    public function getProductsByCategory(int|string $category_id): \Illuminate\Http\JsonResponse
+    public function getProductPage(string $partnerLink, int|string $productId): View
     {
-        $products = Product::where('category_id', $category_id)
-            ->where('stock', '>', 0)
-            ->where('is_active', true)
-            ->orderBy('id', 'desc')
-            ->paginate(4);
-
-        return response()->json($products);
-    }
-
-    public function getProductPage(string $partnerLink, int|string $productId): \Illuminate\Contracts\View\View
-    {
-        $partner = Partner::where('partner_link', $partnerLink)->firstOrFail();
+        $partner = Partner::with(['store.addressStore', 'store.storeHours'])
+            ->where('partner_link', $partnerLink)
+            ->firstOrFail();
         $store = $partner->store;
 
         if ($store->logo !== null) {
@@ -186,11 +177,81 @@ class CatalogController extends Controller
             'imagesLength' => count($images),
             'partnerLink' => $partnerLink,
             'partner' => $partner,
+            'store' => $store,
             'logoStore' => $this->logoStore,
+            'itsOpen' => $this->isStoreOpen($store),
             'category' => $category,
             'related' => $related,
             'wholesaleMinQty' => $store->wholesale_min_quantity,
         ]);
+    }
+
+    private function paginateCatalogProducts(
+        Partner $partner,
+        mixed $searchTerm = null,
+        mixed $categoryId = null,
+    ): LengthAwarePaginator {
+        $query = Product::query()
+            ->with(['images', 'brand'])
+            ->where('partner_id', $partner->id)
+            ->where('is_active', true)
+            ->where('stock', '>', 0)
+            ->orderByDesc('id');
+
+        if ($categoryId !== null && $categoryId !== '' && $categoryId !== 'todos') {
+            $query->where('category_id', $categoryId);
+        }
+
+        if (is_string($searchTerm) && trim($searchTerm) !== '') {
+            $term = '%'.addcslashes(trim($searchTerm), '%_\\').'%';
+
+            $query->where(function (Builder $builder) use ($term): void {
+                $builder->where('name', 'like', $term)
+                    ->orWhere('description', 'like', $term)
+                    ->orWhereHas('brand', function (Builder $brandQuery) use ($term): void {
+                        $brandQuery->where('name', 'like', $term);
+                    });
+            });
+        }
+
+        return $query->paginate(self::PRODUCTS_PER_PAGE)->withQueryString();
+    }
+
+    private function resolvePartner(): ?Partner
+    {
+        $partnerLink = $this->resolvePartnerLink();
+        if ($partnerLink === null) {
+            return null;
+        }
+
+        return Partner::where('partner_link', $partnerLink)->first();
+    }
+
+    private function isStoreOpen(\App\Models\Store $store): bool
+    {
+        $now = CarbonImmutable::now('America/Sao_Paulo');
+        $currentHour = $store->storeHours
+            ->firstWhere('day_of_week', (int) $now->dayOfWeek);
+
+        if ($currentHour === null || ! $currentHour->is_open || $currentHour->open_time === null || $currentHour->close_time === null) {
+            return false;
+        }
+
+        $currentTime = $now->format('H:i');
+        $openTime = substr((string) $currentHour->open_time, 0, 5);
+        $closeTime = substr((string) $currentHour->close_time, 0, 5);
+
+        return $currentTime >= $openTime && $currentTime <= $closeTime;
+    }
+
+    private function resolvePartnerLink(): ?string
+    {
+        $fromQuery = request()->query('partner_link');
+        if (is_string($fromQuery) && $fromQuery !== '') {
+            return $fromQuery;
+        }
+
+        return $this->partnerLinkFromReferer();
     }
 
     private function partnerLinkFromReferer(): ?string
@@ -199,7 +260,10 @@ class CatalogController extends Controller
         $path = parse_url($referer, PHP_URL_PATH) ?? '';
         $segments = array_values(array_filter(explode('/', $path)));
         if (isset($segments[0]) && $segments[0] === 'catalog' && isset($segments[1])) {
-            return $segments[1];
+            $slug = $segments[1];
+            $reserved = ['products-by-partner', 'search', 'get-products-by-category', 'message-sent-page'];
+
+            return in_array($slug, $reserved, true) ? null : $slug;
         }
         // Legado: /orders/{link}
         if (isset($segments[0]) && $segments[0] === 'orders' && isset($segments[1])) {

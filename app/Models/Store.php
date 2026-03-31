@@ -21,12 +21,16 @@ class Store extends Model
         'logo',
         'banner',
         'wholesale_min_quantity',
+        'accepted_payment_methods',
+        'accepted_card_brands',
         'partner_id',
         'plan_id',
     ];
 
     protected $casts = [
         'wholesale_min_quantity' => 'integer',
+        'accepted_payment_methods' => 'array',
+        'accepted_card_brands' => 'array',
     ];
 
     public function partner()

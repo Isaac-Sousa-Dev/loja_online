@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\store;
 
 use App\Interfaces\AbstractServiceInterface;
@@ -43,11 +45,14 @@ class StoreService implements AbstractServiceInterface {
 
     public function update($data, $storeId)
     { 
-        $store = Store::find($storeId)->with('partner')->first();
+        $store = Store::with('partner')->findOrFail($storeId);
         $this->partnerLink = $store->partner->partner_link;
         $response = $this->checkDiferentStoreName($data, $store);
+
+        $data['accepted_payment_methods'] = $this->sanitizeSelection($data['accepted_payment_methods'] ?? null);
+        $data['accepted_card_brands'] = $this->sanitizeSelection($data['accepted_card_brands'] ?? null);
         
-        $addressStore = AddressStore::where('store_id', $storeId)->first();
+        $addressStore = AddressStore::firstOrCreate(['store_id' => $storeId]);
         $addressStore->update($data);
         $store->update($data);
 
@@ -78,5 +83,16 @@ class StoreService implements AbstractServiceInterface {
         $store->partner->update([
             'partner_link' => $this->partnerLink
         ]);
+    }
+
+    private function sanitizeSelection(mixed $value): ?array
+    {
+        if (! is_array($value)) {
+            return null;
+        }
+
+        $selection = array_values(array_filter($value, static fn (mixed $item): bool => is_string($item) && $item !== ''));
+
+        return $selection === [] ? null : $selection;
     }
 }

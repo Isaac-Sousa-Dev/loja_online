@@ -209,12 +209,12 @@ Route::get('catalog/message-sent-page/{store_partner_link}', function(Request $r
     return view('orders.message-sent', ['storePartnerLink' => $storePartnerLink]);
 })->name('catalog.message_sent');
 
-// Catálogo público (vitrine)
-Route::get('catalog/{partner_link}', [CatalogController::class, 'index'])->name('catalog.index');
-Route::get('catalog/{partnerLink}/product/{productId}', [CatalogController::class, 'getProductPage'])->name('catalog.productPage');
+// Catálogo público (vitrine) — rotas literais antes de catalog/{partner_link} para não capturarem segmentos como "products-by-partner"
 Route::get('catalog/products-by-partner', [CatalogController::class, 'getAllProductByPartner'])->name('catalog.productsByPartner');
-Route::get('catalog/get-products-by-category/{category_id}', [CatalogController::class, 'getProductsByCategory'])->name('catalog.getProductsByCategory');
 Route::get('catalog/search', [CatalogController::class, 'search'])->name('catalog.search');
+Route::get('catalog/get-products-by-category/{category_id}', [CatalogController::class, 'getProductsByCategory'])->name('catalog.getProductsByCategory');
+Route::get('catalog/{partnerLink}/product/{productId}', [CatalogController::class, 'getProductPage'])->name('catalog.productPage');
+Route::get('catalog/{partner_link}', [CatalogController::class, 'index'])->name('catalog.index');
 
 // Legado: URLs antigas do catálogo em /orders/... → /catalog/...
 Route::get('orders/{partnerLink}/product/{productId}', function (string $partnerLink, string $productId) {
