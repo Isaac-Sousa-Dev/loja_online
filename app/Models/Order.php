@@ -1,77 +1,148 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
+use App\Enums\FulfillmentType;
 use App\Enums\OrderStatus;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'client_id',
+        'code',
         'store_id',
-        'product_id',
-        'product_variant_id',
-        'selected_color',
-        'selected_size',
+        'client_id',
+        'status',
+        'fulfillment_type',
+        'subtotal',
+        'shipping_amount',
+        'discount_amount',
+        'total',
         'payment_method',
-        'delivery_type',
-        'delivery_address',
-        'delivery_city',
-        'delivery_state',
-        'delivery_zip',
-        'delivery_complement',
+        'payment_installments',
+        'payment_status',
+        'message',
         'shift',
         'finance',
-        'message',
-        'status',
-        'order_ref',
-        'quantity',
+        'notified_at',
+        'assigned_to',
+        'separator_id',
+        'completed_at',
+        'seller_id',
     ];
 
-    public function variant()
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
     {
-        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+        return [
+            'status' => OrderStatus::class,
+            'fulfillment_type' => FulfillmentType::class,
+            'subtotal' => 'decimal:2',
+            'shipping_amount' => 'decimal:2',
+            'discount_amount' => 'decimal:2',
+            'total' => 'decimal:2',
+            'shift' => 'boolean',
+            'finance' => 'boolean',
+            'notified_at' => 'datetime',
+            'completed_at' => 'datetime',
+            'payment_installments' => 'integer',
+        ];
     }
 
-    public function client()
+    protected static function booted(): void
     {
-        return $this->belongsTo(Client::class);
+        static::created(function (Order $order): void {
+            OrderStatusHistory::query()->create([
+                'order_id' => $order->id,
+                'from_status' => null,
+                'to_status' => $order->status instanceof OrderStatus ? $order->status->value : (string) $order->status,
+                'note' => null,
+                'changed_by' => null,
+            ]);
+        });
     }
 
-    public function store()
+    public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
-    public function product()
+    public function client(): BelongsTo
     {
-        return $this->belongsTo(Product::class, 'product_id', 'id');
+        return $this->belongsTo(Client::class);
     }
 
-    public function statusLabel(): string
+    public function assignedUser(): BelongsTo
     {
-        return match ($this->status) {
-            OrderStatus::PENDING->value => 'Em aberto',
-            OrderStatus::PAID->value => 'Pago',
-            OrderStatus::CANCELED->value => 'Cancelado',
-            OrderStatus::SOLD->value => 'Vendido',
-            default => 'Desconhecido',
-        };
+        return $this->belongsTo(User::class, 'assigned_to');
     }
 
-    public function statusColor(): string
+    public function separatorUser(): BelongsTo
     {
-        return match ($this->status) {
-            OrderStatus::PENDING->value => 'bg-gray-300 text-gray-800',
-            OrderStatus::PAID->value => 'bg-green-500 text-white',
-            OrderStatus::CANCELED->value => 'bg-red-500 text-white',
-            OrderStatus::SOLD->value => 'bg-blue-500 text-white',
-            default => 'bg-gray-400 text-white',
-        };
+        return $this->belongsTo(User::class, 'separator_id');
     }
-    
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function statusHistories(): HasMany
+    {
+        return $this->hasMany(OrderStatusHistory::class)->orderByDesc('created_at');
+    }
+
+    /**
+     * Resumo de variações para listagem (sem fotos), ex.: "Tam. M × 2, G × 1".
+     */
+    public function itemsVariationSummary(): string
+    {
+        $items = $this->relationLoaded('items') ? $this->items : $this->items()->get();
+        $parts = [];
+        foreach ($items as $item) {
+            $label = $item->variationSummary();
+            $key = $label;
+            if (! isset($parts[$key])) {
+                $parts[$key] = ['label' => $label, 'qty' => 0];
+            }
+            $parts[$key]['qty'] += (int) $item->quantity;
+        }
+
+        return collect($parts)
+            ->map(fn (array $row) => $row['label'].' × '.$row['qty'])
+            ->implode(', ');
+    }
+
+    public static function generateUniqueCode(): string
+    {
+        do {
+            $code = '#'.strtoupper(substr(bin2hex(random_bytes(5)), 0, 8));
+        } while (self::query()->where('code', $code)->exists());
+
+        return $code;
+    }
+
+    public function recalculateTotals(): void
+    {
+        $this->loadMissing('items');
+        $subtotal = '0.00';
+        foreach ($this->items as $item) {
+            $item->recalcLineSubtotal();
+            $item->saveQuietly();
+            $subtotal = bcadd($subtotal, (string) $item->line_subtotal, 2);
+        }
+        $this->subtotal = $subtotal;
+        $this->total = bcsub(
+            bcadd($subtotal, (string) $this->shipping_amount, 2),
+            (string) $this->discount_amount,
+            2
+        );
+        $this->saveQuietly();
+    }
 }

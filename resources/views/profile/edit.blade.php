@@ -18,7 +18,7 @@
 
                 {{-- Title --}}
                 <div class="flex items-center gap-2 mt-2 mb-4 px-1">
-                    <h2 class="font-semibold text-3xl text-gray-800 leading-tight">
+                    <h2 class="font-display font-semibold text-3xl text-[#33363B] leading-tight">
                         {{ __('Meu Perfil') }}
                     </h2>
                 </div>

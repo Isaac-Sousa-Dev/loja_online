@@ -10,7 +10,7 @@
         @csrf
 
         {{-- Seg a Sex --}}
-        <div class="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100 gap-3 md:gap-0 hover:border-gray-200 transition">
+        <div class="flex flex-col md:flex-row md:items-center justify-between p-2 px-4 rounded-xl bg-gray-50 border border-gray-100 gap-3 md:gap-0 hover:border-gray-200 transition">
             <div class="font-medium text-gray-700 w-full md:w-1/3 flex items-center gap-2">
                 <i class="fa-regular fa-calendar-days text-gray-400"></i>
                 Seg a Sex
@@ -29,7 +29,7 @@
         </div>
 
         {{-- Sábado --}}
-        <div class="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100 gap-3 md:gap-0 hover:border-gray-200 transition">
+        <div class="flex flex-col md:flex-row md:items-center justify-between p-2 px-4 rounded-xl bg-gray-50 border border-gray-100 gap-3 md:gap-0 hover:border-gray-200 transition">
             <div class="font-medium text-gray-700 w-full md:w-1/3 flex items-center gap-2">
                 <i class="fa-regular fa-calendar-check text-gray-400"></i>
                 Sábado
@@ -48,7 +48,7 @@
         </div>
 
         {{-- Domingo --}}
-        <div class="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100 gap-3 md:gap-0 hover:border-gray-200 transition">
+        <div class="flex flex-col md:flex-row md:items-center justify-between p-2 px-4 rounded-xl bg-gray-50 border border-gray-100 gap-3 md:gap-0 hover:border-gray-200 transition">
             <div class="font-medium text-gray-700 w-full md:w-1/3 flex items-center gap-2">
                 <i class="fa-regular fa-calendar-xmark text-gray-400"></i>
                 Domingo
@@ -66,7 +66,7 @@
             </div>
         </div>
 
-        <div class="flex justify-end mt-4 pt-5 border-t border-gray-100">
+        <div class="flex justify-end mt-1 pt-3 border-t border-gray-100">
             <x-primary-button id="btnSaveStoreHour" class="w-full justify-center md:w-auto px-6 py-2.5 shadow-md">
                 {{ __('Atualizar Horários') }}
             </x-primary-button>

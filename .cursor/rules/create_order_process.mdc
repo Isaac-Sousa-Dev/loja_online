@@ -1,0 +1,254 @@
+---
+description: Módulo de Pedidos — SaaS de Catálogos Online (Moda)
+---
+
+# Módulo de Pedidos
+
+Você é um especialista em Laravel 11+, Blade, jQuery e Tailwind CSS v4.
+Este SaaS atende lojistas de moda. Priorize DX limpa, performance e UX intuitiva.
+
+---
+
+## Stack e padrões do projeto
+
+- **Backend:** Laravel, Eloquent, Form Requests, Policies, Actions (classe única por operação)
+- **Frontend:** Blade puro + jQuery — sem Livewire, sem Alpine.js, sem Vue, sem React
+- **AJAX:** jQuery `$.ajax` / `$.get` / `$.post` para todas as interações assíncronas
+- **Realtime:** SSE via rota dedicada (`/sse/orders`) — sem WebSockets ou broadcasting
+- **CSS:** Tailwind CSS v4 — utilitários inline nas views Blade
+- **Tipagem:** PHP 8.3 strict types em todos os arquivos
+- **Serialização:** `OrderResource` para todas as respostas JSON de pedidos
+
+---
+
+## 1. Tabela de Pedidos (`/orders`)
+
+**View:** `resources/views/orders/index.blade.php`
+**Controller:** `OrderController@index` — retorna view com paginação server-side
+
+### Colunas obrigatórias
+| Coluna | Campo | Notas |
+|---|---|---|
+| Código | `orders.code` | Prefixo `#` |
+| Data | `orders.created_at` | Formato `d/m/Y H:i` |
+| Cliente | `customers.name` | Eager loaded |
+| Itens | Agrupados por variação | Ex: `Tam. M × 2, G × 1` — sem fotos |
+| Valor | `orders.total` | Moeda BRL formatada |
+| Status | `orders.status` | Badge colorido por status |
+| Tipo | `orders.fulfillment_type` | `delivery` ou `pickup` — ícone + label |
+| Ações | — | Ver detalhes · Confirmar · Cancelar |
+
+**Regras:**
+- Não exibir fotos dos produtos na listagem
+- Itens agrupados por variação: `{variation}: {qty}` separados por vírgula
+- Botões "Confirmar" e "Cancelar" desabilitados com `title` tooltip quando status não permitir a transição
+- A tabela é renderizada server-side via Blade; filtros e paginação fazem reload parcial via AJAX substituindo `#orders-table-wrapper`
+
+---
+
+## 2. Filtros, Paginação e Seleção em Massa
+
+### Filtros
+Formulário no topo da página. Ao submeter, dispara `$.get('/orders', params)` e substitui `#orders-table-wrapper` com o HTML retornado (partial Blade).
+
+- **Data:** dois `<input type="date">` — `date_from` e `date_to`
+- **Cliente:** `<input type="text">` com debounce de 400ms via `setTimeout`
+- **Status:** `<select multiple>` — valores: `pending`, `confirmed`, `separating`, `delivered`, `completed`, `cancelled`
+- **Tipo:** `<select>` — `all` | `delivery` | `pickup`
+
+O controller detecta se a requisição é AJAX (`$request->ajax()`) e retorna apenas o partial `orders._table` em vez da view completa.
+
+### Paginação
+- Usar o padrão de paginação já existente no sistema
+- Links de paginação interceptados via jQuery para fazer reload AJAX em vez de navegação completa
+- Manter filtros ativos na query string ao paginar
+
+### Seleção em Massa
+- Checkbox no `<thead>` seleciona/deseleciona toda a página atual
+- Ao selecionar ≥ 1 registro: exibir `#bulk-action-bar` (barra fixa no rodapé) com contagem e botões **Confirmar selecionados** e **Cancelar selecionados**
+- Antes de executar: abrir modal (`#bulk-confirm-modal`) listando os códigos dos pedidos selecionados e a ação escolhida
+- Após confirmação do modal: `$.post('/orders/bulk-action', { ids: [...], action: 'confirm'|'cancel' })` → recarregar tabela e limpar seleção
+
+---
+
+## 3. Drawer de Detalhes do Pedido
+
+**Trigger:** botão "Ver detalhes" chama `openOrderDrawer(orderId)` via jQuery
+**Implementação:** reaproveitar o componente de drawer já existente no sistema
+
+**Conteúdo obrigatório:**
+- Cabeçalho: código, data, status badge, tipo
+- Cliente: nome, telefone, e-mail
+- Itens: foto miniatura, nome, variação, quantidade, preço unitário, subtotal
+- Sumário: subtotal, frete, desconto, **total**
+- Pagamento: método, parcelamento, status do pagamento
+- Entrega: endereço completo (`delivery`) ou ponto de retirada (`pickup`)
+- Timeline: histórico de status com data/hora e responsável
+- Rodapé: ações de Confirmar / Cancelar / Transferir (conforme permissões)
+
+---
+
+## 4. Notificações em Tempo Real (SSE)
+
+**Rota:** `GET /sse/orders` — middleware `auth`
+
+### Backend
+```php
+// OrderSseController@stream
+return response()->stream(function () {
+    while (true) {
+        $count = Order::query()
+            ->where('store_id', auth()->user()->store_id)
+            ->where('status', 'pending')
+            ->where('notified_at', null)
+            ->count();
+
+        if ($count > 0) {
+            echo "data: " . json_encode(['count' => $count]) . "\n\n";
+        }
+
+        ob_flush();
+        flush();
+        sleep(8);
+    }
+}, 200, [
+    'Content-Type'      => 'text/event-stream',
+    'Cache-Control'     => 'no-cache',
+    'X-Accel-Buffering' => 'no',
+]);
+```
+
+### Frontend (jQuery + SSE nativo)
+```js
+// Arquivo: public/js/orders/notifications.js
+(function () {
+  const audio = new Audio('/sounds/notify.mp3');
+  audio.volume = 0.35;
+
+  const source = new EventSource('/sse/orders');
+
+  source.onmessage = function (e) {
+    const data = JSON.parse(e.data);
+    if (data.count > 0) {
+      $('#order-notification-badge').text(data.count).removeClass('hidden');
+      audio.play().catch(() => {}); // catch: autoplay policy
+    }
+  };
+
+  source.onerror = function () {
+    // EventSource reconecta automaticamente — não é necessário intervir
+  };
+
+  $('#order-notification-badge').on('click', function () {
+    window.location.href = '/orders?status=pending';
+  });
+})();
+```
+
+**Notas:**
+- Arquivo de som: `public/sounds/notify.mp3` — tom curto e suave (< 1s)
+- Badge no Navbar: `<span id="order-notification-badge" class="hidden">0</span>`
+- Sem Redis, Pusher ou Echo
+
+---
+
+## 5. Equipe de Vendas — Assumir Pedido
+
+**Condição:** Bloco renderizado no Blade apenas se `$store->hasFeature('sales_team')`
+
+**Regras de negócio:**
+- Qualquer vendedor pode assumir pedido com status `pending`
+- Após assumir: `order.assigned_to = auth()->id()`
+- Pedido assumido some da fila geral dos outros vendedores
+- **Somente o owner** pode transferir o pedido (`OrderPolicy::transfer`)
+- Transferência: selecionar novo responsável + motivo opcional
+
+### Fluxo jQuery
+```js
+// Assumir pedido
+$('#btn-assume-order').on('click', function () {
+  const orderId = $(this).data('order-id');
+  $.post(`/orders/${orderId}/assume`, { _token: CSRF_TOKEN })
+    .done(function () {
+      location.reload(); // ou recarregar apenas o drawer
+    });
+});
+
+// Transferir (owner only)
+$('#btn-transfer-order').on('click', function () {
+  $('#transfer-modal').modal('show'); // modal já existente no sistema
+});
+```
+
+---
+
+## 6. Fluxo de Status dos Pedidos
+```
+pending → confirmed → separating → delivered → completed
+       ↘          ↘
+        cancelled   cancelled   (não permitido após delivered)
+```
+
+### Tabela de transições permitidas
+| De | Para | Quem pode |
+|---|---|---|
+| `pending` | `confirmed` | vendedor, owner |
+| `pending` | `cancelled` | vendedor, owner |
+| `confirmed` | `separating` | separador, owner |
+| `confirmed` | `cancelled` | owner |
+| `separating` | `delivered` | separador, owner |
+| `delivered` | `completed` | owner |
+
+**Separação:**
+- Se `store->hasFeature('separation_team')`: pedidos `confirmed` aparecem na fila de separação
+- Um membro pode ter roles `vendor` e `separator` simultaneamente
+- Fila de separação = view filtrada da mesma tabela (`/orders?status=confirmed`)
+
+---
+
+## 7. Relatórios Exportáveis
+
+**Trigger:** Botão "Exportar" na tela de pedidos — `<a href="/orders/export?{query_string_atual}">` ou `$.get` para exportação assíncrona
+
+**Formatos:** CSV e XLSX via `maatwebsite/excel`
+
+**Campos exportados:**
+- Código, Data, Cliente, CPF/CNPJ, Itens (resumo), Qtd total, Valor, Frete, Desconto, Total, Pagamento, Status, Tipo, Vendedor responsável, Separador, Data de conclusão
+
+**Regras:**
+- Respeitar os mesmos filtros ativos na tabela (passar via query string)
+- Se > 500 registros: exportação via job + notificação por toast quando o arquivo estiver pronto (`/orders/export/status`)
+- Download direto se ≤ 500 registros
+
+**Classe:** `App\Exports\OrdersExport` implementando `FromQuery`, `WithHeadings`, `WithMapping`
+
+
+---
+
+## Modelos e relações esperadas
+```php
+// Order
+- belongsTo: Customer, Store, User (assigned_to), User (separator_id)
+- hasMany: OrderItems, OrderStatusHistories
+- casts: status (enum OrderStatus), fulfillment_type (enum FulfillmentType)
+
+// OrderItem
+- belongsTo: Order, ProductVariation
+- attributes: qty, unit_price, subtotal
+
+// OrderStatusHistory
+- belongsTo: Order, User (changed_by)
+- attributes: from_status, to_status, note, created_at
+```
+
+---
+
+## O que NÃO fazer
+
+- Não usar Livewire, Alpine.js, Vue ou React — apenas Blade + jQuery
+- Não recriar o componente de drawer ou paginação já existentes no sistema
+- Não usar WebSockets, Reverb ou Pusher — SSE puro
+- Não exibir fotos na listagem da tabela
+- Não permitir que vendedores transfiram pedidos entre si — somente owner
+- Não exportar sem aplicar os filtros ativos da query string
+- Não retornar a view completa em requisições AJAX — sempre checar `$request->ajax()` e retornar apenas o partial

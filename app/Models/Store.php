@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Store extends Model
 {
@@ -17,8 +20,13 @@ class Store extends Model
         'qtd_vehicles_in_stock',
         'logo',
         'banner',
+        'wholesale_min_quantity',
         'partner_id',
-        'plan_id'
+        'plan_id',
+    ];
+
+    protected $casts = [
+        'wholesale_min_quantity' => 'integer',
     ];
 
     public function partner()
@@ -62,5 +70,17 @@ class Store extends Model
     public function orders()
     {
         return $this->hasMany(Order::class);
-    } 
+    }
+
+    public function hasFeature(string $module): bool
+    {
+        if ($this->plan_id === null) {
+            return false;
+        }
+
+        return DB::table('plan_modules')
+            ->where('plan_id', $this->plan_id)
+            ->where('module', $module)
+            ->exists();
+    }
 }

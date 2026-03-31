@@ -16,13 +16,14 @@
         body{font-family:'Montserrat',sans-serif;background:#f8fafc}
         .thumb-slide{cursor:pointer;opacity:.55;transition:opacity .2s}
         .thumb-slide.swiper-slide-thumb-active{opacity:1}
-        .main-swiper{border-radius:16px;overflow:hidden;background:#fff}
+        .main-swiper{border-radius:16px;overflow:hidden;background:#fff;cursor:zoom-in}
         .main-swiper .swiper-slide img{width:100%;height:420px;object-fit:contain;background:#f1f5f9}
         @media(max-width:640px){.main-swiper .swiper-slide img{height:280px}}
         .thumb-swiper .swiper-slide img{height:72px;width:72px;object-fit:cover;border-radius:10px;border:2px solid transparent}
         .thumb-swiper .swiper-slide-thumb-active img{border-color:#1d4ed8}
         .qty-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:#f1f5f9;font-size:18px;cursor:pointer;user-select:none;transition:background .15s}
         .qty-btn:hover{background:#e2e8f0}
+        .qty-btn:disabled{opacity:.35;cursor:not-allowed}
         @media(min-width:1024px){.sticky-sidebar{position:sticky;top:80px}}
         .swiper-button-next,.swiper-button-prev{color:#1d4ed8!important}
         .swiper-pagination-bullet-active{background:#1d4ed8!important}
@@ -36,6 +37,23 @@
         .payment-btn.selected{border-color:#1d4ed8;background:#eff6ff}
         .related-card{background:#fff;border-radius:16px;overflow:hidden;border:1px solid #f1f5f9;transition:box-shadow .2s}
         .related-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.08)}
+
+        /* Lightbox */
+        .lightbox-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9998;display:none;align-items:center;justify-content:center;flex-direction:column}
+        .lightbox-overlay.active{display:flex}
+        .lightbox-close{position:absolute;top:16px;right:16px;z-index:9999;background:rgba(255,255,255,.15);border:none;color:#fff;width:40px;height:40px;border-radius:50%;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+        .lightbox-close:hover{background:rgba(255,255,255,.3)}
+        .lightbox-img-wrap{position:relative;max-width:90vw;max-height:80vh;overflow:hidden;display:flex;align-items:center;justify-content:center}
+        .lightbox-img-wrap img{max-width:90vw;max-height:80vh;object-fit:contain;transition:transform .3s ease;cursor:grab;touch-action:none}
+        .lightbox-img-wrap img.zoomed{cursor:move}
+        .lightbox-nav{display:flex;gap:12px;margin-top:16px}
+        .lightbox-nav button{background:rgba(255,255,255,.15);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+        .lightbox-nav button:hover{background:rgba(255,255,255,.3)}
+        .lightbox-counter{color:rgba(255,255,255,.6);font-size:13px;margin-top:8px;font-weight:600}
+
+        /* Toast */
+        .pdp-toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none}
+        .pdp-toast.show{opacity:1}
     </style>
 </head>
 <body class="pb-28">
@@ -59,7 +77,7 @@
             <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.5 6h13M10 21a1 1 0 100-2 1 1 0 000 2zm7 0a1 1 0 100-2 1 1 0 000 2z"/></svg>
             <span id="cartBadge" class="hidden absolute -top-1 -right-1 bg-blue-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
         </button>
-        <a href="{{ route('orders.index', $partner->partner_link) }}" class="flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-blue-700 transition">
+        <a href="{{ route('catalog.index', $partner->partner_link) }}" class="flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-blue-700 transition">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
             Voltar
         </a>
@@ -76,6 +94,9 @@
     $storePhone    = preg_replace('/\D/', '', $partner->store->store_phone ?? '');
     $basePrice     = ($product->price_promotional && $product->price_promotional > 0 && $product->price_promotional < $product->price)
                         ? $product->price_promotional : $product->price;
+    $defaultImage  = $images->isNotEmpty()
+                        ? asset('storage/' . str_replace('public/', '', $images->first()->url))
+                        : '/img/image-not-found.png';
 @endphp
 
 <main class="pt-20 px-4 md:px-8 max-w-6xl mx-auto">
@@ -83,9 +104,9 @@
 
     <!-- Images -->
     <div>
-        <div class="main-swiper swiper swiper-main shadow-sm">
+        <div class="main-swiper swiper swiper-main shadow-sm" id="mainSwiperContainer">
             <div class="swiper-wrapper">
-                @if(empty($variantsByColor[0]['images']))
+                @if(empty($variantsByColor[0]['images']) || $variantsByColor[0]['images']->isEmpty())
                     <div class="swiper-slide"><img src="/img/image-not-found.png" alt="Sem imagem"></div>
                 @else
                     @foreach($variantsByColor[0]['images'] as $image)
@@ -97,17 +118,17 @@
             <div class="swiper-button-prev"></div>
             <div class="swiper-pagination"></div>
         </div>
-        @if(!empty($variantsByColor[0]['images']) && $variantsByColor[0]['images']->count() > 1)
-        <div class="thumb-swiper swiper mt-3 px-1">
+        <div class="thumb-swiper swiper mt-3 px-1" id="thumbSwiperContainer">
             <div class="swiper-wrapper">
-                @foreach($variantsByColor[0]['images'] as $image)
-                    <div class="swiper-slide thumb-slide w-auto">
-                        <img src="{{ asset('storage/' . str_replace('public/', '', $image->url)) }}" alt="">
-                    </div>
-                @endforeach
+                @if(!empty($variantsByColor[0]['images']) && $variantsByColor[0]['images']->count() > 1)
+                    @foreach($variantsByColor[0]['images'] as $image)
+                        <div class="swiper-slide thumb-slide w-auto">
+                            <img src="{{ asset('storage/' . str_replace('public/', '', $image->url)) }}" alt="">
+                        </div>
+                    @endforeach
+                @endif
             </div>
         </div>
-        @endif
     </div>
 
     <!-- Info -->
@@ -125,34 +146,45 @@
 
             <h1 class="text-2xl font-bold text-gray-900 leading-tight">{{ $product->name }}</h1>
 
-            {{-- Estoque --}}
-            @if($product->stock !== null)
-                <div class="mt-2">
-                    @if($product->stock > 5)<span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">✓ Em estoque ({{ $product->stock }} un.)</span>
-                    @elseif($product->stock > 0)<span class="text-xs font-semibold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full">⚠ Últimas {{ $product->stock }} unidades</span>
-                    @else<span class="text-xs font-semibold text-red-600 bg-red-50 px-2.5 py-1 rounded-full">✗ Sem estoque</span>@endif
-                </div>
-            @endif
+            {{-- Estoque dinâmico --}}
+            <div class="mt-2" id="stockBadge">
+                @if(!$hasVariants && $product->stock !== null)
+                    @if($product->stock > 5)<span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">Em estoque ({{ $product->stock }} un.)</span>
+                    @elseif($product->stock > 0)<span class="text-xs font-semibold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full">Últimas {{ $product->stock }} unidades</span>
+                    @else<span class="text-xs font-semibold text-red-600 bg-red-50 px-2.5 py-1 rounded-full">Sem estoque</span>@endif
+                @endif
+            </div>
 
-            {{-- Preços --}}
-            <div class="mt-4 space-y-1">
+            {{-- Preços (dinâmico via JS quando há variantes) --}}
+            <div class="mt-4 space-y-1" id="priceBlock">
                 @if($product->price_promotional && $product->price_promotional > 0 && $product->price_promotional < $product->price)
                     <div class="flex items-end gap-2">
-                        <span class="text-3xl font-extrabold text-blue-700">R$ <span class="price-mask">{{ $product->price_promotional }}</span></span>
-                        <span class="text-base text-gray-400 line-through mb-0.5">R$ <span class="price-mask">{{ $product->price }}</span></span>
+                        <span id="mainPrice" class="text-3xl font-extrabold text-blue-700">R$ {{ number_format($product->price_promotional, 2, ',', '.') }}</span>
+                        <span class="text-base text-gray-400 line-through mb-0.5">R$ {{ number_format($product->price, 2, ',', '.') }}</span>
                         @php $disc=round((1-$product->price_promotional/$product->price)*100);@endphp
                         <span class="text-xs font-bold text-white bg-red-500 px-2 py-0.5 rounded-full mb-0.5">-{{ $disc }}%</span>
                     </div>
                 @else
-                    <div class="text-3xl font-extrabold text-blue-700">R$ <span class="price-mask">{{ $product->price }}</span></div>
+                    <div class="flex items-end gap-2">
+                        <span id="mainPrice" class="text-3xl font-extrabold text-blue-700">R$ {{ number_format($product->price, 2, ',', '.') }}</span>
+                    </div>
                     @if($product->old_price && $product->price < $product->old_price)
-                        <div class="text-sm text-gray-400 line-through">R$ <span class="price-mask">{{ $product->old_price }}</span></div>
+                        <div class="text-sm text-gray-400 line-through">R$ {{ number_format($product->old_price, 2, ',', '.') }}</div>
                     @endif
                 @endif
-                @if($product->price_wholesale && $product->price_wholesale > 0)
-                    <span class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full inline-block mt-1">Atacado: R$ <span class="price-mask">{{ $product->price_wholesale }}</span></span>
-                @endif
             </div>
+
+            {{-- Atacado --}}
+            @if($product->price_wholesale && $product->price_wholesale > 0)
+            <div class="mt-2" id="wholesaleInfo">
+                <span class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full inline-block">
+                    Atacado: R$ {{ number_format($product->price_wholesale, 2, ',', '.') }}
+                    @if($wholesaleMinQty)
+                        — a partir de {{ $wholesaleMinQty }} peças
+                    @endif
+                </span>
+            </div>
+            @endif
 
             {{-- Seleção de COR --}}
             @if($hasColors)
@@ -160,9 +192,8 @@
                 <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Cor: <span id="selectedColorLabel" class="text-gray-800 normal-case font-semibold"></span></p>
                 <div class="flex flex-wrap gap-2" id="colorSwatches">
                     @foreach($colors as $v)
-
                         <button type="button"
-                            class="color-swatch @selected($v->color === $variantsByColor[0]['variants'][0]->color)"
+                            class="color-swatch @if($loop->first) selected @endif"
                             data-color="{{ $v->color }}"
                             data-hex="{{ $v->color_hex ?? '#cccccc' }}"
                             style="background-color: {{ $v->color_hex ?? '#cccccc' }}"
@@ -182,7 +213,7 @@
                 <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Tamanho</p>
                 <div class="flex flex-wrap gap-2" id="sizeButtons">
                     @foreach($sizes as $sz)
-                        <button type="button" class="variant-btn @selected($sz == $variantsByColor[0]['variants'][0]->size)" data-size="{{ $sz }}">{{ $sz }}</button>
+                        <button type="button" class="variant-btn" data-size="{{ $sz }}">{{ $sz }}</button>
                     @endforeach
                 </div>
                 <p id="errSize" class="hidden text-xs text-red-500 mt-1">Selecione um tamanho</p>
@@ -311,7 +342,7 @@
     <h2 class="text-lg font-bold text-gray-800 mb-4">Produtos relacionados</h2>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
         @foreach($related as $rel)
-        <a href="{{ route('orders.productPage', [$partner->partner_link, $rel->id]) }}" class="related-card block">
+        <a href="{{ route('catalog.productPage', [$partner->partner_link, $rel->id]) }}" class="related-card block">
             <div class="aspect-square overflow-hidden bg-gray-100">
                 @if($rel->images->isNotEmpty())
                     <img src="{{ asset('storage/' . str_replace('public/', '', $rel->images->first()->url)) }}"
@@ -382,272 +413,548 @@
     </div>
 </div>
 
+<!-- Lightbox -->
+<div class="lightbox-overlay" id="lightbox" role="dialog" aria-modal="true" aria-label="Galeria de imagens">
+    <button class="lightbox-close" id="lightboxClose" aria-label="Fechar galeria">&times;</button>
+    <div class="lightbox-img-wrap" id="lightboxWrap">
+        <img id="lightboxImg" src="" alt="Zoom" draggable="false">
+    </div>
+    <div class="lightbox-nav">
+        <button id="lightboxPrev" aria-label="Anterior">&#8249;</button>
+        <button id="lightboxNext" aria-label="Próxima">&#8250;</button>
+    </div>
+    <div class="lightbox-counter" id="lightboxCounter"></div>
+</div>
+
+<!-- Toast -->
+<div class="pdp-toast" id="pdpToast"></div>
+
 <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
 <script>
-// Swiper
-const mainSwiper = new Swiper('.swiper-main', {
-    loop: {{ $images->count() > 1 ? 'true' : 'false' }},
-    navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-    pagination: { el: '.swiper-pagination', clickable: true },
-});
-@if(!$images->isEmpty() && $images->count() > 1)
-const thumbSwiper = new Swiper('.thumb-swiper', { spaceBetween: 8, slidesPerView: 'auto', watchSlidesProgress: true, slideToClickedSlide: true });
-mainSwiper.thumbs.swiper = thumbSwiper; mainSwiper.thumbs.init(); mainSwiper.thumbs.update();
-@endif
+(function() {
+    // ── Server data ──
+    const VARIANTS        = @json($variants->values());
+    const IMAGES_BY_COLOR = @json($imagesByColor);
+    const HAS_COLORS      = {{ $hasColors ? 'true' : 'false' }};
+    const HAS_SIZES       = {{ $hasSizes  ? 'true' : 'false' }};
+    const HAS_VARIANTS    = {{ $hasVariants ? 'true' : 'false' }};
+    const STORE_KEY       = 'pdp_cart_{{ $partner->store->id }}';
+    const STORE_ID        = {{ $partner->store->id }};
+    const STORE_PHONE     = '{{ $storePhone }}';
+    const PRODUCT_ID      = {{ $product->id }};
+    const PRODUCT_NAME    = @json($product->name);
+    const DEFAULT_IMG     = @json($defaultImage);
+    const BASE_PRICE      = {{ $basePrice }};
+    const PRODUCT_STOCK   = {{ $product->stock ?? 0 }};
+    const WHOLESALE_PRICE = {{ $product->price_wholesale ?? 0 }};
+    const WHOLESALE_MIN   = {{ $wholesaleMinQty ?? 0 }};
+    const DISCOUNT_PIX    = {{ $product->discount_pix ?? 0 }};
 
-$(document).ready(function() {
-    $('.phone-mask').mask('(00) 00000-0000');
-    $('.cep-mask').mask('00000-000');
-    $('.price-mask').mask('000.000.000.000.000,00', { reverse: true });
-});
-$(document).ajaxStart(() => $('#globalLoaderPdp').css('display','flex'));
-$(document).ajaxStop(() => $('#globalLoaderPdp').hide());
+    // ── State ──
+    let selectedColor   = null;
+    let selectedSize    = null;
+    let selectedPayment = null;
+    let deliveryType    = 'pickup';
+    let currentImages   = [];
 
-// Variants data from server
-const VARIANTS = @json($variants->values());
-const HAS_COLORS = {{ $hasColors ? 'true' : 'false' }};
-const HAS_SIZES  = {{ $hasSizes  ? 'true' : 'false' }};
+    // ── Helpers ──
+    function formatPrice(v) {
+        return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
 
-// State
-let selectedColor   = null;
-let selectedSize    = null;
-let selectedPayment = null;
-let deliveryType    = 'pickup';
+    function showToast(msg) {
+        const el = document.getElementById('pdpToast');
+        el.textContent = msg;
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 2500);
+    }
 
-// Color swatches
-document.querySelectorAll('.color-swatch').forEach(btn => {
-    btn.addEventListener('click', function() {
-        document.querySelectorAll('.color-swatch').forEach(b => b.classList.remove('selected'));
-        this.classList.add('selected');
-        selectedColor = this.dataset.color;
-        document.getElementById('selectedColorLabel').textContent = selectedColor;
-        // Update available sizes for this color
-        updateSizesForColor(selectedColor);
+    // ── Swiper ──
+    let mainSwiper, thumbSwiper;
+
+    function initSwipers() {
+        const mainEl = document.getElementById('mainSwiperContainer');
+        const thumbEl = document.getElementById('thumbSwiperContainer');
+
+        if (mainSwiper) { mainSwiper.destroy(true, true); mainSwiper = null; }
+        if (thumbSwiper) { thumbSwiper.destroy(true, true); thumbSwiper = null; }
+
+        const hasMultiple = mainEl.querySelectorAll('.swiper-slide').length > 1;
+
+        mainSwiper = new Swiper(mainEl, {
+            loop: hasMultiple,
+            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+            pagination: { el: '.swiper-pagination', clickable: true },
+        });
+
+        if (hasMultiple) {
+            thumbSwiper = new Swiper(thumbEl, {
+                spaceBetween: 8,
+                slidesPerView: 'auto',
+                watchSlidesProgress: true,
+                slideToClickedSlide: true,
+            });
+            mainSwiper.thumbs.swiper = thumbSwiper;
+            mainSwiper.thumbs.init();
+            mainSwiper.thumbs.update();
+        }
+    }
+
+    function rebuildSwiperSlides(urls) {
+        currentImages = urls && urls.length ? urls : ['/img/image-not-found.png'];
+
+        const mainWrapper = document.querySelector('#mainSwiperContainer .swiper-wrapper');
+        const thumbWrapper = document.querySelector('#thumbSwiperContainer .swiper-wrapper');
+
+        mainWrapper.innerHTML = currentImages.map(u =>
+            `<div class="swiper-slide"><img src="${u}" alt="${PRODUCT_NAME}"></div>`
+        ).join('');
+
+        thumbWrapper.innerHTML = currentImages.length > 1
+            ? currentImages.map(u =>
+                `<div class="swiper-slide thumb-slide w-auto"><img src="${u}" alt=""></div>`
+            ).join('')
+            : '';
+
+        initSwipers();
+    }
+
+    // ── Lightbox ──
+    let lightboxIndex = 0;
+    let zoomLevel = 1;
+    const lightboxOverlay = document.getElementById('lightbox');
+    const lightboxImg     = document.getElementById('lightboxImg');
+    const lightboxCounter = document.getElementById('lightboxCounter');
+
+    function openLightbox(index) {
+        if (!currentImages.length || currentImages[0] === '/img/image-not-found.png') return;
+        lightboxIndex = index || 0;
+        renderLightbox();
+        lightboxOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        lightboxOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+        resetZoom();
+    }
+
+    function renderLightbox() {
+        lightboxImg.src = currentImages[lightboxIndex];
+        lightboxCounter.textContent = `${lightboxIndex + 1} / ${currentImages.length}`;
+        resetZoom();
+    }
+
+    function resetZoom() {
+        zoomLevel = 1;
+        lightboxImg.style.transform = 'scale(1)';
+        lightboxImg.classList.remove('zoomed');
+    }
+
+    document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+    document.getElementById('lightboxPrev').addEventListener('click', () => {
+        lightboxIndex = (lightboxIndex - 1 + currentImages.length) % currentImages.length;
+        renderLightbox();
     });
-});
+    document.getElementById('lightboxNext').addEventListener('click', () => {
+        lightboxIndex = (lightboxIndex + 1) % currentImages.length;
+        renderLightbox();
+    });
 
-function updateSizesForColor(color) {
-    if (!HAS_SIZES) return;
-    const availableSizes = VARIANTS.filter(v => v.color === color && v.size).map(v => v.size);
-    document.querySelectorAll('.variant-btn[data-size]').forEach(btn => {
-        const inStock = availableSizes.includes(btn.dataset.size);
-        btn.disabled = !inStock;
-        if (!inStock && btn.classList.contains('selected')) {
-            btn.classList.remove('selected');
-            selectedSize = null;
+    lightboxOverlay.addEventListener('click', function(e) {
+        if (e.target === lightboxOverlay) closeLightbox();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (!lightboxOverlay.classList.contains('active')) return;
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') { lightboxIndex = (lightboxIndex - 1 + currentImages.length) % currentImages.length; renderLightbox(); }
+        if (e.key === 'ArrowRight') { lightboxIndex = (lightboxIndex + 1) % currentImages.length; renderLightbox(); }
+    });
+
+    lightboxImg.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        zoomLevel = Math.min(4, Math.max(1, zoomLevel + (e.deltaY < 0 ? 0.3 : -0.3)));
+        lightboxImg.style.transform = `scale(${zoomLevel})`;
+        lightboxImg.classList.toggle('zoomed', zoomLevel > 1);
+    }, { passive: false });
+
+    let touchDist = 0;
+    lightboxImg.addEventListener('touchstart', function(e) {
+        if (e.touches.length === 2) {
+            touchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
         }
     });
-}
-
-// Size buttons
-document.querySelectorAll('.variant-btn[data-size]').forEach(btn => {
-    btn.addEventListener('click', function() {
-        if (this.disabled) return;
-        document.querySelectorAll('.variant-btn[data-size]').forEach(b => b.classList.remove('selected'));
-        this.classList.add('selected');
-        selectedSize = this.dataset.size;
+    lightboxImg.addEventListener('touchmove', function(e) {
+        if (e.touches.length === 2) {
+            e.preventDefault();
+            const newDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            const scale = newDist / touchDist;
+            zoomLevel = Math.min(4, Math.max(1, zoomLevel * scale));
+            lightboxImg.style.transform = `scale(${zoomLevel})`;
+            lightboxImg.classList.toggle('zoomed', zoomLevel > 1);
+            touchDist = newDist;
+        }
+    }, { passive: false });
+    lightboxImg.addEventListener('dblclick', function() {
+        if (zoomLevel > 1) { resetZoom(); } else { zoomLevel = 2.5; lightboxImg.style.transform = 'scale(2.5)'; lightboxImg.classList.add('zoomed'); }
     });
-});
 
-// Payment
-document.querySelectorAll('.payment-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        document.querySelectorAll('.payment-btn').forEach(b => b.classList.remove('selected'));
-        this.classList.add('selected');
-        selectedPayment = this.dataset.method;
+    document.querySelector('#mainSwiperContainer').addEventListener('click', function(e) {
+        if (e.target.closest('.swiper-button-next') || e.target.closest('.swiper-button-prev')) return;
+        const activeIndex = mainSwiper ? mainSwiper.realIndex : 0;
+        openLightbox(activeIndex);
     });
-});
 
-// Delivery
-function setDelivery(type) {
-    deliveryType = type;
-    const fields = document.getElementById('deliveryFields');
-    const btnPickup   = document.getElementById('btnPickup');
-    const btnDelivery = document.getElementById('btnDelivery');
-    if (type === 'delivery') {
-        fields.classList.remove('hidden');
-        btnDelivery.classList.add('border-blue-600','bg-blue-50'); btnDelivery.classList.remove('border-gray-200','bg-white');
-        btnPickup.classList.remove('border-blue-600','bg-blue-50'); btnPickup.classList.add('border-gray-200','bg-white');
-    } else {
-        fields.classList.add('hidden');
-        btnPickup.classList.add('border-blue-600','bg-blue-50'); btnPickup.classList.remove('border-gray-200','bg-white');
-        btnDelivery.classList.remove('border-blue-600','bg-blue-50'); btnDelivery.classList.add('border-gray-200','bg-white');
+    // ── Variant UI ──
+    function findVariant() {
+        if (!VARIANTS.length) return null;
+        return VARIANTS.find(v => {
+            const colorMatch = HAS_COLORS ? v.color === selectedColor : true;
+            const sizeMatch  = HAS_SIZES  ? v.size  === selectedSize  : true;
+            return colorMatch && sizeMatch;
+        }) || null;
     }
-}
 
-// Validate selections before adding to cart
-function validateSelections() {
-    let valid = true;
-    if (HAS_COLORS && !selectedColor) { $('#errColor').removeClass('hidden'); valid = false; } else { $('#errColor').addClass('hidden'); }
-    if (HAS_SIZES  && !selectedSize)  { $('#errSize').removeClass('hidden');  valid = false; } else { $('#errSize').addClass('hidden'); }
-    if (!selectedPayment) { $('#errPayment').removeClass('hidden'); valid = false; } else { $('#errPayment').addClass('hidden'); }
-    if (deliveryType === 'delivery') {
-        const addr = $('#deliveryAddress').val().trim();
-        const city = $('#deliveryCity').val().trim();
-        const zip  = $('#deliveryZip').val().trim();
-        if (!addr || !city || !zip) { $('#errDelivery').removeClass('hidden'); valid = false; } else { $('#errDelivery').addClass('hidden'); }
+    function getVariantStock() {
+        const v = findVariant();
+        if (v) return v.stock;
+        if (HAS_VARIANTS && selectedColor && !HAS_SIZES) {
+            return VARIANTS.filter(v => v.color === selectedColor).reduce((s, v) => s + v.stock, 0);
+        }
+        return PRODUCT_STOCK;
     }
-    return valid;
-}
 
-// Find matching variant
-function findVariant() {
-    if (!VARIANTS.length) return null;
-    return VARIANTS.find(v => {
-        const colorMatch = !v.color || v.color === selectedColor;
-        const sizeMatch  = !v.size  || v.size  === selectedSize;
-        return colorMatch && sizeMatch;
-    }) || null;
-}
-
-// Cart
-const STORE_KEY   = 'pdp_cart_{{ $partner->store->id }}';
-const STORE_ID    = {{ $partner->store->id }};
-const STORE_PHONE = '{{ $storePhone }}';
-const PRODUCT_ID  = {{ $product->id }};
-const PRODUCT_NAME  = @json($product->name);
-const PRODUCT_IMG   = '{{ $images->isNotEmpty() ? asset("storage/" . str_replace("public/", "", $images->first()->url)) : "/img/image-not-found.png" }}';
-const BASE_PRICE    = {{ $basePrice }};
-
-let cart = JSON.parse(localStorage.getItem(STORE_KEY) || '[]');
-// Also store delivery/payment per cart session
-let cartMeta = JSON.parse(localStorage.getItem(STORE_KEY + '_meta') || '{}');
-
-function saveCart() {
-    localStorage.setItem(STORE_KEY, JSON.stringify(cart));
-    localStorage.setItem(STORE_KEY + '_meta', JSON.stringify(cartMeta));
-}
-function formatPrice(v) { return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-
-function updateBadges() {
-    const qty = cart.reduce((s, i) => s + i.qty, 0);
-    ['#cartBadge','#cartBadgeBar'].forEach(sel => {
-        const el = $(sel);
-        qty > 0 ? el.text(qty).removeClass('hidden').addClass('flex') : el.addClass('hidden').removeClass('flex');
-    });
-}
-
-function renderCart() {
-    const container = $('#cartItems'), empty = $('#cartEmpty'), footer = $('#cartFooter');
-    container.empty();
-    if (!cart.length) { container.addClass('hidden'); empty.removeClass('hidden'); footer.addClass('hidden'); return; }
-    container.removeClass('hidden'); empty.addClass('hidden'); footer.removeClass('hidden');
-    let total = 0;
-    cart.forEach((item, idx) => {
-        total += item.price * item.qty;
-        const variantInfo = [item.color, item.size].filter(Boolean).join(' · ');
-        const paymentLabel = { pix: 'PIX', credit_card: 'Cartão', cash: 'À vista' }[item.payment] || '';
-        container.append(`
-            <div class="flex gap-3 items-start bg-gray-50 rounded-xl p-3">
-                <img src="${item.image}" class="w-14 h-14 object-cover object-center rounded-lg flex-shrink-0 bg-white border border-gray-100">
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-gray-800 truncate">${item.name}</p>
-                    ${variantInfo ? `<p class="text-xs text-gray-500 mt-0.5">${variantInfo}</p>` : ''}
-                    ${paymentLabel ? `<p class="text-xs text-blue-600 font-semibold mt-0.5">${paymentLabel}</p>` : ''}
-                    <p class="text-blue-700 font-bold text-sm mt-0.5">R$ ${formatPrice(item.price)}</p>
-                    <div class="flex items-center gap-2 mt-2">
-                        <button onclick="changeQty(${idx},-1)" class="qty-btn text-gray-600">−</button>
-                        <span class="text-sm font-semibold w-5 text-center">${item.qty}</span>
-                        <button onclick="changeQty(${idx},1)" class="qty-btn text-gray-600">+</button>
-                    </div>
-                </div>
-                <button onclick="removeItem(${idx})" class="p-1.5 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500 transition mt-0.5">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </div>`);
-    });
-    $('#cartTotal').text('R$ ' + formatPrice(total));
-}
-
-function changeQty(idx, delta) { cart[idx].qty = Math.max(1, cart[idx].qty + delta); saveCart(); updateBadges(); renderCart(); }
-function removeItem(idx) { cart.splice(idx, 1); saveCart(); updateBadges(); renderCart(); }
-function openCart() { renderCart(); $('#cartDrawer').removeClass('translate-x-full'); $('#cartOverlay').removeClass('hidden'); }
-function closeCart() { $('#cartDrawer').addClass('translate-x-full'); $('#cartOverlay').addClass('hidden'); }
-
-$('#btnAddToCart').click(function() {
-    if (!validateSelections()) {
-        // Scroll to first error
-        const firstErr = document.querySelector('.text-red-500:not(.hidden)');
-        if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return;
+    function getVariantPrice() {
+        const v = findVariant();
+        return (v && v.price_override) ? v.price_override : BASE_PRICE;
     }
-    const variant = findVariant();
-    const price   = variant?.price_override || BASE_PRICE;
-    const key     = `${PRODUCT_ID}_${selectedColor || ''}_${selectedSize || ''}`;
-    const idx     = cart.findIndex(i => i.key === key);
 
-    if (idx >= 0) {
-        cart[idx].qty++;
-    } else {
-        cart.push({
-            key, id: PRODUCT_ID, name: PRODUCT_NAME, price, qty: 1,
-            image: PRODUCT_IMG, color: selectedColor, size: selectedSize,
-            payment: selectedPayment, variant_id: variant?.id || null,
+    function refreshStockBadge() {
+        const stock = getVariantStock();
+        const el = document.getElementById('stockBadge');
+        if (!HAS_VARIANTS && PRODUCT_STOCK === null) { el.innerHTML = ''; return; }
+        if (HAS_VARIANTS && !selectedColor && HAS_COLORS) { el.innerHTML = ''; return; }
+
+        if (stock > 5)      el.innerHTML = `<span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">Em estoque (${stock} un.)</span>`;
+        else if (stock > 0) el.innerHTML = `<span class="text-xs font-semibold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full">Últimas ${stock} unidades</span>`;
+        else                el.innerHTML = `<span class="text-xs font-semibold text-red-600 bg-red-50 px-2.5 py-1 rounded-full">Sem estoque</span>`;
+    }
+
+    function refreshPrice() {
+        const price = getVariantPrice();
+        const el = document.getElementById('mainPrice');
+        if (el) el.textContent = 'R$ ' + formatPrice(price);
+    }
+
+    function refreshVariantUi() {
+        refreshStockBadge();
+        refreshPrice();
+    }
+
+    function updateSizesForColor(color) {
+        if (!HAS_SIZES) return;
+        const variantsOfColor = VARIANTS.filter(v => v.color === color);
+        document.querySelectorAll('.variant-btn[data-size]').forEach(btn => {
+            const match = variantsOfColor.find(v => v.size === btn.dataset.size);
+            const available = match && match.stock > 0;
+            btn.disabled = !available;
+            if (!available && btn.classList.contains('selected')) {
+                btn.classList.remove('selected');
+                selectedSize = null;
+            }
         });
     }
-    // Save delivery meta (shared for the session)
-    cartMeta = {
-        payment_method:      selectedPayment,
-        delivery_type:       deliveryType,
-        delivery_address:    $('#deliveryAddress').val(),
-        delivery_city:       $('#deliveryCity').val(),
-        delivery_state:      $('#deliveryState').val(),
-        delivery_zip:        $('#deliveryZip').val(),
-        delivery_complement: $('#deliveryComplement').val(),
-    };
-    saveCart(); updateBadges(); openCart();
-});
 
-$('#btnCheckout').click(function() {
-    const name  = $('#cartName').val().trim();
-    const phone = $('#cartPhone').val().trim();
-    let valid = true;
-    $('#errCartName, #errCartPhone').addClass('hidden');
-    if (!name)  { $('#errCartName').removeClass('hidden');  valid = false; }
-    if (!phone) { $('#errCartPhone').removeClass('hidden'); valid = false; }
-    if (!valid || !cart.length) return;
+    // ── Color swatches ──
+    document.querySelectorAll('.color-swatch').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.color-swatch').forEach(b => b.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedColor = this.dataset.color;
+            document.getElementById('selectedColorLabel').textContent = selectedColor;
 
-    const paymentLabel = { pix: 'PIX', credit_card: 'Cartão de crédito', cash: 'À vista' };
-    const deliveryLabel = cartMeta.delivery_type === 'delivery'
-        ? `Entrega em: ${cartMeta.delivery_address}, ${cartMeta.delivery_city} - ${cartMeta.delivery_state}, CEP ${cartMeta.delivery_zip}`
-        : 'Retirada na loja';
-
-    let msg = `Olá! Sou *${name}* e gostaria de finalizar meu pedido:\n\n`;
-    cart.forEach(i => {
-        const v = [i.color, i.size].filter(Boolean).join(', ');
-        msg += `• ${i.name}${v ? ` (${v})` : ''} x${i.qty} — R$ ${formatPrice(i.price * i.qty)}\n`;
+            const urls = IMAGES_BY_COLOR[selectedColor] || [];
+            rebuildSwiperSlides(urls);
+            updateSizesForColor(selectedColor);
+            refreshVariantUi();
+        });
     });
-    msg += `\n*Total: R$ ${formatPrice(cart.reduce((s,i) => s + i.price * i.qty, 0))}*`;
-    msg += `\n*Pagamento:* ${paymentLabel[cartMeta.payment_method] || cartMeta.payment_method || '—'}`;
-    msg += `\n*${deliveryLabel}*`;
 
-    const items = cart.map(i => ({
-        product_id: i.id, quantity: i.qty,
-        color: i.color, size: i.size, variant_id: i.variant_id,
-    }));
+    // ── Size buttons ──
+    document.querySelectorAll('.variant-btn[data-size]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (this.disabled) return;
+            document.querySelectorAll('.variant-btn[data-size]').forEach(b => b.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedSize = this.dataset.size;
+            refreshVariantUi();
+        });
+    });
 
-    $.ajax({
-        url: '/requests/store-cart',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({
-            name, phone, store_id: STORE_ID, items, message: msg,
-            payment_method:      cartMeta.payment_method,
-            delivery_type:       cartMeta.delivery_type,
-            delivery_address:    cartMeta.delivery_address,
-            delivery_city:       cartMeta.delivery_city,
-            delivery_state:      cartMeta.delivery_state,
-            delivery_zip:        cartMeta.delivery_zip,
-            delivery_complement: cartMeta.delivery_complement,
-        }),
-        complete: function() {
-            window.open(`https://wa.me/55${STORE_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
-            cart = []; cartMeta = {}; saveCart(); updateBadges(); closeCart();
+    // ── Payment ──
+    document.querySelectorAll('.payment-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.payment-btn').forEach(b => b.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedPayment = this.dataset.method;
+        });
+    });
+
+    // ── Delivery ──
+    window.setDelivery = function(type) {
+        deliveryType = type;
+        const fields = document.getElementById('deliveryFields');
+        const btnPickup   = document.getElementById('btnPickup');
+        const btnDelivery = document.getElementById('btnDelivery');
+        if (type === 'delivery') {
+            fields.classList.remove('hidden');
+            btnDelivery.classList.add('border-blue-600','bg-blue-50'); btnDelivery.classList.remove('border-gray-200','bg-white');
+            btnPickup.classList.remove('border-blue-600','bg-blue-50'); btnPickup.classList.add('border-gray-200','bg-white');
+        } else {
+            fields.classList.add('hidden');
+            btnPickup.classList.add('border-blue-600','bg-blue-50'); btnPickup.classList.remove('border-gray-200','bg-white');
+            btnDelivery.classList.remove('border-blue-600','bg-blue-50'); btnDelivery.classList.add('border-gray-200','bg-white');
         }
-    });
-});
+    };
 
-updateBadges();
+    // ── Validate ──
+    function validateSelections() {
+        let valid = true;
+        if (HAS_COLORS && !selectedColor) { $('#errColor').removeClass('hidden'); valid = false; } else { $('#errColor').addClass('hidden'); }
+        if (HAS_SIZES  && !selectedSize)  { $('#errSize').removeClass('hidden');  valid = false; } else { $('#errSize').addClass('hidden'); }
+        if (!selectedPayment) { $('#errPayment').removeClass('hidden'); valid = false; } else { $('#errPayment').addClass('hidden'); }
+        if (deliveryType === 'delivery') {
+            const addr = $('#deliveryAddress').val().trim();
+            const city = $('#deliveryCity').val().trim();
+            const zip  = $('#deliveryZip').val().trim();
+            if (!addr || !city || !zip) { $('#errDelivery').removeClass('hidden'); valid = false; } else { $('#errDelivery').addClass('hidden'); }
+        }
+        return valid;
+    }
+
+    // ── Cart ──
+    let cart     = JSON.parse(localStorage.getItem(STORE_KEY) || '[]');
+    let cartMeta = JSON.parse(localStorage.getItem(STORE_KEY + '_meta') || '{}');
+
+    function saveCart() {
+        localStorage.setItem(STORE_KEY, JSON.stringify(cart));
+        localStorage.setItem(STORE_KEY + '_meta', JSON.stringify(cartMeta));
+    }
+
+    function updateBadges() {
+        const qty = cart.reduce((s, i) => s + i.qty, 0);
+        ['#cartBadge','#cartBadgeBar'].forEach(sel => {
+            const el = $(sel);
+            qty > 0 ? el.text(qty).removeClass('hidden').addClass('flex') : el.addClass('hidden').removeClass('flex');
+        });
+    }
+
+    function computeItemPrice(item) {
+        if (WHOLESALE_PRICE > 0 && WHOLESALE_MIN > 0 && item.qty >= WHOLESALE_MIN) {
+            return WHOLESALE_PRICE;
+        }
+        return item.retail_price;
+    }
+
+    function renderCart() {
+        const container = $('#cartItems'), empty = $('#cartEmpty'), footer = $('#cartFooter');
+        container.empty();
+        if (!cart.length) { container.addClass('hidden'); empty.removeClass('hidden'); footer.addClass('hidden'); return; }
+        container.removeClass('hidden'); empty.addClass('hidden'); footer.removeClass('hidden');
+        let total = 0;
+        cart.forEach((item, idx) => {
+            const unitPrice = computeItemPrice(item);
+            const lineTotal = unitPrice * item.qty;
+            total += lineTotal;
+            const variantInfo = [item.color, item.size].filter(Boolean).join(' · ');
+            const paymentLabel = { pix: 'PIX', credit_card: 'Cartão', cash: 'À vista' }[item.payment] || '';
+            const isWholesale = WHOLESALE_PRICE > 0 && WHOLESALE_MIN > 0 && item.qty >= WHOLESALE_MIN;
+            const maxReached  = item.max_stock > 0 && item.qty >= item.max_stock;
+            container.append(`
+                <div class="flex gap-3 items-start bg-gray-50 rounded-xl p-3">
+                    <img src="${item.image}" class="w-14 h-14 object-cover object-center rounded-lg flex-shrink-0 bg-white border border-gray-100">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-800 truncate">${item.name}</p>
+                        ${variantInfo ? `<p class="text-xs text-gray-500 mt-0.5">${variantInfo}</p>` : ''}
+                        ${paymentLabel ? `<p class="text-xs text-blue-600 font-semibold mt-0.5">${paymentLabel}</p>` : ''}
+                        <p class="text-blue-700 font-bold text-sm mt-0.5">R$ ${formatPrice(unitPrice)}${isWholesale ? ' <span class="text-indigo-600 text-[10px] font-semibold">(atacado)</span>' : ''}</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <button onclick="changeQty(${idx},-1)" class="qty-btn text-gray-600">−</button>
+                            <span class="text-sm font-semibold w-5 text-center">${item.qty}</span>
+                            <button onclick="changeQty(${idx},1)" class="qty-btn text-gray-600" ${maxReached ? 'disabled' : ''}>+</button>
+                        </div>
+                        ${maxReached ? '<p class="text-[10px] text-amber-600 mt-1">Estoque máximo atingido</p>' : ''}
+                    </div>
+                    <button onclick="removeItem(${idx})" class="p-1.5 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500 transition mt-0.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>`);
+        });
+        $('#cartTotal').text('R$ ' + formatPrice(total));
+    }
+
+    window.changeQty = function(idx, delta) {
+        const item = cart[idx];
+        const newQty = item.qty + delta;
+        if (newQty < 1) return;
+        if (item.max_stock > 0 && newQty > item.max_stock) {
+            showToast(`Estoque máximo: ${item.max_stock} unidades`);
+            return;
+        }
+        item.qty = newQty;
+        saveCart(); updateBadges(); renderCart();
+    };
+
+    window.removeItem = function(idx) { cart.splice(idx, 1); saveCart(); updateBadges(); renderCart(); };
+    window.openCart    = function() { renderCart(); $('#cartDrawer').removeClass('translate-x-full'); $('#cartOverlay').removeClass('hidden'); };
+    window.closeCart   = function() { $('#cartDrawer').addClass('translate-x-full'); $('#cartOverlay').addClass('hidden'); };
+
+    $('#btnAddToCart').click(function() {
+        if (!validateSelections()) {
+            const firstErr = document.querySelector('.text-red-500:not(.hidden)');
+            if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
+        const variant  = findVariant();
+        const maxStock = variant ? variant.stock : PRODUCT_STOCK;
+        const price    = (variant && variant.price_override) ? variant.price_override : BASE_PRICE;
+        const variantId = variant ? variant.id : null;
+        const key      = `${PRODUCT_ID}_v${variantId || 'base'}`;
+        const idx      = cart.findIndex(i => i.key === key);
+
+        const imgForCart = currentImages.length && currentImages[0] !== '/img/image-not-found.png'
+            ? currentImages[0] : DEFAULT_IMG;
+
+        if (idx >= 0) {
+            if (maxStock > 0 && cart[idx].qty >= maxStock) {
+                showToast(`Estoque máximo: ${maxStock} unidades`);
+                return;
+            }
+            cart[idx].qty++;
+        } else {
+            if (maxStock === 0) {
+                showToast('Produto sem estoque');
+                return;
+            }
+            cart.push({
+                key,
+                id: PRODUCT_ID,
+                name: PRODUCT_NAME,
+                retail_price: price,
+                qty: 1,
+                max_stock: maxStock,
+                image: imgForCart,
+                color: selectedColor,
+                size: selectedSize,
+                payment: selectedPayment,
+                variant_id: variantId,
+            });
+        }
+
+        cartMeta = {
+            payment_method:      selectedPayment,
+            delivery_type:       deliveryType,
+            delivery_address:    $('#deliveryAddress').val(),
+            delivery_city:       $('#deliveryCity').val(),
+            delivery_state:      $('#deliveryState').val(),
+            delivery_zip:        $('#deliveryZip').val(),
+            delivery_complement: $('#deliveryComplement').val(),
+        };
+        saveCart(); updateBadges(); openCart();
+    });
+
+    $('#btnCheckout').click(function() {
+        const name  = $('#cartName').val().trim();
+        const phone = $('#cartPhone').val().trim();
+        let valid = true;
+        $('#errCartName, #errCartPhone').addClass('hidden');
+        if (!name)  { $('#errCartName').removeClass('hidden');  valid = false; }
+        if (!phone) { $('#errCartPhone').removeClass('hidden'); valid = false; }
+        if (!valid || !cart.length) return;
+
+        const paymentLabel = { pix: 'PIX', credit_card: 'Cartão de crédito', cash: 'À vista' };
+        const deliveryLabel = cartMeta.delivery_type === 'delivery'
+            ? `Entrega em: ${cartMeta.delivery_address}, ${cartMeta.delivery_city} - ${cartMeta.delivery_state}, CEP ${cartMeta.delivery_zip}`
+            : 'Retirada na loja';
+
+        let msg = `Olá! Sou *${name}* e gostaria de finalizar meu pedido:\n\n`;
+        let grandTotal = 0;
+        cart.forEach(i => {
+            const v = [i.color, i.size].filter(Boolean).join(', ');
+            const up = computeItemPrice(i);
+            const lt = up * i.qty;
+            grandTotal += lt;
+            msg += `• ${i.name}${v ? ` (${v})` : ''} x${i.qty} — R$ ${formatPrice(lt)}\n`;
+        });
+        msg += `\n*Total: R$ ${formatPrice(grandTotal)}*`;
+        msg += `\n*Pagamento:* ${paymentLabel[cartMeta.payment_method] || cartMeta.payment_method || '—'}`;
+        msg += `\n*${deliveryLabel}*`;
+
+        const items = cart.map(i => ({
+            product_id: i.id, quantity: i.qty,
+            color: i.color, size: i.size, variant_id: i.variant_id,
+        }));
+
+        $.ajax({
+            url: @json(route('orders.storeCart')),
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                name, phone, store_id: STORE_ID, items, message: msg,
+                payment_method:      cartMeta.payment_method,
+                delivery_type:       cartMeta.delivery_type,
+                delivery_address:    cartMeta.delivery_address,
+                delivery_city:       cartMeta.delivery_city,
+                delivery_state:      cartMeta.delivery_state,
+                delivery_zip:        cartMeta.delivery_zip,
+                delivery_complement: cartMeta.delivery_complement,
+            }),
+            complete: function() {
+                window.open(`https://wa.me/55${STORE_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
+                cart = []; cartMeta = {}; saveCart(); updateBadges(); closeCart();
+            }
+        });
+    });
+
+    // ── Init ──
+    $(document).ready(function() {
+        $('.phone-mask').mask('(00) 00000-0000');
+        $('.cep-mask').mask('00000-000');
+    });
+    $(document).ajaxStart(() => $('#globalLoaderPdp').css('display','flex'));
+    $(document).ajaxStop(() => $('#globalLoaderPdp').hide());
+
+    // Sync initial state from already-selected Blade elements
+    const initialColorBtn = document.querySelector('.color-swatch.selected');
+    if (initialColorBtn) {
+        selectedColor = initialColorBtn.dataset.color;
+        const label = document.getElementById('selectedColorLabel');
+        if (label) label.textContent = selectedColor;
+        currentImages = IMAGES_BY_COLOR[selectedColor] || [];
+        updateSizesForColor(selectedColor);
+    }
+
+    const initialSizeBtn = document.querySelector('.variant-btn[data-size].selected');
+    if (initialSizeBtn) {
+        selectedSize = initialSizeBtn.dataset.size;
+    }
+
+    const initialPaymentBtn = document.querySelector('.payment-btn.selected');
+    if (initialPaymentBtn) {
+        selectedPayment = initialPaymentBtn.dataset.method;
+    }
+
+    if (!currentImages.length) {
+        currentImages = Object.values(IMAGES_BY_COLOR)[0] || [DEFAULT_IMG];
+    }
+
+    initSwipers();
+    refreshVariantUi();
+    updateBadges();
+})();
 </script>
 </body>
 </html>

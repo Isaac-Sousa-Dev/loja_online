@@ -160,7 +160,7 @@
 
                     cards += `
                             <div id="car-product" class="class_card_product card p-1 w-full shadow-sm pb-4 bg-white mt-3 ">
-                                <a href="/orders/${partnerLink}/product/${product.id}">
+                                <a href="/catalog/${partnerLink}/product/${product.id}">
                                     <img class="rounded-t-lg w-full h-32 object-cover object-center" src="/storage/${product.image_main.replace('', 'public/')}" alt="" >
                                     <div class="h-1/2 flex justify-between flex-col">
                                         <div class="mt-2 mx-1">
@@ -233,7 +233,7 @@
     function getProductByCategory(dataElement) {
         $.ajax({
             type: "GET",
-            url: "/orders/get-products-by-category/" + dataElement,
+            url: "/catalog/get-products-by-category/" + dataElement,
             success: function(data) {
 
                 if (data.length == 0) {
@@ -251,7 +251,7 @@
 
                         cards += `
                                 <div id="car-product" class="class_card_product card p-1 w-[50%] pb-4 bg-white mt-3">
-                                    <a href="/orders/${partnerLink}/product/${product.id}">
+                                    <a href="/catalog/${partnerLink}/product/${product.id}">
                                         <div>teste</div>
                                         <img class="rounded-lg w-full h-32 object-cover" src="/storage/${product.image_main.replace('/public/', '')}" alt="" >
                                         <div class="h-1/2 flex justify-between flex-col">

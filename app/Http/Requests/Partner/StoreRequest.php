@@ -22,8 +22,9 @@ class StoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',    // 2048KB = 2MB
-            'banner' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048', // 2048KB = 2MB
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            'banner' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            'wholesale_min_quantity' => 'nullable|integer|min:2',
         ];
     }
 

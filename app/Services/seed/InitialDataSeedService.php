@@ -5,8 +5,16 @@ declare(strict_types=1);
 namespace App\Services\seed;
 
 use App\DTO\InitialDataSeedResultDTO;
+use App\Enums\FulfillmentType;
+use App\Enums\OrderStatus;
+use App\Models\Client;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Product;
+use App\Models\Store;
 use App\Repository\seed\InitialDataRepository;
 use Faker\Generator;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 
@@ -24,7 +32,7 @@ final class InitialDataSeedService
     private const PLAN_MODULES = [
         'dashboard',
         'analitycs',
-        'requests',
+        'orders',
         'agentia',
         'sales',
         'team',
@@ -272,34 +280,13 @@ final class InitialDataSeedService
             ]);
         }
 
-        $orderRefBase = 'SV-DEMO-' . strtoupper(Str::random(4));
-        $statuses = ['pending', 'paid', 'pending', 'sold', 'canceled'];
-        $orderRows = [];
-        foreach (range(0, 4) as $idx) {
-            $orderRows[] = [
-                'store_id' => $store->id,
-                'client_id' => $clients[$idx]->id,
-                'product_id' => $products[$idx % 3]->id,
-                'seller_id' => $idx % 2 === 0 ? $sellerUser1->id : $sellerUser2->id,
-                'status' => $statuses[$idx],
-                'message' => 'Pedido gerado pelo seed inicial (Studio Vitrine Demo).',
-                'shift' => $idx === 1,
-                'finance' => $idx === 2,
-                'product_variant_id' => null,
-                'selected_color' => null,
-                'selected_size' => null,
-                'payment_method' => $idx % 2 === 0 ? 'pix' : 'cash',
-                'delivery_type' => $idx < 3 ? 'delivery' : 'pickup',
-                'delivery_address' => $idx < 3 ? 'Av. Paulista, 1000' : null,
-                'delivery_city' => $idx < 3 ? 'São Paulo' : null,
-                'delivery_state' => $idx < 3 ? 'SP' : null,
-                'delivery_zip' => $idx < 3 ? '01310100' : null,
-                'delivery_complement' => $idx < 3 ? 'Sala 42' : null,
-                'order_ref' => $orderRefBase . '-' . ($idx + 1),
-                'quantity' => ($idx % 3) + 1,
-            ];
-        }
-        $this->repository->insertOrderRows($orderRows);
+        $this->seedDemoOrders(
+            $store,
+            $clients,
+            $products,
+            $sellerUser1->id,
+            $sellerUser2->id
+        );
 
         return new InitialDataSeedResultDTO(accounts: [
             ['label' => 'Sysadmin', 'email' => $sysadmin->email, 'password' => self::DEFAULT_PASSWORD],
@@ -307,6 +294,82 @@ final class InitialDataSeedService
             ['label' => 'Consultora (equipe)', 'email' => $sellerUser1->email, 'password' => self::DEFAULT_PASSWORD],
             ['label' => 'Consultor (equipe)', 'email' => $sellerUser2->email, 'password' => self::DEFAULT_PASSWORD],
         ]);
+    }
+
+    /**
+     * Pedidos demo: cabeçalho em {@see Order} e linhas em {@see OrderItem} (schema pós-reestruturação).
+     *
+     * @param  list<Client>  $clients
+     * @param  list<Product>  $products
+     */
+    private function seedDemoOrders(
+        Store $store,
+        array $clients,
+        array $products,
+        int $sellerUser1Id,
+        int $sellerUser2Id,
+    ): void {
+        $codePrefix = 'SV-DEMO-'.strtoupper(Str::random(4));
+        /** Status legado da vitrine antiga → fluxo atual do módulo de pedidos */
+        $legacyStatuses = ['pending', 'paid', 'pending', 'sold', 'canceled'];
+        $now = Carbon::now();
+
+        foreach (range(0, 4) as $idx) {
+            $legacy = $legacyStatuses[$idx];
+            $headerStatus = match ($legacy) {
+                'pending' => OrderStatus::PENDING,
+                'paid' => OrderStatus::CONFIRMED,
+                'sold' => OrderStatus::COMPLETED,
+                'canceled' => OrderStatus::CANCELLED,
+                default => OrderStatus::PENDING,
+            };
+
+            $product = $products[$idx % 3];
+            $qty = ($idx % 3) + 1;
+            $unit = number_format((float) $product->price, 2, '.', '');
+            $lineSubtotal = bcmul($unit, (string) $qty, 2);
+
+            $fulfillment = $idx < 3 ? FulfillmentType::DELIVERY : FulfillmentType::PICKUP;
+            $deliveryNote = $idx < 3
+                ? "\nEntrega: Av. Paulista, 1000 — São Paulo/SP, CEP 01310-100. Complemento: Sala 42."
+                : '';
+            $message = 'Pedido gerado pelo seed inicial (Studio Vitrine Demo).'.$deliveryNote;
+
+            $paidLike = in_array($headerStatus, [OrderStatus::CONFIRMED, OrderStatus::COMPLETED], true);
+
+            $order = Order::query()->create([
+                'code' => $codePrefix.'-'.($idx + 1),
+                'store_id' => $store->id,
+                'client_id' => $clients[$idx]->id,
+                'status' => $headerStatus,
+                'fulfillment_type' => $fulfillment,
+                'subtotal' => $lineSubtotal,
+                'shipping_amount' => '0.00',
+                'discount_amount' => '0.00',
+                'total' => $lineSubtotal,
+                'payment_method' => $idx % 2 === 0 ? 'pix' : 'cash',
+                'payment_installments' => 1,
+                'payment_status' => $paidLike ? 'paid' : 'pending',
+                'message' => $message,
+                'shift' => $idx === 1,
+                'finance' => $idx === 2,
+                'seller_id' => $idx % 2 === 0 ? $sellerUser1Id : $sellerUser2Id,
+                'completed_at' => $headerStatus === OrderStatus::COMPLETED ? $now : null,
+            ]);
+
+            OrderItem::query()->create([
+                'order_id' => $order->id,
+                'store_id' => $store->id,
+                'client_id' => $clients[$idx]->id,
+                'product_id' => $product->id,
+                'product_variant_id' => null,
+                'selected_color' => null,
+                'selected_size' => null,
+                'quantity' => $qty,
+                'unit_price' => $unit,
+                'line_subtotal' => $lineSubtotal,
+            ]);
+        }
     }
 
     private function seedRequestPlans(): void

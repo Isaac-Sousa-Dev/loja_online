@@ -53,7 +53,7 @@ class DashboardController extends Controller
         $brands = $partner->brands;
         $clientsByStore = ClientStore::where('store_id', $store->id)->orderBy('created_at', 'desc')->get();
 
-        $ordersByStore = $store->orders()->with(['client', 'product'])->latest()->get();
+        $ordersByStore = $store->orders()->with(['client', 'items.product'])->latest()->get();
         $quantityOrders = $ordersByStore->count();
 
         $data = [];

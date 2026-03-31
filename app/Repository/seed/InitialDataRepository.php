@@ -147,17 +147,4 @@ final class InitialDataRepository
         DB::table('sales_teams')->insert($rows);
     }
 
-    /**
-     * @param  list<array<string, mixed>>  $rows
-     */
-    public function insertOrderRows(array $rows): void
-    {
-        $now = now();
-        foreach ($rows as &$row) {
-            $row['created_at'] = $row['created_at'] ?? $now;
-            $row['updated_at'] = $row['updated_at'] ?? $now;
-        }
-        unset($row);
-        DB::table('orders')->insert($rows);
-    }
 }

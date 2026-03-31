@@ -26,7 +26,7 @@
                         title="Voltar para Categorias">
                         <i class="fa-solid fa-arrow-left text-sm"></i>
                     </a>
-                    <h2 class="font-semibold text-3xl text-gray-800 leading-tight truncate">
+                    <h2 class="font-display font-semibold text-2xl text-[#33363B] leading-tight">
                         {{ $storeCategory->category->name }}
                     </h2>
                 </div>

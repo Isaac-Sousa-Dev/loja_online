@@ -34,7 +34,7 @@
         <span class="font-bold text-gray-800 text-base">{{ $partner->store->store_name }}</span>
     </div>
 
-    <a href="{{ route('orders.index', $partner->partner_link) }}" class="flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-blue-700 transition">
+    <a href="{{ route('catalog.index', $partner->partner_link) }}" class="flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-blue-700 transition">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
         </svg>
@@ -60,7 +60,7 @@
                 </svg>
                 <p class="text-gray-500 font-semibold text-lg">Seu carrinho está vazio</p>
                 <p class="text-gray-400 text-sm mt-1 mb-6">Explore nosso catálogo e adicione produtos</p>
-                <a href="{{ route('orders.index', $partner->partner_link) }}"
+                <a href="{{ route('catalog.index', $partner->partner_link) }}"
                     class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-6 py-3 rounded-xl transition text-sm">
                     Ver catálogo
                 </a>

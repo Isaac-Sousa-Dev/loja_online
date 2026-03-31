@@ -302,10 +302,10 @@ export function initColorPhotosForWizard(wrapper, colors) {
                 <div class="bg-gray-50 rounded-xl p-3 text-center"><p class="text-xl font-extrabold text-emerald-600" id="cpMetricWith">0</p><p class="text-xs text-gray-500 mt-0.5">Cores com fotos</p></div>
                 <div class="bg-gray-50 rounded-xl p-3 text-center"><p class="text-xl font-extrabold text-amber-500" id="cpMetricWithout">0</p><p class="text-xs text-gray-500 mt-0.5">Cores sem fotos</p></div>
             </div>
-            <div class="flex gap-4 min-h-[420px]">
-                <div class="w-[220px] flex-shrink-0 flex flex-col gap-2">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="w-[250px] flex flex-col gap-2">
                     <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest px-1 mb-1">Cores do produto</p>
-                    <div id="cpColorTabsList" class="flex flex-col gap-1"></div>
+                    <div id="cpColorTabsList" class="grid grid-cols-2 md:grid-cols-1 gap-1"></div>
                     <div class="mt-3 bg-blue-50 border border-blue-100 rounded-xl p-3">
                         <p class="text-[11px] text-blue-700 leading-relaxed"><i class="fa-solid fa-circle-info mr-1"></i>A <strong>primeira foto</strong> de cada cor é usada como miniatura no seletor de cores. Arraste para reordenar.</p>
                     </div>

@@ -12,3 +12,5 @@ Tratamento de Erros: "Evite try/catch vazios. Erros devem ser tratados, logados 
 DRY (Don't Repeat Yourself): "Identifique padrões repetitivos e abstraia-os, mas cuidado com a abstração prematura. Prefira duplicação a uma abstração errada."
 
 Imutabilidade: "Prefira objetos e variáveis imutáveis por padrão. Isso reduz efeitos colaterais e facilita o rastreamento de bugs."
+
+Legibilidade: Váriaveis autoexplicativas, não utilizar nomes de variáveis ou parâmetros ou funções que não tenha sentido e sem compreensão

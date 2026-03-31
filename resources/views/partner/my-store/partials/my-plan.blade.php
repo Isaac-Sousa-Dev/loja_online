@@ -41,7 +41,7 @@
 
     <div class="grid grid-cols-2 gap-2">
         <div class="bg-[#EDE9FE]/70 mt-2 gap-2 px-4 p-2 rounded-xl border border-[#6A2BBA]/15">
-            <div class="font-semibold text-[#6A2BBA] text-xl">
+            <div class="font-semibold text-[#6A2BBA] text-md">
                 {{ $partner->subscription->plan->name }}
             </div>
             <div class="font-semibold text-[#33363B] text-sm md:text-md">
@@ -55,16 +55,16 @@
             <div class="font-semibold text-[#33363B]/70 text-sm">
                 Inicio
             </div>
-            <div class="font-semibold text-[#33363B] text-xl md:text-2xl">
+            <div class="font-semibold text-[#33363B] text-xl md:text-xl">
                 {{ \Carbon\Carbon::parse($partner->subscription->start_date)->format('d/m/Y') }}
             </div>
         </div>
     </div>
 
     <div class="mt-2">
-        <div class="text-[#33363B]/75 font-medium text-center flex flex-col gap-2">
+        <div class="text-[#33363B]/75 font-medium flex flex-col gap-2">
 
-            <div class="flex gap-1 items-center text-sm justify-center">
+            <div class="flex gap-1 items-center text-sm justify-start">
                 <svg class="w-4 h-4 shrink-0 text-[#6A2BBA]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                     viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -73,7 +73,7 @@
                 1 Usuário
             </div>
 
-            <div class="flex gap-1 items-center text-sm justify-center">
+            <div class="flex gap-1 items-center text-sm justify-start">
                 <svg class="w-4 h-4 shrink-0 text-[#6A2BBA]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                     height="24" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -82,7 +82,7 @@
                 Gestão de Produtos
             </div>
 
-            <div class="line-through flex gap-1 text-sm items-center justify-center text-[#33363B]/45">
+            <div class="line-through flex gap-1 text-sm items-center justify-start text-[#33363B]/45">
                 <svg class="w-4 h-4 shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                     height="24" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -92,7 +92,7 @@
                 CRM Dedicado
             </div>
 
-            <div class="flex gap-1 items-center text-sm justify-center">
+            <div class="flex gap-1 items-center text-sm justify-start">
                 <svg class="w-4 h-4 shrink-0 text-[#6A2BBA]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                     height="24" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -101,7 +101,7 @@
                 Gestão de Vendas
             </div>
 
-            <div class="flex gap-1 items-center text-sm justify-center">
+            <div class="flex gap-1 items-center text-sm justify-start">
                 <svg class="w-4 h-4 shrink-0 text-[#6A2BBA]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                     height="24" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -110,7 +110,7 @@
                 Site Profissional
             </div>
 
-            <div class="flex gap-1 items-center line-through text-sm justify-center text-[#33363B]/45">
+            <div class="flex gap-1 items-center line-through text-sm justify-start text-[#33363B]/45">
                 <svg class="w-4 h-4 shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                     height="24" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -119,7 +119,7 @@
                 Indique e Ganhe
             </div>
 
-            <div class="flex gap-1 items-center text-sm justify-center">
+            <div class="flex gap-1 items-center text-sm justify-start">
                 <svg class="w-4 h-4 shrink-0 text-[#6A2BBA]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                     height="24" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

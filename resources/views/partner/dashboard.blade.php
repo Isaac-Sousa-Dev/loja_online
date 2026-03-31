@@ -181,7 +181,7 @@
                             <i class="fa-solid fa-list-ol text-[#33363B]/70"></i>
                             <h3 class="font-semibold text-lg text-[#33363B]">Últimos Pedidos</h3>
                         </div>
-                        <a href="{{ route('requests.index') }}" class="text-xs font-semibold text-[#6A2BBA] hover:text-[#D131A3] transition px-1">
+                        <a href="{{ route('orders.index') }}" class="text-xs font-semibold text-[#6A2BBA] hover:text-[#D131A3] transition px-1">
                             Ver todos →
                         </a>
                     </div>
@@ -202,17 +202,8 @@
 
                                             {{-- Status badge --}}
                                             <div class="flex flex-wrap gap-1.5 items-center">
-                                                @php
-                                                    $statusMap = [
-                                                        'in_open'     => ['label' => 'Em aberto',    'class' => 'bg-[#FFF8E7] text-[#b45309] border-[#FF914D]/30'],
-                                                        'in_progress' => ['label' => 'Em andamento', 'class' => 'bg-[#EDE9FE] text-[#6A2BBA] border-[#6A2BBA]/25'],
-                                                        'sold'        => ['label' => 'Vendido',       'class' => 'bg-emerald-100 text-emerald-700 border-emerald-200'],
-                                                        'canceled'    => ['label' => 'Cancelado',     'class' => 'bg-red-100 text-red-600 border-red-200'],
-                                                    ];
-                                                    $s = $statusMap[$order->status] ?? ['label' => 'Desconhecido', 'class' => 'bg-gray-100 text-gray-500 border-gray-200'];
-                                                @endphp
-                                                <span class="px-2 py-0.5 rounded-full text-xs font-semibold border {{ $s['class'] }}">
-                                                    {{ $s['label'] }}
+                                                <span class="px-2 py-0.5 rounded-full text-xs font-semibold border {{ $order->status->badgeClasses() }}">
+                                                    {{ $order->status->label() }}
                                                 </span>
 
                                                 @if ($order->shift == 1)
@@ -231,7 +222,13 @@
 
                                         <div class="mt-2 flex items-center justify-between gap-2">
                                             <div class="min-w-0">
-                                                <p class="font-bold text-gray-800 text-sm truncate">{{ $order->product->name }}</p>
+                                                @php
+                                                    $fi = $order->items->first();
+                                                    $lineTitle = $order->items->count() > 1
+                                                        ? $order->items->count().' itens · '.$order->itemsVariationSummary()
+                                                        : ($fi?->product?->name ?? '—');
+                                                @endphp
+                                                <p class="font-bold text-gray-800 text-sm truncate">{{ $lineTitle }}</p>
                                                 <div class="flex items-center gap-3 mt-0.5">
                                                     @if ($order->client)
                                                         <span class="text-xs text-gray-500 flex items-center gap-1">
@@ -250,12 +247,9 @@
                                                 </div>
                                             </div>
 
-                                            {{-- Preço do produto --}}
-                                            @if ($order->product->price)
-                                                <span class="text-sm font-extrabold text-[#6A2BBA] flex-shrink-0">
-                                                    R$ {{ number_format($order->product->price, 2, ',', '.') }}
-                                                </span>
-                                            @endif
+                                            <span class="text-sm font-extrabold text-[#6A2BBA] flex-shrink-0">
+                                                R$ {{ number_format((float) $order->total, 2, ',', '.') }}
+                                            </span>
                                         </div>
                                     </div>
                                 @endforeach

@@ -83,6 +83,12 @@
                     <x-text-input id="store_cpf_cnpj" name="store_cpf_cnpj" type="text" class="mt-1 block w-full cpf-cnpj-mask required bg-gray-50 bg-opacity-50" :value="old('store_cpf_cnpj', $store->store_cpf_cnpj)" placeholder="XX.XXX.XXX/0001-XX" required />
                     <x-input-error class="mt-2" :messages="$errors->get('store_cpf_cnpj')" />
                 </div>
+                <div>
+                    <x-input-label for="wholesale_min_quantity" :value="__('Qtd. mínima para atacado')" />
+                    <x-text-input id="wholesale_min_quantity" name="wholesale_min_quantity" type="number" min="2" class="mt-1 block w-full bg-gray-50 bg-opacity-50" :value="old('wholesale_min_quantity', $store->wholesale_min_quantity)" placeholder="Ex: 6" />
+                    <p class="text-xs text-gray-400 mt-1">Quantidade mínima de peças (por variante) para aplicar preço de atacado.</p>
+                    <x-input-error class="mt-2" :messages="$errors->get('wholesale_min_quantity')" />
+                </div>
             </div>
         </div>
 
@@ -122,7 +128,7 @@
             </div>
         </div>
 
-        <div class="flex flex-col md:flex-row justify-end items-center gap-4 mt-6 border-t border-gray-100 pt-5">
+        <div class="flex flex-col md:flex-row justify-end items-center gap-4 mt-2 pt-3">
             <x-primary-button id="btnSaveInfoStore" class="w-full justify-center md:w-auto px-6 py-2.5 shadow-md">
                 {{ __('Salvar Modificações') }}
             </x-primary-button>

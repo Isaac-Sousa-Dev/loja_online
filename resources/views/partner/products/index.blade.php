@@ -28,7 +28,7 @@
 
                 {{-- Header + abrir filtros --}}
                 <div class="mt-1 mb-3 flex flex-col gap-3 px-1 md:flex-row md:items-center md:justify-between md:gap-4">
-                    <h2 class="font-semibold text-2xl text-gray-800 shrink-0">Produtos</h2>
+                    <h2 class="font-display font-semibold text-3xl text-[#33363B] leading-tight">Produtos</h2>
                     <div class="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap md:w-auto md:justify-end md:gap-2">
                         <button type="button"
                             id="openProductFiltersBtn"

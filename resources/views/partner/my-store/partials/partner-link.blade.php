@@ -27,7 +27,7 @@
         @if($partner && $partner->partner_link != null)
             <div class="flex flex-col gap-2">
                 <input id="partner_link" type="text" readonly
-                    value="{{ request()->getSchemeAndHttpHost().'/orders/'.$user->partner->partner_link }}"
+                    value="{{ request()->getSchemeAndHttpHost().'/catalog/'.$user->partner->partner_link }}"
                     class="bg-[#F8F9FC] border border-[#33363B]/10 text-[#33363B]/80 text-sm rounded-xl focus:ring-2 focus:ring-[#6A2BBA]/40 focus:border-[#6A2BBA] block w-full p-2.5" />
                 
                 <button id="copyButton" type="button" class="w-full px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#6A2BBA] to-[#D131A3] text-white hover:brightness-105 transition flex items-center justify-center gap-2 font-semibold shadow-md shadow-[#6A2BBA]/25">

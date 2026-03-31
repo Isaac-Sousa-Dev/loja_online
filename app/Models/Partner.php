@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -53,8 +55,8 @@ class Partner extends Model
 
     public function orders()
     {
-        return $this->hasMany(Order::class, 'store_id', 'store_id');
-    }  
+        return $this->hasManyThrough(Order::class, Store::class, 'partner_id', 'store_id');
+    }
 
     public function brands()
     {

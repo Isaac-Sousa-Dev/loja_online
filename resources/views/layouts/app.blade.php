@@ -326,7 +326,10 @@
             $("#global-loader").fadeOut();
         }
 
-        $(document).on('submit', 'form', function() {
+        $(document).on('submit', 'form', function (e) {
+            if (e.isDefaultPrevented()) {
+                return;
+            }
             showLoader();
         });
 
@@ -577,6 +580,44 @@
         text-transform: uppercase;
     }
 </style>
+
+@auth
+    @if(Auth::user()->role === 'partner')
+        <script>
+            (function () {
+                var badges = document.querySelectorAll('.js-order-notify-badge');
+                if (!badges.length || typeof EventSource === 'undefined') return;
+                var sseUrl = @json(route('orders.sse.stream'));
+                var pendingOrdersUrl = @json(route('orders.index', ['ack' => 1, 'status' => ['pending']]));
+                try {
+                    var source = new EventSource(sseUrl);
+                    source.onmessage = function (e) {
+                        try {
+                            var data = JSON.parse(e.data);
+                            if (data.count > 0) {
+                                var label = data.count > 99 ? '99+' : String(data.count);
+                                badges.forEach(function (el) {
+                                    el.textContent = label;
+                                    el.classList.remove('hidden');
+                                    el.classList.add('inline-flex');
+                                });
+                            }
+                        } catch (err) { /* ignore */ }
+                    };
+                    source.onerror = function () { /* EventSource reconecta */ };
+                } catch (e) { /* ignore */ }
+                badges.forEach(function (el) {
+                    el.setAttribute('title', 'Ver pedidos pendentes');
+                    el.addEventListener('click', function (ev) {
+                        ev.preventDefault();
+                        ev.stopPropagation();
+                        window.location.href = pendingOrdersUrl;
+                    });
+                });
+            })();
+        </script>
+    @endif
+@endauth
 
 @stack('scripts')
 

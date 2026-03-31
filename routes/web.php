@@ -10,14 +10,15 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\ModeloController;
+use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderSseController;
 use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\PopulateController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegisterController;
-use App\Http\Controllers\RequestController;
 use App\Http\Controllers\RequestPlanController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SellerController;
@@ -149,19 +150,20 @@ Route::middleware('auth')->group(function () {
     Route::get('modelos/edit/{id}', [ModeloController::class, 'edit'])->name('modelos.edit');
     Route::put('modelos/update/{id}', [ModeloController::class, 'update'])->name('modelos.update');
 
-    // Route for Orders
+    // Pedidos da loja (parceiro) — ex-solicitações / requests
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::get('orders/create', [OrderController::class, 'create'])->name('orders.create');
-    Route::post('orders/store', [OrderController::class, 'store'])->name('orders.store');
-    Route::delete('orders/destroy/{id}', [OrderController::class, 'destroy'])->name('orders.destroy');
-    Route::get('orders/edit/{id}', [OrderController::class, 'edit'])->name('orders.edit');
-    Route::put('orders/update/{id}', [OrderController::class, 'update'])->name('orders.update');
-   
-    // Route for Catalog
-    Route::get('requests', [RequestController::class, 'index'])->name('requests.index');
-    Route::post('requests/init', [RequestController::class, 'init'])->name('requests.init');
-    Route::post('requests/sold', [RequestController::class, 'sold'])->name('requests.sold');
-    Route::post('requests/unsold', [RequestController::class, 'unsold'])->name('requests.unsold');
+    Route::get('orders/export', [OrderController::class, 'export'])->name('orders.export');
+    Route::post('orders/bulk-action', [OrderController::class, 'bulkAction'])->name('orders.bulk');
+    Route::get('orders/pending/json', [OrderController::class, 'pendingJson'])->name('orders.pending.json');
+    Route::post('orders/init', [OrderController::class, 'init'])->name('orders.init');
+    Route::post('orders/sold', [OrderController::class, 'sold'])->name('orders.sold');
+    Route::post('orders/unsold', [OrderController::class, 'unsold'])->name('orders.unsold');
+    Route::post('orders/{order}/confirm', [OrderController::class, 'confirm'])->name('orders.confirm');
+    Route::post('orders/{order}/advance', [OrderController::class, 'advance'])->name('orders.advance');
+    Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+    Route::post('orders/{order}/complete', [OrderController::class, 'complete'])->name('orders.complete');
+
+    Route::get('sse/orders', [OrderSseController::class, 'stream'])->name('orders.sse.stream');
 
     // Route for Store
     Route::put('store/update/{id}', [StoreController::class, 'update'])->name('store.update');
@@ -201,19 +203,32 @@ Route::middleware('auth')->group(function () {
 
 
 
-Route::post('requests/store', [RequestController::class, 'store'])->name('requests.store');
-Route::post('requests/store-cart', [RequestController::class, 'storeCart'])->name('requests.storeCart');
+Route::post('orders/store-cart', [OrderController::class, 'storeCart'])->name('orders.storeCart');
 Route::get('catalog/message-sent-page/{store_partner_link}', function(Request $request) {
     $storePartnerLink = $request->store_partner_link;
     return view('orders.message-sent', ['storePartnerLink' => $storePartnerLink]);
 })->name('catalog.message_sent');
 
-// Routes for Catalog
-Route::get('orders/{partner_link}', [OrderController::class, 'index'])->name('orders.index');
-Route::get('orders/{partnerLink}/product/{productId}', [OrderController::class, 'getProductPage'])->name('orders.productPage');
-Route::get('get-products-by-partner', [OrderController::class, 'getAllProductByPartner'])->name('orders.getAllProductByPartner');
-Route::get('orders/get-products-by-category/{category_id}', [OrderController::class, 'getProductsByCategory'])->name('orders.getProductsByCategory');  
-Route::get('catalog/search', [OrderController::class, 'search'])->name('catalog.search'); 
+// Catálogo público (vitrine)
+Route::get('catalog/{partner_link}', [CatalogController::class, 'index'])->name('catalog.index');
+Route::get('catalog/{partnerLink}/product/{productId}', [CatalogController::class, 'getProductPage'])->name('catalog.productPage');
+Route::get('catalog/products-by-partner', [CatalogController::class, 'getAllProductByPartner'])->name('catalog.productsByPartner');
+Route::get('catalog/get-products-by-category/{category_id}', [CatalogController::class, 'getProductsByCategory'])->name('catalog.getProductsByCategory');
+Route::get('catalog/search', [CatalogController::class, 'search'])->name('catalog.search');
+
+// Legado: URLs antigas do catálogo em /orders/... → /catalog/...
+Route::get('orders/{partnerLink}/product/{productId}', function (string $partnerLink, string $productId) {
+    return redirect()->route('catalog.productPage', [$partnerLink, $productId], 301);
+});
+Route::get('orders/{partner_link}', function (string $partner_link) {
+    return redirect()->route('catalog.index', $partner_link, 301);
+});
+Route::get('get-products-by-partner', function () {
+    return redirect()->route('catalog.productsByPartner', status: 301);
+});
+Route::get('orders/get-products-by-category/{category_id}', function (string $category_id) {
+    return redirect()->route('catalog.getProductsByCategory', ['category_id' => $category_id], 301);
+}); 
 
 Route::get('register-new-store', [StoreController::class, 'newStorePage'])->name('index.newstore');
 Route::get('new-store-info', [StoreController::class, 'newStoreInfo'])->name('store.newstore.info');

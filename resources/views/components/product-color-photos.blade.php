@@ -24,7 +24,7 @@
     <div class="flex flex-col md:flex-row gap-4 min-h-[420px]">
 
         {{-- Coluna esquerda: navegação --}}
-        <div class="w-[220px] flex-shrink-0 flex flex-col gap-2">
+        <div class="w-[220px] flex-shrink-0 flex flex-col gap-2 bg-red-200">
             <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest px-1 mb-1">Cores do produto</p>
             <div id="colorTabsList" class="grid grid-cols-2 md:grid-cols-12 gap-1"></div>
 

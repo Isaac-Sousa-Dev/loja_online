@@ -80,7 +80,7 @@
 
         
         <div class="bg-white fixed bottom-0 w-full p-3 flex justify-center z-10">
-            <a class="w-full" href="{{route('orders.index', $storePartnerLink)}}">
+            <a class="w-full" href="{{route('catalog.index', $storePartnerLink)}}">
                 <button class="btn-back-initial-page bg-blue-700 px-4 py-3 w-full rounded-lg font-bold text-white">Voltar para início</button>
             </a>
         </div>

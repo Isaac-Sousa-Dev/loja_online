@@ -436,7 +436,7 @@
                 '';
 
             return `
-            <a href="/orders/${partnerLink}/product/${product.id}" class="catalog-card">
+            <a href="/catalog/${partnerLink}/product/${product.id}" class="catalog-card">
                 <img class="catalog-card__image" src="${imgSrc}" alt="${product.name}"
                      onerror="this.src='/img/image-not-found.png'">
                 <div class="catalog-card__body">
@@ -482,7 +482,7 @@
         function getAllProducts() {
             $.ajax({
                 type: 'GET',
-                url: '/get-products-by-partner',
+                url: '/catalog/products-by-partner',
                 success: data => {
                     data.forEach(p => {
                         p.price = parseFloat(p.price);
@@ -496,7 +496,7 @@
         function getProductsByCategory(categoryId) {
             $.ajax({
                 type: 'GET',
-                url: '/orders/get-products-by-category/' + categoryId,
+                url: '/catalog/get-products-by-category/' + categoryId,
                 success: data => {
                     data.forEach(p => {
                         p.price = parseFloat(p.price);

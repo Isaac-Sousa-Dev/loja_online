@@ -23,7 +23,7 @@
            aria-label="Voltar para lista de produtos">
             <i class="fa-solid fa-arrow-left text-sm" aria-hidden="true"></i>
         </a>
-        <h2 class="font-bold text-2xl text-gray-800">Novo Produto</h2>
+        <h2 class="font-display font-semibold text-2xl text-[#33363B] leading-tight">Novo Produto</h2>
     </div>
 
     {{-- TABS --}}

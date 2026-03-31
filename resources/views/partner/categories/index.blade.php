@@ -21,7 +21,7 @@
                     <div class="flex flex-col md:justify-between mt-2">
 
                         <div class="flex items-center justify-between">
-                            <div class="text-gray-900 font-semibold text-3xl md:text-3xl ml-1">
+                            <div class="font-display font-semibold text-3xl text-[#33363B] leading-tight">
                                 {{ __('Categorias') }}
                             </div>
 
