@@ -157,16 +157,11 @@
                 <div
                     class="bg-white rounded-2xl p-4 shadow-sm border border-[#33363B]/8 flex items-center justify-between hover:shadow-md transition duration-300">
                     <div>
-                        <p class="text-sm font-semibold text-[#33363B]/55 mb-1">Meus Clientes</p>
-                        <p class="text-3xl font-bold text-[#33363B]">{{ $quantityClients }}</p>
+                        <p class="text-sm font-semibold text-[#33363B]/55 mb-1">Saldo no mês</p>
+                        <p class="text-3xl font-bold text-[#33363B] price-mask">{{ 1000 }}</p>
                     </div>
                     <div class="w-12 h-12 rounded-full bg-[#FCE7F3]/60 flex items-center justify-center text-[#D131A3]">
-                        <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-                            viewBox="0 0 24 24">
-                            <path fill-rule="evenodd"
-                                d="M12 6a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm-1.5 8a4 4 0 0 0-4 4 2 2 0 0 0 2 2h7a2 2 0 0 0 2-2 4 4 0 0 0-4-4h-3Zm6.82-3.096a5.51 5.51 0 0 0-2.797-6.293 3.5 3.5 0 1 1 2.796 6.292ZM19.5 18h.5a2 2 0 0 0 2-2 4 4 0 0 0-4-4h-1.1a5.503 5.503 0 0 1-.471.762A5.998 5.998 0 0 1 19.5 18ZM4 7.5a3.5 3.5 0 0 1 5.477-2.889 5.5 5.5 0 0 0-2.796 6.293A3.501 3.501 0 0 1 4 7.5ZM7.1 12H6a4 4 0 0 0-4 4 2 2 0 0 0 2 2h.5a5.998 5.998 0 0 1 3.071-5.238A5.505 5.505 0 0 1 7.1 12Z"
-                                clip-rule="evenodd" />
-                        </svg>
+                        <svg class="w-6 h-6" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M128 128C92.7 128 64 156.7 64 192L64 448C64 483.3 92.7 512 128 512L512 512C547.3 512 576 483.3 576 448L576 192C576 156.7 547.3 128 512 128L128 128zM320 224C373 224 416 267 416 320C416 373 373 416 320 416C267 416 224 373 224 320C224 267 267 224 320 224zM512 248C512 252.4 508.4 256.1 504 255.5C475 251.9 452.1 228.9 448.5 200C448 195.6 451.6 192 456 192L504 192C508.4 192 512 195.6 512 200L512 248zM128 392C128 387.6 131.6 383.9 136 384.5C165 388.1 187.9 411.1 191.5 440C192 444.4 188.4 448 184 448L136 448C131.6 448 128 444.4 128 440L128 392zM136 255.5C131.6 256 128 252.4 128 248L128 200C128 195.6 131.6 192 136 192L184 192C188.4 192 192.1 195.6 191.5 200C187.9 229 164.9 251.9 136 255.5zM504 384.5C508.4 384 512 387.6 512 392L512 440C512 444.4 508.4 448 504 448L456 448C451.6 448 447.9 444.4 448.5 440C452.1 411 475.1 388.1 504 384.5z"/></svg>
                     </div>
                 </div>
             </div>
@@ -200,19 +195,7 @@
                                     <div class="px-4 py-3.5 hover:bg-gray-50 transition">
                                         <div class="flex items-start justify-between gap-2">
 
-                                            {{-- Status badge --}}
-                                            <div class="flex flex-wrap gap-1.5 items-center">
-                                                <span class="px-2 py-0.5 rounded-full text-xs font-semibold border {{ $order->status->badgeClasses() }}">
-                                                    {{ $order->status->label() }}
-                                                </span>
-
-                                                @if ($order->shift == 1)
-                                                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-[#E0E7FF] text-[#4338ca] border border-[#6366f1]/25">Negociação</span>
-                                                @endif
-                                                @if ($order->finance == 1)
-                                                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-[#FCE7F3] text-[#D131A3] border border-[#D131A3]/25">Financiamento</span>
-                                                @endif
-                                            </div>
+                                           
 
                                             <span class="text-xs text-gray-400 whitespace-nowrap flex-shrink-0 mt-0.5">
                                                 <i class="fa-regular fa-clock mr-0.5"></i>
@@ -228,7 +211,16 @@
                                                         ? $order->items->count().' itens · '.$order->itemsVariationSummary()
                                                         : ($fi?->product?->name ?? '—');
                                                 @endphp
-                                                <p class="font-bold text-gray-800 text-sm truncate">{{ $lineTitle }}</p>
+                                                <div class="flex gap-2 items-center">
+                                                    <p class="font-bold text-gray-800 text-sm truncate">{{ $lineTitle }}</p>
+                                                    {{-- Status badge --}}
+                                                    <div class="flex flex-wrap gap-1.5 items-center">
+                                                        <span class="px-2 py-0.5 rounded-full text-xs font-semibold border {{ $order->status->badgeClasses() }}">
+                                                            {{ $order->status->label() }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                
                                                 <div class="flex items-center gap-3 mt-0.5">
                                                     @if ($order->client)
                                                         <span class="text-xs text-gray-500 flex items-center gap-1">
@@ -329,11 +321,11 @@
                                                 </p>
                                             @endif
                                             {{-- MOCK: avaliação — implementar em breve --}}
-                                            <div class="flex items-center justify-end gap-0.5 mt-0.5" title="Avaliação (em breve)">
+                                            {{-- <div class="flex items-center justify-end gap-0.5 mt-0.5" title="Avaliação (em breve)">
                                                 @for ($i = 0; $i < 5; $i++)
                                                     <i class="fa-solid fa-star text-[9px] text-gray-200"></i>
                                                 @endfor
-                                            </div>
+                                            </div> --}}
                                         </div>
                                     </div>
                                 @endforeach

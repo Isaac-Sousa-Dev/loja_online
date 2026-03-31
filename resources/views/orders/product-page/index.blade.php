@@ -605,8 +605,8 @@
         .lightbox-overlay.active{display:flex}
         .lightbox-close{position:absolute;top:16px;right:16px;z-index:9999;background:rgba(255,255,255,.15);border:none;color:#fff;width:40px;height:40px;border-radius:50%;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
         .lightbox-close:hover{background:rgba(255,255,255,.3)}
-        .lightbox-img-wrap{position:relative;max-width:90vw;max-height:80vh;overflow:hidden;display:flex;align-items:center;justify-content:center}
-        .lightbox-img-wrap img{max-width:90vw;max-height:80vh;object-fit:contain;transition:transform .3s ease;cursor:grab;touch-action:none}
+        .lightbox-img-wrap{position:relative;max-width:100vw;max-height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center}
+        .lightbox-img-wrap img{max-width:100vw;max-height:100vh;object-fit:contain;transition:transform .3s ease;cursor:grab;touch-action:none}
         .lightbox-img-wrap img.zoomed{cursor:move}
         .lightbox-nav{display:flex;gap:12px;margin-top:16px}
         .lightbox-nav button{background:rgba(255,255,255,.15);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
@@ -674,7 +674,7 @@
 @endphp
 
 <main class="pt-24 px-4 md:px-8 max-w-screen-2xl mx-auto">
-    <section class="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(340px,460px)]">
+    <section class="">
         <div class="space-y-5">
             <div class="pdp-card pdp-hero-card pdp-gallery-shell pdp-reveal">
                 {{-- <div class="pdp-gallery-meta">
