@@ -59,7 +59,7 @@
         }
 
         .pdp-gallery-shell {
-            padding: 20px;
+            padding: 0px;
             overflow: hidden;
         }
 
@@ -677,13 +677,9 @@
     <section class="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(340px,460px)]">
         <div class="space-y-5">
             <div class="pdp-card pdp-hero-card pdp-gallery-shell pdp-reveal">
-                <div class="pdp-gallery-meta">
-                    <div class="flex flex-wrap gap-2">
-                        <span class="pdp-pill">Galeria do produto</span>
-                        <span class="pdp-pill">Toque para ampliar</span>
-                    </div>
+                {{-- <div class="pdp-gallery-meta">
                     <span class="pdp-eyebrow">Experiencia visual mais intuitiva</span>
-                </div>
+                </div> --}}
 
                 <div class="pdp-gallery-frame">
                     <div class="main-swiper swiper swiper-main shadow-sm" id="mainSwiperContainer">
@@ -715,7 +711,7 @@
                 </div>
             </div>
 
-            <div class="pdp-trust-grid">
+            {{-- <div class="pdp-trust-grid">
                 <article class="pdp-trust-card pdp-reveal" style="animation-delay: 0.04s;">
                     <div class="pdp-trust-card__icon">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-3.314 0-6 2.239-6 5 0 2.761 2.686 5 6 5s6-2.239 6-5c0-2.761-2.686-5-6-5zm0 0V5m0 13v3m7-8h3M2 13h3"/></svg>
@@ -739,7 +735,7 @@
                     <h3>Confiança na compra</h3>
                     <p>Informacoes de estoque, entrega e atendimento aparecem de forma consistente com o visual do catalogo.</p>
                 </article>
-            </div>
+            </div> --}}
         </div>
 
         <div class="sticky-sidebar">
@@ -942,7 +938,7 @@
 
     @php $hasDim = $product->width || $product->height || $product->length || $product->weight; @endphp
     <section class="grid gap-6 mt-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-        <article class="pdp-card pdp-story-card pdp-reveal" style="animation-delay: 0.08s;">
+        {{-- <article class="pdp-card pdp-story-card pdp-reveal" style="animation-delay: 0.08s;">
             <p class="pdp-section-eyebrow">Detalhes que ajudam a decidir</p>
             <div class="pdp-story-grid">
                 <div class="pdp-story-block">
@@ -970,7 +966,7 @@
                     </div>
                 </div>
             </div>
-        </article>
+        </article> --}}
 
         <div class="space-y-6">
             @if($hasDim || $product->size)
