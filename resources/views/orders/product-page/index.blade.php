@@ -12,31 +12,593 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
-        *{box-sizing:border-box}
-        body{font-family:'Montserrat',sans-serif;background:#f8fafc}
-        .thumb-slide{cursor:pointer;opacity:.55;transition:opacity .2s}
-        .thumb-slide.swiper-slide-thumb-active{opacity:1}
-        .main-swiper{border-radius:16px;overflow:hidden;background:#fff;cursor:zoom-in}
-        .main-swiper .swiper-slide img{width:100%;height:420px;object-fit:contain;background:#f1f5f9}
-        @media(max-width:640px){.main-swiper .swiper-slide img{height:280px}}
-        .thumb-swiper .swiper-slide img{height:72px;width:72px;object-fit:cover;border-radius:10px;border:2px solid transparent}
-        .thumb-swiper .swiper-slide-thumb-active img{border-color:#1d4ed8}
-        .qty-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:#f1f5f9;font-size:18px;cursor:pointer;user-select:none;transition:background .15s}
-        .qty-btn:hover{background:#e2e8f0}
-        .qty-btn:disabled{opacity:.35;cursor:not-allowed}
-        @media(min-width:1024px){.sticky-sidebar{position:sticky;top:80px}}
-        .swiper-button-next,.swiper-button-prev{color:#1d4ed8!important}
-        .swiper-pagination-bullet-active{background:#1d4ed8!important}
-        .info-chip{display:inline-flex;align-items:center;gap:4px;background:#f1f5f9;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;color:#475569}
-        .variant-btn{border:2px solid #e2e8f0;border-radius:10px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;background:#fff;color:#374151}
-        .variant-btn.selected{border-color:#1d4ed8;background:#eff6ff;color:#1d4ed8}
-        .variant-btn:disabled{opacity:.4;cursor:not-allowed}
-        .color-swatch{width:32px;height:32px;border-radius:50%;border:3px solid transparent;cursor:pointer;transition:all .15s;box-shadow:0 0 0 2px #e2e8f0}
-        .color-swatch.selected{box-shadow:0 0 0 3px #1d4ed8}
-        .payment-btn{border:2px solid #e2e8f0;border-radius:12px;padding:10px 14px;cursor:pointer;transition:all .15s;background:#fff;text-align:left}
-        .payment-btn.selected{border-color:#1d4ed8;background:#eff6ff}
-        .related-card{background:#fff;border-radius:16px;overflow:hidden;border:1px solid #f1f5f9;transition:box-shadow .2s}
-        .related-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.08)}
+        :root {
+            --brand-blue: #1e3a5f;
+            --brand-blue-light: #2563eb;
+            --brand-blue-dark: #10243a;
+            --brand-blue-soft: rgba(37, 99, 235, 0.12);
+            --brand-accent: #f59e0b;
+            --surface: #f8fafc;
+            --surface-strong: #eef4fb;
+            --border-soft: rgba(148, 163, 184, 0.18);
+            --text-main: #0f172a;
+            --text-soft: #64748b;
+            --success: #059669;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 28%),
+                linear-gradient(180deg, #f8fbff 0%, #f1f5f9 100%);
+            color: var(--text-main);
+        }
+
+        .pdp-header {
+            background: rgba(255, 255, 255, 0.88);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.92);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .pdp-card {
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 16px 42px rgba(15, 23, 42, 0.08);
+        }
+
+        .pdp-hero-card {
+            background:
+                radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 30%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96));
+        }
+
+        .pdp-gallery-shell {
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .pdp-gallery-frame {
+            border-radius: 24px;
+            padding: 12px;
+            background: linear-gradient(180deg, #ffffff 0%, var(--surface-strong) 100%);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+        }
+
+        .pdp-gallery-meta {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .pdp-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #94a3b8;
+        }
+
+        .pdp-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.86);
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #475569;
+        }
+
+        .thumb-slide {
+            cursor: pointer;
+            opacity: .58;
+            transition: opacity .2s ease, transform .2s ease;
+        }
+
+        .thumb-slide:hover {
+            opacity: 1;
+            transform: translateY(-1px);
+        }
+
+        .thumb-slide.swiper-slide-thumb-active {
+            opacity: 1;
+        }
+
+        .main-swiper {
+            border-radius: 22px;
+            overflow: hidden;
+            background: #fff;
+            cursor: zoom-in;
+            box-shadow: inset 0 0 0 1px rgba(226, 232, 240, 0.9);
+        }
+
+        .main-swiper .swiper-slide img {
+            width: 100%;
+            height: 520px;
+            object-fit: contain;
+            background: linear-gradient(180deg, #ffffff, #eef4fb);
+        }
+
+        @media(max-width: 640px) {
+            .main-swiper .swiper-slide img {
+                height: 320px;
+            }
+        }
+
+        .thumb-swiper .swiper-slide img {
+            height: 78px;
+            width: 78px;
+            object-fit: cover;
+            border-radius: 16px;
+            border: 2px solid transparent;
+            background: #fff;
+        }
+
+        .thumb-swiper .swiper-slide-thumb-active img {
+            border-color: var(--brand-blue-light);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.18);
+        }
+
+        .sticky-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        @media(min-width: 1024px) {
+            .sticky-sidebar {
+                position: sticky;
+                top: 88px;
+            }
+        }
+
+        .swiper-button-next,
+        .swiper-button-prev {
+            color: var(--brand-blue-light) !important;
+        }
+
+        .swiper-pagination-bullet-active {
+            background: var(--brand-blue-light) !important;
+        }
+
+        .info-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 11px;
+            border-radius: 999px;
+            background: rgba(239, 246, 255, 0.95);
+            border: 1px solid rgba(191, 219, 254, 0.95);
+            font-size: 0.73rem;
+            font-weight: 700;
+            color: var(--brand-blue-light);
+        }
+
+        .pdp-title {
+            font-size: clamp(2rem, 2.7vw, 3rem);
+            line-height: 1.05;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .pdp-lead {
+            color: var(--text-soft);
+            font-size: 0.96rem;
+            line-height: 1.75;
+        }
+
+        .pdp-price-wrap {
+            padding: 18px 20px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, rgba(16, 36, 58, 0.98), rgba(37, 99, 235, 0.95));
+            color: #fff;
+            box-shadow: 0 18px 36px rgba(30, 58, 95, 0.2);
+        }
+
+        .pdp-price-wrap .pdp-price-caption {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.68);
+        }
+
+        .pdp-price-wrap #mainPrice {
+            color: #fff;
+        }
+
+        .pdp-price-support {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+            font-size: 0.82rem;
+            color: rgba(255, 255, 255, 0.78);
+        }
+
+        .pdp-highlight-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(245, 158, 11, 0.18);
+            color: #fef3c7;
+            border: 1px solid rgba(253, 224, 71, 0.22);
+            font-size: 0.72rem;
+            font-weight: 800;
+        }
+
+        .pdp-trust-grid {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        @media(min-width: 640px) {
+            .pdp-trust-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        .pdp-trust-card {
+            padding: 18px;
+            border-radius: 22px;
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+        }
+
+        .pdp-trust-card__icon {
+            width: 42px;
+            height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: rgba(239, 246, 255, 0.95);
+            color: var(--brand-blue-light);
+        }
+
+        .pdp-trust-card h3 {
+            margin: 14px 0 0;
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .pdp-trust-card p {
+            margin: 8px 0 0;
+            font-size: 0.82rem;
+            line-height: 1.6;
+            color: var(--text-soft);
+        }
+
+        .pdp-section-eyebrow {
+            margin: 0 0 10px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #94a3b8;
+        }
+
+        .variant-btn {
+            min-height: 44px;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 8px 15px;
+            font-size: 0.84rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .18s ease;
+            background: #fff;
+            color: #334155;
+        }
+
+        .variant-btn.selected {
+            border-color: var(--brand-blue-light);
+            background: rgba(239, 246, 255, 0.95);
+            color: var(--brand-blue-light);
+            box-shadow: 0 12px 24px rgba(37, 99, 235, 0.12);
+        }
+
+        .variant-btn:disabled {
+            opacity: .38;
+            cursor: not-allowed;
+        }
+
+        .color-swatch {
+            width: 38px;
+            height: 38px;
+            border-radius: 999px;
+            border: 4px solid rgba(255, 255, 255, 0.95);
+            cursor: pointer;
+            transition: transform .18s ease, box-shadow .18s ease;
+            box-shadow: 0 0 0 2px #dbe3ef;
+        }
+
+        .color-swatch:hover {
+            transform: translateY(-1px);
+        }
+
+        .color-swatch.selected {
+            box-shadow: 0 0 0 3px var(--brand-blue-light), 0 10px 18px rgba(37, 99, 235, 0.18);
+        }
+
+        .payment-btn {
+            border: 2px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all .18s ease;
+            background: #fff;
+            text-align: left;
+        }
+
+        .payment-btn:hover {
+            border-color: rgba(59, 130, 246, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .payment-btn.selected {
+            border-color: var(--brand-blue-light);
+            background: rgba(239, 246, 255, 0.92);
+            box-shadow: 0 12px 24px rgba(37, 99, 235, 0.1);
+        }
+
+        .pdp-help-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .pdp-help-item {
+            display: flex;
+            align-items: start;
+            gap: 12px;
+            padding: 14px;
+            border-radius: 18px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.92));
+            border: 1px solid rgba(226, 232, 240, 0.9);
+        }
+
+        .pdp-help-item strong {
+            display: block;
+            font-size: 0.88rem;
+            color: var(--text-main);
+        }
+
+        .pdp-help-item span {
+            display: block;
+            margin-top: 2px;
+            font-size: 0.78rem;
+            line-height: 1.55;
+            color: var(--text-soft);
+        }
+
+        .delivery-opt {
+            border-radius: 18px;
+            transition: all .18s ease;
+        }
+
+        .pdp-spec-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        @media(min-width: 640px) {
+            .pdp-spec-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        .pdp-spec-item {
+            padding: 15px;
+            border-radius: 18px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.92));
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            min-height: 100%;
+        }
+
+        .pdp-spec-item span {
+            display: block;
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #94a3b8;
+        }
+
+        .pdp-spec-item strong {
+            display: block;
+            margin-top: 8px;
+            font-size: 0.98rem;
+            color: var(--text-main);
+        }
+
+        .pdp-story-card {
+            padding: 24px;
+        }
+
+        .pdp-story-grid {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        @media(min-width: 768px) {
+            .pdp-story-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .pdp-story-block {
+            padding: 18px;
+            border-radius: 22px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.94));
+            border: 1px solid rgba(226, 232, 240, 0.9);
+        }
+
+        .pdp-story-block p {
+            color: var(--text-soft);
+            font-size: 0.92rem;
+            line-height: 1.8;
+        }
+
+        .pdp-related-section {
+            margin-top: 40px;
+        }
+
+        .related-card {
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+            overflow: hidden;
+            border-radius: 24px;
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+            transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+        }
+
+        .related-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(59, 130, 246, 0.25);
+            box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
+        }
+
+        .related-card__media {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(180deg, #f8fafc, #e2e8f0);
+        }
+
+        .related-card__media img {
+            transition: transform .35s ease;
+        }
+
+        .related-card:hover .related-card__media img {
+            transform: scale(1.03);
+        }
+
+        .related-card__body {
+            padding: 14px;
+        }
+
+        .pdp-primary-btn {
+            background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-light));
+            color: #fff;
+            box-shadow: 0 16px 32px rgba(37, 99, 235, 0.22);
+        }
+
+        .pdp-primary-btn:hover {
+            filter: brightness(1.02);
+        }
+
+        .pdp-outline-btn {
+            border: 1px solid rgba(203, 213, 225, 0.95);
+            background: rgba(255, 255, 255, 0.92);
+            color: #334155;
+        }
+
+        .pdp-outline-btn:hover {
+            border-color: rgba(59, 130, 246, 0.35);
+            background: rgba(239, 246, 255, 0.92);
+            color: var(--brand-blue-light);
+        }
+
+        .qty-btn {
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: #f1f5f9;
+            font-size: 18px;
+            cursor: pointer;
+            user-select: none;
+            transition: background .15s;
+        }
+
+        .qty-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .qty-btn:disabled {
+            opacity: .35;
+            cursor: not-allowed;
+        }
+
+        .pdp-bottom-bar {
+            background: rgba(255, 255, 255, 0.92);
+            border-top: 1px solid rgba(226, 232, 240, 0.92);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            box-shadow: 0 -8px 30px rgba(15, 23, 42, 0.08);
+        }
+
+        .pdp-bottom-bar__price {
+            min-width: 0;
+        }
+
+        .pdp-bottom-bar__price span {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #94a3b8;
+        }
+
+        .pdp-bottom-bar__price strong {
+            display: block;
+            font-size: 1.1rem;
+            line-height: 1.1;
+            color: var(--brand-blue-dark);
+        }
+
+        @media(max-width: 767px) {
+            .pdp-bottom-bar__price {
+                display: none;
+            }
+        }
+
+        @keyframes pdp-fade-up {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .pdp-reveal {
+            opacity: 0;
+            transform: translateY(18px);
+        }
+
+        .pdp-reveal.is-visible {
+            animation: pdp-fade-up .5s ease forwards;
+        }
 
         /* Lightbox */
         .lightbox-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9998;display:none;align-items:center;justify-content:center;flex-direction:column}
@@ -59,25 +621,28 @@
 <body class="pb-28">
 
 <div id="globalLoaderPdp" class="fixed inset-0 bg-white/80 z-[9999] hidden items-center justify-center">
-    <svg class="w-10 h-10 animate-spin text-blue-700" viewBox="0 0 64 64"><path d="M32 64a32 32 0 1 1 32-32h-4a28 28 0 1 0-28 28z" fill="currentColor"/><path d="M32 0a32 32 0 0 1 32 32h-4a28 28 0 0 0-28-28z" fill="currentColor"/></svg>
+    <svg class="w-10 h-10 animate-spin text-[var(--brand-blue-light)]" viewBox="0 0 64 64"><path d="M32 64a32 32 0 1 1 32-32h-4a28 28 0 1 0-28 28z" fill="currentColor"/><path d="M32 0a32 32 0 0 1 32 32h-4a28 28 0 0 0-28-28z" fill="currentColor"/></svg>
 </div>
 
 <!-- Header -->
-<header class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 shadow-sm h-16 flex items-center px-4 md:px-8 justify-between">
-    <div class="flex items-center gap-3">
+<header class="pdp-header fixed top-0 left-0 right-0 z-50 h-16 flex items-center px-4 md:px-8 justify-between">
+    <div class="flex items-center gap-3 min-w-0">
         @if($logoStore)
-            <div class="w-9 h-9 rounded-full overflow-hidden border-2 border-gray-100 flex-shrink-0">
-                <img src="{{ $logoStore }}" class="w-full h-full object-cover" alt="Logo">
+            <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm flex-shrink-0">
+                <img src="{{ $logoStore }}" class="w-full h-full object-cover" alt="Logo da loja">
             </div>
         @endif
-        <span class="font-bold text-gray-800 text-base">{{ $partner->store->store_name }}</span>
+        <div class="min-w-0">
+            <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Loja oficial</p>
+            <span class="block truncate font-bold text-slate-800 text-base">{{ $partner->store->store_name }}</span>
+        </div>
     </div>
     <div class="flex items-center gap-3">
-        <button onclick="openCart()" class="relative p-2 rounded-xl hover:bg-gray-100 transition">
-            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.5 6h13M10 21a1 1 0 100-2 1 1 0 000 2zm7 0a1 1 0 100-2 1 1 0 000 2z"/></svg>
-            <span id="cartBadge" class="hidden absolute -top-1 -right-1 bg-blue-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
+        <button onclick="openCart()" class="pdp-outline-btn relative p-2.5 rounded-2xl transition">
+            <svg class="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.5 6h13M10 21a1 1 0 100-2 1 1 0 000 2zm7 0a1 1 0 100-2 1 1 0 000 2z"/></svg>
+            <span id="cartBadge" class="hidden absolute -top-1 -right-1 bg-[var(--brand-blue-light)] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
         </button>
-        <a href="{{ route('catalog.index', $partner->partner_link) }}" class="flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-blue-700 transition">
+        <a href="{{ route('catalog.index', $partner->partner_link) }}" class="flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-[var(--brand-blue-light)] transition">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
             Voltar
         </a>
@@ -97,287 +662,407 @@
     $defaultImage  = $images->isNotEmpty()
                         ? asset('storage/' . str_replace('public/', '', $images->first()->url))
                         : '/img/image-not-found.png';
+    $descriptionText = trim(strip_tags((string) ($product->description ?? '')));
+    $shortDescription = $descriptionText !== ''
+                        ? \Illuminate\Support\Str::limit($descriptionText, 180)
+                        : 'Uma selecao apresentada com foco em clareza, confianca e decisao rapida para o cliente.';
+    $referencePrice = ($product->old_price && $product->old_price > $basePrice) ? $product->old_price : $product->price;
+    $hasReferencePrice = $referencePrice && $referencePrice > $basePrice;
+    $discountPercent = $hasReferencePrice ? (int) round((1 - ($basePrice / $referencePrice)) * 100) : null;
+    $pixPrice = ($product->discount_pix && $product->discount_pix > 0) ? $basePrice * (1 - $product->discount_pix / 100) : null;
+    $installmentValue = ($product->installments && $product->installments > 1) ? $basePrice / $product->installments : null;
 @endphp
 
-<main class="pt-20 px-4 md:px-8 max-w-6xl mx-auto">
-<div class="lg:grid lg:grid-cols-2 lg:gap-12">
+<main class="pt-24 px-4 md:px-8 max-w-screen-2xl mx-auto">
+    <section class="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(340px,460px)]">
+        <div class="space-y-5">
+            <div class="pdp-card pdp-hero-card pdp-gallery-shell pdp-reveal">
+                <div class="pdp-gallery-meta">
+                    <div class="flex flex-wrap gap-2">
+                        <span class="pdp-pill">Galeria do produto</span>
+                        <span class="pdp-pill">Toque para ampliar</span>
+                    </div>
+                    <span class="pdp-eyebrow">Experiencia visual mais intuitiva</span>
+                </div>
 
-    <!-- Images -->
-    <div>
-        <div class="main-swiper swiper swiper-main shadow-sm" id="mainSwiperContainer">
-            <div class="swiper-wrapper">
-                @if(empty($variantsByColor[0]['images']) || $variantsByColor[0]['images']->isEmpty())
-                    <div class="swiper-slide"><img src="/img/image-not-found.png" alt="Sem imagem"></div>
-                @else
-                    @foreach($variantsByColor[0]['images'] as $image)
-                        <div class="swiper-slide"><img src="{{ asset('storage/' . str_replace('public/', '', $image->url)) }}" alt="{{ $product->name }}"></div>
-                    @endforeach
-                @endif
-            </div>
-            <div class="swiper-button-next"></div>
-            <div class="swiper-button-prev"></div>
-            <div class="swiper-pagination"></div>
-        </div>
-        <div class="thumb-swiper swiper mt-3 px-1" id="thumbSwiperContainer">
-            <div class="swiper-wrapper">
-                @if(!empty($variantsByColor[0]['images']) && $variantsByColor[0]['images']->count() > 1)
-                    @foreach($variantsByColor[0]['images'] as $image)
-                        <div class="swiper-slide thumb-slide w-auto">
-                            <img src="{{ asset('storage/' . str_replace('public/', '', $image->url)) }}" alt="">
+                <div class="pdp-gallery-frame">
+                    <div class="main-swiper swiper swiper-main shadow-sm" id="mainSwiperContainer">
+                        <div class="swiper-wrapper">
+                            @if(empty($variantsByColor[0]['images']) || $variantsByColor[0]['images']->isEmpty())
+                                <div class="swiper-slide"><img src="/img/image-not-found.png" alt="Sem imagem do produto"></div>
+                            @else
+                                @foreach($variantsByColor[0]['images'] as $image)
+                                    <div class="swiper-slide"><img src="{{ asset('storage/' . str_replace('public/', '', $image->url)) }}" alt="{{ $product->name }}"></div>
+                                @endforeach
+                            @endif
                         </div>
-                    @endforeach
-                @endif
+                        <div class="swiper-button-next"></div>
+                        <div class="swiper-button-prev"></div>
+                        <div class="swiper-pagination"></div>
+                    </div>
+
+                    <div class="thumb-swiper swiper mt-4 px-1" id="thumbSwiperContainer">
+                        <div class="swiper-wrapper">
+                            @if(!empty($variantsByColor[0]['images']) && $variantsByColor[0]['images']->count() > 1)
+                                @foreach($variantsByColor[0]['images'] as $image)
+                                    <div class="swiper-slide thumb-slide w-auto">
+                                        <img src="{{ asset('storage/' . str_replace('public/', '', $image->url)) }}" alt="Miniatura do produto {{ $product->name }}">
+                                    </div>
+                                @endforeach
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pdp-trust-grid">
+                <article class="pdp-trust-card pdp-reveal" style="animation-delay: 0.04s;">
+                    <div class="pdp-trust-card__icon">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-3.314 0-6 2.239-6 5 0 2.761 2.686 5 6 5s6-2.239 6-5c0-2.761-2.686-5-6-5zm0 0V5m0 13v3m7-8h3M2 13h3"/></svg>
+                    </div>
+                    <h3>Visual forte e organizado</h3>
+                    <p>Galeria destacada, leitura mais limpa e decisoes importantes reunidas perto da compra.</p>
+                </article>
+
+                <article class="pdp-trust-card pdp-reveal" style="animation-delay: 0.08s;">
+                    <div class="pdp-trust-card__icon">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-3.314 0-6 2.239-6 5 0 2.761 2.686 5 6 5s6-2.239 6-5c0-2.761-2.686-5-6-5zm0 0V5m0 13v3m7-8h3M2 13h3"/></svg>
+                    </div>
+                    <h3>Escolha intuitiva</h3>
+                    <p>Cores, tamanhos e pagamentos ficam agrupados em blocos simples para acelerar a conversao.</p>
+                </article>
+
+                <article class="pdp-trust-card pdp-reveal" style="animation-delay: 0.12s;">
+                    <div class="pdp-trust-card__icon">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                    <h3>Confiança na compra</h3>
+                    <p>Informacoes de estoque, entrega e atendimento aparecem de forma consistente com o visual do catalogo.</p>
+                </article>
             </div>
         </div>
-    </div>
 
-    <!-- Info -->
-    <div class="sticky-sidebar mt-6 lg:mt-0 flex flex-col gap-4">
-
-        <!-- Card principal -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-
-            {{-- Chips --}}
-            <div class="flex flex-wrap gap-2 mb-3">
-                @if($category)<span class="info-chip"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>{{ $category->name }}</span>@endif
-                @if($product->brand)<span class="info-chip">{{ $product->brand->name }}</span>@endif
-                @if($product->gender)@php $gm=['M'=>'Masculino','F'=>'Feminino','U'=>'Unissex'];@endphp<span class="info-chip">{{ $gm[$product->gender] ?? $product->gender }}</span>@endif
-            </div>
-
-            <h1 class="text-2xl font-bold text-gray-900 leading-tight">{{ $product->name }}</h1>
-
-            {{-- Estoque dinâmico --}}
-            <div class="mt-2" id="stockBadge">
-                @if(!$hasVariants && $product->stock !== null)
-                    @if($product->stock > 5)<span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">Em estoque ({{ $product->stock }} un.)</span>
-                    @elseif($product->stock > 0)<span class="text-xs font-semibold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full">Últimas {{ $product->stock }} unidades</span>
-                    @else<span class="text-xs font-semibold text-red-600 bg-red-50 px-2.5 py-1 rounded-full">Sem estoque</span>@endif
-                @endif
-            </div>
-
-            {{-- Preços (dinâmico via JS quando há variantes) --}}
-            <div class="mt-4 space-y-1" id="priceBlock">
-                @if($product->price_promotional && $product->price_promotional > 0 && $product->price_promotional < $product->price)
-                    <div class="flex items-end gap-2">
-                        <span id="mainPrice" class="text-3xl font-extrabold text-blue-700">R$ {{ number_format($product->price_promotional, 2, ',', '.') }}</span>
-                        <span class="text-base text-gray-400 line-through mb-0.5">R$ {{ number_format($product->price, 2, ',', '.') }}</span>
-                        @php $disc=round((1-$product->price_promotional/$product->price)*100);@endphp
-                        <span class="text-xs font-bold text-white bg-red-500 px-2 py-0.5 rounded-full mb-0.5">-{{ $disc }}%</span>
-                    </div>
-                @else
-                    <div class="flex items-end gap-2">
-                        <span id="mainPrice" class="text-3xl font-extrabold text-blue-700">R$ {{ number_format($product->price, 2, ',', '.') }}</span>
-                    </div>
-                    @if($product->old_price && $product->price < $product->old_price)
-                        <div class="text-sm text-gray-400 line-through">R$ {{ number_format($product->old_price, 2, ',', '.') }}</div>
-                    @endif
-                @endif
-            </div>
-
-            {{-- Atacado --}}
-            @if($product->price_wholesale && $product->price_wholesale > 0)
-            <div class="mt-2" id="wholesaleInfo">
-                <span class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full inline-block">
-                    Atacado: R$ {{ number_format($product->price_wholesale, 2, ',', '.') }}
-                    @if($wholesaleMinQty)
-                        — a partir de {{ $wholesaleMinQty }} peças
-                    @endif
-                </span>
-            </div>
-            @endif
-
-            {{-- Seleção de COR --}}
-            @if($hasColors)
-            <div class="mt-5 pt-4 border-t border-gray-100">
-                <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Cor: <span id="selectedColorLabel" class="text-gray-800 normal-case font-semibold"></span></p>
-                <div class="flex flex-wrap gap-2" id="colorSwatches">
-                    @foreach($colors as $v)
-                        <button type="button"
-                            class="color-swatch @if($loop->first) selected @endif"
-                            data-color="{{ $v->color }}"
-                            data-hex="{{ $v->color_hex ?? '#cccccc' }}"
-                            style="background-color: {{ $v->color_hex ?? '#cccccc' }}"
-                            title="{{ $v->color }}">
-                        </button>
-                    @endforeach
+        <div class="sticky-sidebar">
+            <section class="pdp-card pdp-hero-card p-6 md:p-7 pdp-reveal">
+                <div class="flex flex-wrap gap-2 mb-4">
+                    @if($category)<span class="info-chip"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>{{ $category->name }}</span>@endif
+                    @if($product->brand)<span class="info-chip">{{ $product->brand->name }}</span>@endif
+                    @if($product->gender)@php $gm=['M'=>'Masculino','F'=>'Feminino','U'=>'Unissex'];@endphp<span class="info-chip">{{ $gm[$product->gender] ?? $product->gender }}</span>@endif
                 </div>
-                <p id="errColor" class="hidden text-xs text-red-500 mt-1">Selecione uma cor</p>
-            </div>
-            @elseif($product->color)
-            <div class="mt-3"><span class="info-chip">{{ $product->color }}</span></div>
-            @endif
 
-            {{-- Seleção de TAMANHO --}}
-            @if($hasSizes)
-            <div class="mt-4">
-                <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Tamanho</p>
-                <div class="flex flex-wrap gap-2" id="sizeButtons">
-                    @foreach($sizes as $sz)
-                        <button type="button" class="variant-btn" data-size="{{ $sz }}">{{ $sz }}</button>
-                    @endforeach
+                <div class="pdp-eyebrow mb-3">Pagina de produto</div>
+                <h1 class="pdp-title">{{ $product->name }}</h1>
+                <p class="pdp-lead mt-4">{{ $shortDescription }}</p>
+
+                <div class="mt-4" id="stockBadge">
+                    @if(!$hasVariants && $product->stock !== null)
+                        @if($product->stock > 5)<span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full inline-flex">Em estoque ({{ $product->stock }} un.)</span>
+                        @elseif($product->stock > 0)<span class="text-xs font-semibold text-amber-700 bg-amber-50 px-3 py-1.5 rounded-full inline-flex">Ultimas {{ $product->stock }} unidades</span>
+                        @else<span class="text-xs font-semibold text-red-600 bg-red-50 px-3 py-1.5 rounded-full inline-flex">Sem estoque</span>@endif
+                    @endif
                 </div>
-                <p id="errSize" class="hidden text-xs text-red-500 mt-1">Selecione um tamanho</p>
-            </div>
-            @elseif($product->size)
-            <div class="mt-3"><span class="info-chip">Tam: {{ $product->size }}</span></div>
-            @endif
 
-            {{-- Forma de pagamento --}}
-            <div class="mt-5 pt-4 border-t border-gray-100">
-                <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Forma de pagamento</p>
-                <div class="grid grid-cols-1 gap-2" id="paymentOptions">
-                    @if($product->discount_pix && $product->discount_pix > 0)
-                        @php $pixPrice = $basePrice * (1 - $product->discount_pix / 100); @endphp
-                        <button type="button" class="payment-btn selected" data-method="pix">
+                <div class="pdp-price-wrap mt-5" id="priceBlock">
+                    <span class="pdp-price-caption">Preco principal</span>
+                    <div class="mt-2 flex flex-wrap items-end gap-3">
+                        <span id="mainPrice" class="text-4xl font-extrabold">R$ {{ number_format($basePrice, 2, ',', '.') }}</span>
+                        @if($hasReferencePrice)
+                            <span id="referencePrice" class="text-base text-white/60 line-through mb-1">R$ {{ number_format($referencePrice, 2, ',', '.') }}</span>
+                        @endif
+                        @if($discountPercent)
+                            <span id="discountBadge" class="pdp-highlight-badge mb-1">-{{ $discountPercent }}%</span>
+                        @endif
+                    </div>
+
+                    <div class="pdp-price-support">
+                        @if($pixPrice)
+                            <span id="pixSummary">Pix por R$ {{ number_format($pixPrice, 2, ',', '.') }}</span>
+                        @endif
+                        @if($installmentValue)
+                            <span id="installmentSummary">{{ $product->installments }}x de R$ {{ number_format($installmentValue, 2, ',', '.') }}</span>
+                        @endif
+                        <span>Compra orientada via WhatsApp</span>
+                    </div>
+                </div>
+
+                @if($product->price_wholesale && $product->price_wholesale > 0)
+                    <div class="mt-4" id="wholesaleInfo">
+                        <span class="inline-flex rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700">
+                            Atacado: R$ {{ number_format($product->price_wholesale, 2, ',', '.') }}
+                            @if($wholesaleMinQty)
+                                — a partir de {{ $wholesaleMinQty }} pecas
+                            @endif
+                        </span>
+                    </div>
+                @endif
+
+                @if($hasColors)
+                    <div class="mt-6 pt-5 border-t border-slate-100">
+                        <p class="pdp-section-eyebrow">Cor selecionada</p>
+                        <div class="flex items-center justify-between gap-3 mb-3">
+                            <p class="text-sm font-semibold text-slate-800">Escolha a variacao ideal</p>
+                            <span id="selectedColorLabel" class="text-sm font-semibold text-[var(--brand-blue-light)]"></span>
+                        </div>
+                        <div class="flex flex-wrap gap-3" id="colorSwatches">
+                            @foreach($colors as $v)
+                                <button type="button"
+                                    class="color-swatch @if($loop->first) selected @endif"
+                                    data-color="{{ $v->color }}"
+                                    data-hex="{{ $v->color_hex ?? '#cccccc' }}"
+                                    style="background-color: {{ $v->color_hex ?? '#cccccc' }}"
+                                    title="{{ $v->color }}"
+                                    aria-label="Selecionar cor {{ $v->color }}">
+                                </button>
+                            @endforeach
+                        </div>
+                        <p id="errColor" class="hidden text-xs text-red-500 mt-2">Selecione uma cor</p>
+                    </div>
+                @elseif($product->color)
+                    <div class="mt-4"><span class="info-chip">{{ $product->color }}</span></div>
+                @endif
+
+                @if($hasSizes)
+                    <div class="mt-5">
+                        <p class="pdp-section-eyebrow">Tamanho</p>
+                        <div class="flex flex-wrap gap-2" id="sizeButtons">
+                            @foreach($sizes as $sz)
+                                <button type="button" class="variant-btn" data-size="{{ $sz }}">{{ $sz }}</button>
+                            @endforeach
+                        </div>
+                        <p id="errSize" class="hidden text-xs text-red-500 mt-2">Selecione um tamanho</p>
+                    </div>
+                @elseif($product->size)
+                    <div class="mt-4"><span class="info-chip">Tam: {{ $product->size }}</span></div>
+                @endif
+
+                <div class="mt-6 pt-5 border-t border-slate-100">
+                    <p class="pdp-section-eyebrow">Forma de pagamento</p>
+                    <div class="grid grid-cols-1 gap-3" id="paymentOptions">
+                        @if($product->discount_pix && $product->discount_pix > 0)
+                            <button type="button" class="payment-btn selected" data-method="pix">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-2xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 24 24"><path d="M11.9 2C6.4 2 2 6.4 2 11.9s4.4 9.9 9.9 9.9 9.9-4.4 9.9-9.9S17.4 2 11.9 2zm4.3 13.4l-2.4-2.4c-.3.1-.6.2-.9.2s-.6-.1-.9-.2l-2.4 2.4c-.2.2-.4.3-.7.3s-.5-.1-.7-.3c-.4-.4-.4-1 0-1.4l2.4-2.4c-.1-.3-.2-.6-.2-.9s.1-.6.2-.9L8.2 7.4c-.4-.4-.4-1 0-1.4s1-.4 1.4 0l2.4 2.4c.3-.1.6-.2.9-.2s.6.1.9.2l2.4-2.4c.4-.4 1-.4 1.4 0s.4 1 0 1.4l-2.4 2.4c.1.3.2.6.2.9s-.1.6-.2.9l2.4 2.4c.4.4.4 1 0 1.4-.2.2-.4.3-.7.3s-.5-.1-.7-.3z"/></svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800">PIX com desconto</p>
+                                        <p id="pixPaymentLabel" class="text-xs text-emerald-600 font-semibold">
+                                            {{ $product->discount_pix }}% off — R$ {{ number_format($pixPrice, 2, ',', '.') }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </button>
+                        @endif
+
+                        @if($product->installments && $product->installments > 1)
+                            <button type="button" class="payment-btn" data-method="credit_card">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-2xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800">Cartao de credito</p>
+                                        <p id="installmentPaymentLabel" class="text-xs text-blue-600 font-semibold">
+                                            {{ $product->installments }}x de R$ {{ number_format($installmentValue, 2, ',', '.') }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </button>
+                        @endif
+
+                        <button type="button" class="payment-btn" data-method="cash">
                             <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24"><path d="M11.9 2C6.4 2 2 6.4 2 11.9s4.4 9.9 9.9 9.9 9.9-4.4 9.9-9.9S17.4 2 11.9 2zm4.3 13.4l-2.4-2.4c-.3.1-.6.2-.9.2s-.6-.1-.9-.2l-2.4 2.4c-.2.2-.4.3-.7.3s-.5-.1-.7-.3c-.4-.4-.4-1 0-1.4l2.4-2.4c-.1-.3-.2-.6-.2-.9s.1-.6.2-.9L8.2 7.4c-.4-.4-.4-1 0-1.4s1-.4 1.4 0l2.4 2.4c.3-.1.6-.2.9-.2s.6.1.9.2l2.4-2.4c.4-.4 1-.4 1.4 0s.4 1 0 1.4l-2.4 2.4c.1.3.2.6.2.9s-.1.6-.2.9l2.4 2.4c.4.4.4 1 0 1.4-.2.2-.4.3-.7.3s-.5-.1-.7-.3z"/></svg>
+                                <div class="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                                 </div>
                                 <div>
-                                    <p class="text-sm font-bold text-gray-800">PIX — {{ $product->discount_pix }}% de desconto</p>
-                                    <p class="text-xs text-green-600 font-semibold">R$ {{ number_format($pixPrice, 2, ',', '.') }}</p>
+                                    <p class="text-sm font-bold text-slate-800">Pagamento a vista</p>
+                                    <p class="text-xs text-slate-500 font-semibold">Confirme condicoes direto com a loja</p>
                                 </div>
                             </div>
                         </button>
-                    @endif
-                    @if($product->installments && $product->installments > 1)
-                        @php $installPrice = $basePrice / $product->installments; @endphp
-                        <button type="button" class="payment-btn" data-method="credit_card">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-bold text-gray-800">Cartão de crédito</p>
-                                    <p class="text-xs text-blue-600 font-semibold">{{ $product->installments }}x de R$ {{ number_format($installPrice, 2, ',', '.') }}</p>
-                                </div>
-                            </div>
-                        </button>
-                    @endif
-                    <button type="button" class="payment-btn" data-method="cash">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-                                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                            </div>
-                            <p class="text-sm font-bold text-gray-800">À vista</p>
-                        </div>
+                    </div>
+                    <p id="errPayment" class="hidden text-xs text-red-500 mt-2">Selecione uma forma de pagamento</p>
+                </div>
+            </section>
+
+            <section class="pdp-card p-5 md:p-6 pdp-reveal" style="animation-delay: 0.06s;">
+                <p class="pdp-section-eyebrow">Entrega e retirada</p>
+                <div class="grid grid-cols-2 gap-2 mb-4">
+                    <button type="button" id="btnPickup" onclick="setDelivery('pickup')"
+                        class="delivery-opt selected flex flex-col items-center gap-2 border-2 border-[var(--brand-blue-light)] bg-blue-50 rounded-2xl p-3 transition">
+                        <svg class="w-6 h-6 text-[var(--brand-blue-light)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                        <span class="text-xs font-bold text-[var(--brand-blue)]">Retirar na loja</span>
+                    </button>
+                    <button type="button" id="btnDelivery" onclick="setDelivery('delivery')"
+                        class="delivery-opt flex flex-col items-center gap-2 border-2 border-gray-200 bg-white rounded-2xl p-3 transition hover:border-blue-300">
+                        <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+                        <span class="text-xs font-bold text-gray-600">Entrega</span>
                     </button>
                 </div>
-                <p id="errPayment" class="hidden text-xs text-red-500 mt-1">Selecione uma forma de pagamento</p>
-            </div>
 
-            {{-- Descrição --}}
-            @if($product->description)
-            <div class="mt-5 pt-4 border-t border-gray-100">
-                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Descrição</p>
-                <p class="text-gray-700 text-sm leading-relaxed">{{ $product->description }}</p>
-            </div>
-            @endif
-        </div>
-
-        {{-- Entrega --}}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Entrega</p>
-            <div class="grid grid-cols-2 gap-2 mb-4">
-                <button type="button" id="btnPickup" onclick="setDelivery('pickup')"
-                    class="delivery-opt selected flex flex-col items-center gap-2 border-2 border-blue-600 bg-blue-50 rounded-xl p-3 transition">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                    <span class="text-xs font-bold text-blue-700">Retirar na loja</span>
-                </button>
-                <button type="button" id="btnDelivery" onclick="setDelivery('delivery')"
-                    class="delivery-opt flex flex-col items-center gap-2 border-2 border-gray-200 bg-white rounded-xl p-3 transition hover:border-blue-300">
-                    <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
-                    <span class="text-xs font-bold text-gray-600">Entrega</span>
-                </button>
-            </div>
-
-            <div id="deliveryFields" class="hidden space-y-3">
-                <div class="grid grid-cols-2 gap-2">
-                    <div class="col-span-2">
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">CEP <span class="text-red-500">*</span></label>
-                        <input type="text" id="deliveryZip" placeholder="00000-000" class="cep-mask w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-                    </div>
-                    <div class="col-span-2">
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">Endereço <span class="text-red-500">*</span></label>
-                        <input type="text" id="deliveryAddress" placeholder="Rua, número" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">Cidade <span class="text-red-500">*</span></label>
-                        <input type="text" id="deliveryCity" placeholder="Cidade" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">Estado</label>
-                        <input type="text" id="deliveryState" placeholder="UF" maxlength="2" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition uppercase">
-                    </div>
-                    <div class="col-span-2">
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">Complemento</label>
-                        <input type="text" id="deliveryComplement" placeholder="Apto, bloco..." class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                <div class="pdp-help-list mb-4">
+                    <div class="pdp-help-item">
+                        <svg class="w-5 h-5 mt-0.5 text-[var(--brand-blue-light)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>
+                            <strong>Defina como deseja receber</strong>
+                            <span>O cliente consegue escolher rapidamente entre retirada e entrega sem sair da PDP.</span>
+                        </div>
                     </div>
                 </div>
-                <p id="errDelivery" class="hidden text-xs text-red-500">Preencha o endereço de entrega</p>
-            </div>
-        </div>
 
-        {{-- Dimensões --}}
-        @php $hasDim = $product->width || $product->height || $product->length || $product->weight; @endphp
-        @if($hasDim || $product->size)
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Especificações</p>
-            <div class="grid grid-cols-3 gap-2">
-                @if($product->size)<div class="bg-gray-50 rounded-xl p-2.5 text-center"><p class="text-[10px] text-gray-400 font-semibold uppercase">Tamanho</p><p class="font-bold text-gray-800 mt-0.5">{{ $product->size }}</p></div>@endif
-                @if($product->width)<div class="bg-gray-50 rounded-xl p-2.5 text-center"><p class="text-[10px] text-gray-400 font-semibold uppercase">Largura</p><p class="font-bold text-gray-800 mt-0.5">{{ $product->width }}cm</p></div>@endif
-                @if($product->height)<div class="bg-gray-50 rounded-xl p-2.5 text-center"><p class="text-[10px] text-gray-400 font-semibold uppercase">Altura</p><p class="font-bold text-gray-800 mt-0.5">{{ $product->height }}cm</p></div>@endif
-                @if($product->length)<div class="bg-gray-50 rounded-xl p-2.5 text-center"><p class="text-[10px] text-gray-400 font-semibold uppercase">Comprimento</p><p class="font-bold text-gray-800 mt-0.5">{{ $product->length }}cm</p></div>@endif
-                @if($product->weight)<div class="bg-gray-50 rounded-xl p-2.5 text-center"><p class="text-[10px] text-gray-400 font-semibold uppercase">Peso</p><p class="font-bold text-gray-800 mt-0.5">{{ $product->weight }}kg</p></div>@endif
-            </div>
-        </div>
-        @endif
-
-    </div>
-</div>
-
-{{-- Produtos relacionados --}}
-@if($related->count() > 0)
-<div class="mt-10 mb-4">
-    <h2 class="text-lg font-bold text-gray-800 mb-4">Produtos relacionados</h2>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        @foreach($related as $rel)
-        <a href="{{ route('catalog.productPage', [$partner->partner_link, $rel->id]) }}" class="related-card block">
-            <div class="aspect-square overflow-hidden bg-gray-100">
-                @if($rel->images->isNotEmpty())
-                    <img src="{{ asset('storage/' . str_replace('public/', '', $rel->images->first()->url)) }}"
-                         class="w-full h-full object-cover object-center" alt="{{ $rel->name }}">
-                @else
-                    <div class="w-full h-full flex items-center justify-center text-gray-300">
-                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <div id="deliveryFields" class="hidden space-y-3">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="col-span-2">
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">CEP <span class="text-red-500">*</span></label>
+                            <input type="text" id="deliveryZip" placeholder="00000-000" class="cep-mask w-full border border-gray-200 rounded-2xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Endereco <span class="text-red-500">*</span></label>
+                            <input type="text" id="deliveryAddress" placeholder="Rua, numero" class="w-full border border-gray-200 rounded-2xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Cidade <span class="text-red-500">*</span></label>
+                            <input type="text" id="deliveryCity" placeholder="Cidade" class="w-full border border-gray-200 rounded-2xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Estado</label>
+                            <input type="text" id="deliveryState" placeholder="UF" maxlength="2" class="w-full border border-gray-200 rounded-2xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition uppercase">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Complemento</label>
+                            <input type="text" id="deliveryComplement" placeholder="Apto, bloco..." class="w-full border border-gray-200 rounded-2xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                        </div>
                     </div>
-                @endif
-            </div>
-            <div class="p-3">
-                <p class="text-sm font-semibold text-gray-800 truncate">{{ $rel->name }}</p>
-                <p class="text-sm font-extrabold text-blue-700 mt-0.5">R$ {{ number_format($rel->price, 2, ',', '.') }}</p>
-            </div>
-        </a>
-        @endforeach
-    </div>
-</div>
-@endif
+                    <p id="errDelivery" class="hidden text-xs text-red-500">Preencha o endereco de entrega</p>
+                </div>
+            </section>
+        </div>
+    </section>
 
+    @php $hasDim = $product->width || $product->height || $product->length || $product->weight; @endphp
+    <section class="grid gap-6 mt-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+        <article class="pdp-card pdp-story-card pdp-reveal" style="animation-delay: 0.08s;">
+            <p class="pdp-section-eyebrow">Detalhes que ajudam a decidir</p>
+            <div class="pdp-story-grid">
+                <div class="pdp-story-block">
+                    <h2 class="text-2xl font-extrabold text-slate-900">Uma PDP mais convidativa, sem fugir do seu padrao</h2>
+                    <p class="mt-4">
+                        {{ $descriptionText !== '' ? $descriptionText : 'Este produto agora ganha uma apresentacao com mais respiro visual, foco no preco, destaque para variacoes e uma leitura mais natural para o cliente chegar mais rapido na decisao de compra.' }}
+                    </p>
+                </div>
+
+                <div class="pdp-story-block">
+                    <h3 class="text-lg font-extrabold text-slate-900">O que o cliente encontra aqui</h3>
+                    <div class="pdp-help-list mt-4">
+                        <div class="pdp-help-item">
+                            <svg class="w-5 h-5 mt-0.5 text-[var(--brand-blue-light)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            <div><strong>Informacao priorizada</strong><span>Preco, estoque e selecao aparecem logo no primeiro bloco de decisao.</span></div>
+                        </div>
+                        <div class="pdp-help-item">
+                            <svg class="w-5 h-5 mt-0.5 text-[var(--brand-blue-light)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            <div><strong>Fluxo mais rapido</strong><span>Menos friccao para escolher variacao, forma de pagamento e seguir para o carrinho.</span></div>
+                        </div>
+                        <div class="pdp-help-item">
+                            <svg class="w-5 h-5 mt-0.5 text-[var(--brand-blue-light)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a5 5 0 00-10 0v2m-1 0h12a1 1 0 011 1v9a1 1 0 01-1 1H6a1 1 0 01-1-1v-9a1 1 0 011-1z"/></svg>
+                            <div><strong>Compra com mais confianca</strong><span>Entrega, especificacoes e suporte comercial ficam estruturados em cards coerentes com o catalogo.</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <div class="space-y-6">
+            @if($hasDim || $product->size)
+                <section class="pdp-card p-5 md:p-6 pdp-reveal" style="animation-delay: 0.1s;">
+                    <p class="pdp-section-eyebrow">Especificacoes</p>
+                    <div class="pdp-spec-grid">
+                        @if($product->size)<div class="pdp-spec-item"><span>Tamanho base</span><strong>{{ $product->size }}</strong></div>@endif
+                        @if($product->width)<div class="pdp-spec-item"><span>Largura</span><strong>{{ $product->width }} cm</strong></div>@endif
+                        @if($product->height)<div class="pdp-spec-item"><span>Altura</span><strong>{{ $product->height }} cm</strong></div>@endif
+                        @if($product->length)<div class="pdp-spec-item"><span>Comprimento</span><strong>{{ $product->length }} cm</strong></div>@endif
+                        @if($product->weight)<div class="pdp-spec-item"><span>Peso</span><strong>{{ $product->weight }} kg</strong></div>@endif
+                    </div>
+                </section>
+            @endif
+
+            <section class="pdp-card p-5 md:p-6 pdp-reveal" style="animation-delay: 0.14s;">
+                <p class="pdp-section-eyebrow">Atendimento e suporte</p>
+                <div class="pdp-help-list">
+                    <div class="pdp-help-item">
+                        <svg class="w-5 h-5 mt-0.5 text-[var(--brand-blue-light)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                        <div>
+                            <strong>Contato rapido com a loja</strong>
+                            <span>O cliente pode tirar duvidas e concluir o pedido pelo WhatsApp com o contexto do produto selecionado.</span>
+                        </div>
+                    </div>
+                    <div class="pdp-help-item">
+                        <svg class="w-5 h-5 mt-0.5 text-[var(--brand-blue-light)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-3.314 0-6 2.239-6 5s2.686 5 6 5 6-2.239 6-5-2.686-5-6-5zm0 0V5m0 13v3"/></svg>
+                        <div>
+                            <strong>Pagamento explicado na tela</strong>
+                            <span>Pix, cartao e compra a vista ficam claros antes mesmo do cliente abrir o carrinho.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </section>
+
+    @if($related->count() > 0)
+        <section class="pdp-related-section mb-4">
+            <div class="flex flex-col gap-2 mb-5 md:flex-row md:items-end md:justify-between">
+                <div>
+                    <p class="pdp-section-eyebrow mb-2">Continue explorando</p>
+                    <h2 class="text-2xl font-extrabold text-slate-900">Produtos relacionados</h2>
+                </div>
+                <p class="text-sm text-slate-500">Mais opcoes com o mesmo cuidado visual do catalogo.</p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                @foreach($related as $rel)
+                    <a href="{{ route('catalog.productPage', [$partner->partner_link, $rel->id]) }}" class="related-card block pdp-reveal" style="animation-delay: {{ min(($loop->index + 1) * 0.04, 0.2) }}s;">
+                        <div class="related-card__media aspect-square">
+                            @if($rel->images->isNotEmpty())
+                                <img src="{{ asset('storage/' . str_replace('public/', '', $rel->images->first()->url)) }}"
+                                     class="w-full h-full object-cover object-center" alt="{{ $rel->name }}">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center text-gray-300">
+                                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="related-card__body">
+                            <p class="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">{{ $rel->brand?->name ?? 'Colecao' }}</p>
+                            <p class="text-sm font-semibold text-slate-800 mt-2 truncate">{{ $rel->name }}</p>
+                            <div class="mt-3 flex items-center justify-between gap-3">
+                                <p class="text-base font-extrabold text-[var(--brand-blue)]">R$ {{ number_format($rel->price, 2, ',', '.') }}</p>
+                                <span class="inline-flex items-center justify-center w-9 h-9 rounded-full text-white bg-gradient-to-br from-[var(--brand-blue)] to-[var(--brand-blue-light)] shadow-[0_10px_20px_rgba(37,99,235,0.22)]">+</span>
+                            </div>
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+        </section>
+    @endif
 </main>
 
 <!-- Barra fixa inferior -->
-<div class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] px-4 py-3">
-    <div class="max-w-6xl mx-auto flex items-center gap-2">
-        <button id="btnAddToCart" class="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition text-sm">
+<div class="pdp-bottom-bar fixed bottom-0 left-0 right-0 z-40 px-4 py-3">
+    <div class="max-w-screen-2xl mx-auto flex items-center gap-2 md:gap-3">
+        <div class="pdp-bottom-bar__price">
+            <span>Preco atual</span>
+            <strong id="stickyBarPrice">R$ {{ number_format($basePrice, 2, ',', '.') }}</strong>
+        </div>
+        <button id="btnAddToCart" class="pdp-primary-btn flex-1 flex items-center justify-center gap-2 font-bold py-3.5 rounded-2xl transition text-sm">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.5 6h13M10 21a1 1 0 100-2 1 1 0 000 2zm7 0a1 1 0 100-2 1 1 0 000 2z"/></svg>
             Adicionar ao carrinho
         </button>
-        <button onclick="openCart()" class="relative flex items-center justify-center border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold py-3.5 px-4 rounded-xl transition flex-shrink-0">
+        <button onclick="openCart()" class="pdp-outline-btn relative flex items-center justify-center font-bold py-3.5 px-4 rounded-2xl transition flex-shrink-0">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.5 6h13M10 21a1 1 0 100-2 1 1 0 000 2zm7 0a1 1 0 100-2 1 1 0 000 2z"/></svg>
-            <span id="cartBadgeBar" class="hidden absolute -top-1.5 -right-1.5 bg-blue-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+            <span id="cartBadgeBar" class="hidden absolute -top-1.5 -right-1.5 bg-[var(--brand-blue-light)] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
         </button>
         <a href="https://wa.me/55{{ $storePhone }}?text={{ urlencode('Olá! Tenho interesse no produto ' . $product->name . '. Poderia me passar mais informações?') }}"
-            target="_blank" class="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 px-4 rounded-xl transition flex-shrink-0">
+            target="_blank" class="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 px-4 rounded-2xl transition flex-shrink-0">
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
         </a>
     </div>
@@ -400,7 +1085,7 @@
     <div id="cartFooter" class="hidden px-5 py-4 border-t border-gray-100 space-y-3">
         <div class="flex justify-between items-center">
             <span class="text-sm text-gray-500">Total</span>
-            <span id="cartTotal" class="text-xl font-extrabold text-blue-700">R$ 0,00</span>
+            <span id="cartTotal" class="text-xl font-extrabold text-[var(--brand-blue)]">R$ 0,00</span>
         </div>
         <input type="text" id="cartName" placeholder="Seu nome completo" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
         <p id="errCartName" class="hidden text-xs text-red-500 -mt-1">Campo obrigatório</p>
@@ -445,10 +1130,12 @@
     const PRODUCT_NAME    = @json($product->name);
     const DEFAULT_IMG     = @json($defaultImage);
     const BASE_PRICE      = {{ $basePrice }};
+    const REFERENCE_PRICE = {{ $referencePrice ?? 0 }};
     const PRODUCT_STOCK   = {{ $product->stock ?? 0 }};
     const WHOLESALE_PRICE = {{ $product->price_wholesale ?? 0 }};
     const WHOLESALE_MIN   = {{ $wholesaleMinQty ?? 0 }};
     const DISCOUNT_PIX    = {{ $product->discount_pix ?? 0 }};
+    const INSTALLMENTS_COUNT = {{ $product->installments ?? 0 }};
 
     // ── State ──
     let selectedColor   = null;
@@ -467,6 +1154,30 @@
         el.textContent = msg;
         el.classList.add('show');
         setTimeout(() => el.classList.remove('show'), 2500);
+    }
+
+    function initRevealAnimations() {
+        const items = document.querySelectorAll('.pdp-reveal');
+        if (!items.length) return;
+
+        if (!('IntersectionObserver' in window)) {
+            items.forEach(item => item.classList.add('is-visible'));
+            return;
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.12,
+            rootMargin: '0px 0px -40px 0px',
+        });
+
+        items.forEach(item => observer.observe(item));
     }
 
     // ── Swiper ──
@@ -644,8 +1355,49 @@
 
     function refreshPrice() {
         const price = getVariantPrice();
+        const formattedPrice = 'R$ ' + formatPrice(price);
         const el = document.getElementById('mainPrice');
-        if (el) el.textContent = 'R$ ' + formatPrice(price);
+        const stickyPrice = document.getElementById('stickyBarPrice');
+        const referencePrice = document.getElementById('referencePrice');
+        const discountBadge = document.getElementById('discountBadge');
+        const pixSummary = document.getElementById('pixSummary');
+        const installmentSummary = document.getElementById('installmentSummary');
+        const pixPaymentLabel = document.getElementById('pixPaymentLabel');
+        const installmentPaymentLabel = document.getElementById('installmentPaymentLabel');
+
+        if (el) el.textContent = formattedPrice;
+        if (stickyPrice) stickyPrice.textContent = formattedPrice;
+
+        if (referencePrice && REFERENCE_PRICE > price) {
+            referencePrice.textContent = 'R$ ' + formatPrice(REFERENCE_PRICE);
+            referencePrice.classList.remove('hidden');
+        } else if (referencePrice) {
+            referencePrice.classList.add('hidden');
+        }
+
+        if (discountBadge) {
+            if (REFERENCE_PRICE > price) {
+                const discount = Math.round((1 - (price / REFERENCE_PRICE)) * 100);
+                discountBadge.textContent = `-${discount}%`;
+                discountBadge.classList.remove('hidden');
+            } else {
+                discountBadge.classList.add('hidden');
+            }
+        }
+
+        if (DISCOUNT_PIX > 0) {
+            const pixValue = price * (1 - (DISCOUNT_PIX / 100));
+            const pixText = `${DISCOUNT_PIX}% off — R$ ${formatPrice(pixValue)}`;
+            if (pixSummary) pixSummary.textContent = `Pix por R$ ${formatPrice(pixValue)}`;
+            if (pixPaymentLabel) pixPaymentLabel.textContent = pixText;
+        }
+
+        if (INSTALLMENTS_COUNT > 1) {
+            const installmentValue = price / INSTALLMENTS_COUNT;
+            const installmentText = `${INSTALLMENTS_COUNT}x de R$ ${formatPrice(installmentValue)}`;
+            if (installmentSummary) installmentSummary.textContent = installmentText;
+            if (installmentPaymentLabel) installmentPaymentLabel.textContent = installmentText;
+        }
     }
 
     function refreshVariantUi() {
@@ -710,12 +1462,12 @@
         const btnDelivery = document.getElementById('btnDelivery');
         if (type === 'delivery') {
             fields.classList.remove('hidden');
-            btnDelivery.classList.add('border-blue-600','bg-blue-50'); btnDelivery.classList.remove('border-gray-200','bg-white');
-            btnPickup.classList.remove('border-blue-600','bg-blue-50'); btnPickup.classList.add('border-gray-200','bg-white');
+            btnDelivery.classList.add('border-[var(--brand-blue-light)]','bg-blue-50'); btnDelivery.classList.remove('border-gray-200','bg-white');
+            btnPickup.classList.remove('border-[var(--brand-blue-light)]','bg-blue-50'); btnPickup.classList.add('border-gray-200','bg-white');
         } else {
             fields.classList.add('hidden');
-            btnPickup.classList.add('border-blue-600','bg-blue-50'); btnPickup.classList.remove('border-gray-200','bg-white');
-            btnDelivery.classList.remove('border-blue-600','bg-blue-50'); btnDelivery.classList.add('border-gray-200','bg-white');
+            btnPickup.classList.add('border-[var(--brand-blue-light)]','bg-blue-50'); btnPickup.classList.remove('border-gray-200','bg-white');
+            btnDelivery.classList.remove('border-[var(--brand-blue-light)]','bg-blue-50'); btnDelivery.classList.add('border-gray-200','bg-white');
         }
     };
 
@@ -778,8 +1530,8 @@
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-semibold text-gray-800 truncate">${item.name}</p>
                         ${variantInfo ? `<p class="text-xs text-gray-500 mt-0.5">${variantInfo}</p>` : ''}
-                        ${paymentLabel ? `<p class="text-xs text-blue-600 font-semibold mt-0.5">${paymentLabel}</p>` : ''}
-                        <p class="text-blue-700 font-bold text-sm mt-0.5">R$ ${formatPrice(unitPrice)}${isWholesale ? ' <span class="text-indigo-600 text-[10px] font-semibold">(atacado)</span>' : ''}</p>
+                        ${paymentLabel ? `<p class="text-xs font-semibold mt-0.5" style="color: var(--brand-blue-light);">${paymentLabel}</p>` : ''}
+                        <p class="font-bold text-sm mt-0.5" style="color: var(--brand-blue);">R$ ${formatPrice(unitPrice)}${isWholesale ? ' <span class="text-indigo-600 text-[10px] font-semibold">(atacado)</span>' : ''}</p>
                         <div class="flex items-center gap-2 mt-2">
                             <button onclick="changeQty(${idx},-1)" class="qty-btn text-gray-600">−</button>
                             <span class="text-sm font-semibold w-5 text-center">${item.qty}</span>
@@ -923,6 +1675,7 @@
     $(document).ready(function() {
         $('.phone-mask').mask('(00) 00000-0000');
         $('.cep-mask').mask('00000-000');
+        initRevealAnimations();
     });
     $(document).ajaxStart(() => $('#globalLoaderPdp').css('display','flex'));
     $(document).ajaxStop(() => $('#globalLoaderPdp').hide());
