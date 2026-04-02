@@ -93,7 +93,7 @@
         }
 
         .catalog-hero__banner-placeholder {
-            background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 60%, #0ea5e9 100%);
+            background: linear-gradient(135deg, #c9690e 0%, #a358ff 60%, #af7aff 100%);
         }
 
         .scrollbar-hidden::-webkit-scrollbar {

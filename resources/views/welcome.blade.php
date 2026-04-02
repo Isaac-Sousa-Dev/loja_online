@@ -93,13 +93,13 @@
                         <div class="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-[#6A2BBA]/20 via-[#D131A3]/10 to-[#6366f1]/15 blur-2xl motion-safe:animate-vistoo-float motion-reduce:animate-none" aria-hidden="true"></div>
                         <div class="relative grid grid-cols-3 gap-3 sm:gap-4">
                             <div class="group col-span-2 row-span-2 overflow-hidden rounded-3xl bg-white p-2 shadow-xl ring-1 ring-[#33363B]/5 transition duration-500 hover:-translate-y-1 hover:shadow-2xl motion-reduce:hover:translate-y-0">
-                                <img src="/img/home/img-catalog-page.png" class="h-full w-full rounded-2xl object-cover object-top transition duration-700 ease-out group-hover:scale-[1.02] motion-reduce:group-hover:scale-100" width="400" height="480" alt="Prévia da página de catálogo da loja no celular">
+                                <img src="/img/home/homepage.png" class="h-full w-full rounded-2xl object-cover object-top transition duration-700 ease-out group-hover:scale-[1.02] motion-reduce:group-hover:scale-100" width="400" height="480" alt="Prévia da página de catálogo da loja no celular">
                             </div>
                             <div class="group overflow-hidden rounded-3xl bg-white p-2 shadow-lg ring-1 ring-[#33363B]/5 transition duration-500 hover:-translate-y-1 hover:shadow-xl motion-reduce:hover:translate-y-0">
-                                <img src="/img/home/img-product-page.png" class="aspect-[3/4] w-full rounded-2xl object-cover transition duration-700 group-hover:scale-105 motion-reduce:group-hover:scale-100" width="160" height="213" alt="Prévia da ficha de produto">
+                                <img src="/img/home/pdp_catalog.png" class="w-full h-full rounded-2xl transition duration-700 group-hover:scale-105 motion-reduce:group-hover:scale-100" alt="Prévia da ficha de produto">
                             </div>
                             <div class="group overflow-hidden rounded-3xl bg-white p-2 shadow-lg ring-1 ring-[#33363B]/5 transition duration-500 hover:-translate-y-1 hover:shadow-xl motion-reduce:hover:translate-y-0">
-                                <img src="/img/home/img-send-message-page.png" class="aspect-[3/4] w-full rounded-2xl object-cover transition duration-700 group-hover:scale-105 motion-reduce:group-hover:scale-100" width="160" height="213" alt="Prévia do contato com cliente">
+                                <img src="/img/home/cart_page.png" class="w-full rounded-2xl object-cover transition duration-700 group-hover:scale-105 motion-reduce:group-hover:scale-100" alt="Prévia do contato com cliente">
                             </div>
                         </div>
                         <p class="mt-3 flex items-center gap-1.5 text-xs text-[#33363B]/50">
@@ -120,7 +120,7 @@
                         </div>
                         <div class="col-span-2 rounded-3xl bg-[#33363B] p-6 text-white shadow-xl transition duration-300 hover:-translate-y-0.5 hover:shadow-2xl motion-reduce:hover:translate-y-0" data-aos="fade-up" data-aos-duration="700" data-aos-delay="200">
                             <p class="text-sm font-bold text-white/90">Link público da loja</p>
-                            <p class="mt-2 font-mono text-sm text-[#FF914D] motion-safe:transition-colors motion-safe:hover:text-[#ffb078]">vistoo.app/loja/sua-marca</p>
+                            <p class="mt-2 font-mono text-sm text-[#FF914D] motion-safe:transition-colors motion-safe:hover:text-[#ffb078]">vistuu.app/loja/sua-marca</p>
                             <p class="mt-3 text-xs font-medium text-white/65">Compartilhe no WhatsApp, Instagram e bio.</p>
                         </div>
                     </div>

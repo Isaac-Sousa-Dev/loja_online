@@ -21,7 +21,7 @@
                 <img src="{{ $logoStore }}" alt="Logo {{ $store->store_name }}"
                      class="w-full h-full object-cover object-center">
             @else
-                <img src="/img/logo.png" alt="Logo padrão"
+                <img src="/img/vistuu-logo.png" alt="Logo padrão"
                      class="w-full h-full object-cover object-center">
             @endif
         </div>
