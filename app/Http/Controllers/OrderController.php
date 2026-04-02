@@ -442,10 +442,6 @@ class OrderController extends Controller
 
         $lines = [];
         foreach ($order->items as $item) {
-            $img = '';
-            if ($item->product && $item->product->images->isNotEmpty()) {
-                $img = asset('storage/'.$item->product->images->first()->url);
-            }
             $lines[] = [
                 'id' => $item->id,
                 'name' => $item->product?->name ?? '—',
@@ -453,7 +449,7 @@ class OrderController extends Controller
                 'qty' => (int) $item->quantity,
                 'unit_price' => (float) $item->unit_price,
                 'subtotal' => (float) $item->line_subtotal,
-                'image' => $img,
+                'image' => $this->resolveOrderItemImage($item),
             ];
         }
 
@@ -504,6 +500,56 @@ class OrderController extends Controller
             'can_cancel' => $order->status->canCancel(),
             'can_complete_stock' => in_array($order->status, [OrderStatus::CONFIRMED, OrderStatus::SEPARATING, OrderStatus::DELIVERED], true),
         ];
+    }
+
+    private function resolveOrderItemImage(OrderItem $item): string
+    {
+        $product = $item->product;
+        if ($product === null || $product->images->isEmpty()) {
+            return '';
+        }
+
+        $selectedColor = $this->normalizeColorKey($item->variant?->color ?? $item->selected_color);
+        $images = $product->images;
+
+        $matchedImage = null;
+        if ($selectedColor !== null) {
+            $matchedImage = $images->first(function ($image) use ($selectedColor): bool {
+                return $this->normalizeColorKey($image->variant_color) === $selectedColor
+                    && (bool) $image->is_cover;
+            });
+
+            $matchedImage ??= $images->first(function ($image) use ($selectedColor): bool {
+                return $this->normalizeColorKey($image->variant_color) === $selectedColor;
+            });
+        }
+
+        $matchedImage ??= $images->firstWhere('is_cover', true);
+        $matchedImage ??= $images->sortBy('index')->first();
+
+        if ($matchedImage === null || $matchedImage->url === null || $matchedImage->url === '') {
+            return '';
+        }
+
+        return asset('storage/'.$this->normalizeStoredImagePath((string) $matchedImage->url));
+    }
+
+    private function normalizeColorKey(?string $color): ?string
+    {
+        $normalized = trim((string) $color);
+
+        return $normalized === '' ? null : mb_strtolower($normalized);
+    }
+
+    private function normalizeStoredImagePath(string $path): string
+    {
+        $normalized = ltrim($path, '/');
+
+        if (str_starts_with($normalized, 'public/')) {
+            $normalized = substr($normalized, strlen('public/'));
+        }
+
+        return $normalized;
     }
 
     private function checkExistClient(string $phone, Request $req): Client
