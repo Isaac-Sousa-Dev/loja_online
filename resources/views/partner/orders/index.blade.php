@@ -140,9 +140,10 @@ function openOrderDrawer(orderId) {
 
     body += '<div class="rounded-2xl border border-[#33363B]/8 p-4"><p class="text-[10px] font-bold text-[#33363B]/45 uppercase tracking-widest mb-3">Itens</p><div class="space-y-3">';
     d.lines.forEach(function (line) {
+        console.log(line, 'line');
         body += '<div class="flex gap-3 items-start">';
         body += '<div class="w-14 h-14 rounded-xl overflow-hidden bg-[#33363B]/5 border border-[#33363B]/8 flex-shrink-0">';
-        body += line.image ? '<img src="' + line.image + '" class="w-full h-full object-cover" alt="">' : '<div class="w-full h-full flex items-center justify-center text-[#33363B]/25"><i class="fa-solid fa-image"></i></div>';
+        body += line.image ? '<img src="' + line.image.replace('public/', '') + '" class="w-full h-full object-cover" alt="">' : '<div class="w-full h-full flex items-center justify-center text-[#33363B]/25"><i class="fa-solid fa-image"></i></div>';
         body += '</div><div class="min-w-0 flex-1"><p class="font-bold text-sm text-[#33363B] leading-tight">' + line.name + '</p>';
         body += '<p class="text-xs text-[#33363B]/55">' + line.variation + ' · ' + line.qty + ' un.</p>';
         body += '<p class="text-xs font-semibold text-[#6A2BBA] mt-1">R$ ' + line.subtotal.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + '</p></div></div>';

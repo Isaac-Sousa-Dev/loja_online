@@ -60,9 +60,10 @@ class OrderController extends Controller
                 ->update(['notified_at' => now()]);
         }
 
-        $query = $this->filteredOrdersQuery($request, $store->id);
+        $query = $this->filteredOrdersQuery($request, $store->id)
+            ->orderByDesc('created_at');
         $orders = $query->paginate(15)->withQueryString();
-
+    
         $drawerData = $orders->getCollection()->mapWithKeys(fn (Order $o) => [
             $o->id => $this->drawerPayload($o),
         ])->all();
@@ -74,7 +75,7 @@ class OrderController extends Controller
                 'drawerData' => $drawerData,
             ]);
         }
-
+        
         return view('partner.orders.index', [
             'orders' => $orders,
             'store' => $store,
