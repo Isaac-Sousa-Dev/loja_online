@@ -21,7 +21,7 @@
     <header id="site-header" class="sticky top-0 z-50 border-b border-[#6A2BBA]/10 bg-white/85 backdrop-blur-lg transition-[box-shadow,border-color] duration-300 motion-reduce:transition-none">
         <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 md:px-6">
             <a href="{{ route('welcome') }}" class="flex shrink-0 items-center gap-2 rounded-2xl transition-transform duration-300 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6A2BBA] focus-visible:ring-offset-2 motion-reduce:hover:scale-100" aria-label="Vistoo — página inicial">
-                <img src="{{ asset('img/vistoo-logo.png') }}" width="120" height="40" class="h-9 w-auto md:h-10" alt="Logotipo Vistoo">
+                <img src="{{ asset('img/vistuu-logo.png') }}" width="110" height="30" alt="Logotipo Vistoo">
             </a>
             <nav class="hidden items-center gap-2 text-sm font-semibold text-[#33363B]/80 md:flex" aria-label="Seções da página">
                 <a href="#como-funciona" class="relative rounded-xl px-3 py-2 transition-colors duration-200 hover:text-[#6A2BBA] after:pointer-events-none after:absolute after:bottom-1 after:left-3 after:right-3 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-gradient-to-r after:from-[#6A2BBA] after:to-[#D131A3] after:transition-transform after:duration-300 hover:after:scale-x-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D131A3] focus-visible:ring-offset-2">Como funciona</a>
@@ -37,7 +37,7 @@
                 </a>
             </div>
         </div>
-        <div class="border-t border-[#6A2BBA]/5 md:hidden" aria-hidden="false">
+        <div class="md:hidden" aria-hidden="false">
             <nav class="flex gap-2 overflow-x-auto px-4 pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Atalhos da página">
                 <a href="#como-funciona" class="shrink-0 rounded-full bg-[#6A2BBA]/10 px-3 py-1.5 text-xs font-bold text-[#6A2BBA] transition-transform active:scale-95 hover:bg-[#6A2BBA]/18">Como funciona</a>
                 <a href="#funcionalidades" class="shrink-0 rounded-full bg-[#6A2BBA]/10 px-3 py-1.5 text-xs font-bold text-[#6A2BBA] transition-transform active:scale-95 hover:bg-[#6A2BBA]/18">Funcionalidades</a>
@@ -275,8 +275,8 @@
     <footer class="border-t border-[#33363B]/10 bg-white px-4 py-10" role="contentinfo">
         <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 md:flex-row">
             <div class="flex items-center gap-3">
-                <img src="{{ asset('img/vistoo-logo.png') }}" width="100" height="34" class="h-8 w-auto opacity-90" alt="">
-                <p class="text-sm font-semibold text-[#33363B]/60">© {{ date('Y') }} Vistoo. Todos os direitos reservados.</p>
+                <img src="{{ asset('img/vistuu-logo.png') }}" width="100" height="34" class="h-12 w-auto opacity-90" alt="">
+                <p class="text-sm font-semibold text-[#33363B]/60">© {{ date('Y') }} Vistuu. Todos os direitos reservados.</p>
             </div>
             <nav class="flex flex-wrap items-center justify-center gap-4 text-sm font-bold text-[#6A2BBA]" aria-label="Rodapé">
                 <a href="{{ route('login') }}" class="rounded-xl px-2 py-1 transition hover:text-[#D131A3] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D131A3]">Login</a>
