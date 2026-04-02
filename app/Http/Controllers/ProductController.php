@@ -296,11 +296,7 @@ class ProductController extends Controller
 
         $existingColorPhotosForWizard = $this->productColorImageService->buildWizardExistingPhotosByColor((int) $product->id);
 
-        $genderSelect = match ($product->gender) {
-            'masculine' => 'M',
-            'feminine' => 'F',
-            default => '',
-        };
+        $genderSelect = $product->gender;
 
         return view('partner.products.edit', [
             'product' => $product,

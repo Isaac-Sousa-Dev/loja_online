@@ -164,7 +164,7 @@
         }
 
         .toast-success .toast-message {
-            color: #0f172a;
+            color: #fff;
         }
 
         .toast-error .toast-message {
