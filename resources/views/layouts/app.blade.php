@@ -7,7 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#6A2BBA">
 
-    <title>{{ config('app.name', 'Motiv') }}</title>
+    <title>{{ config('app.name', 'Vistuu') }}</title>
 
     <!-- FONTS (alinhado à landing welcome) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

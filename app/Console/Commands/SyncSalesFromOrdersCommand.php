@@ -14,7 +14,7 @@ class SyncSalesFromOrdersCommand extends Command
 {
     protected $signature = 'sales:sync-from-orders {store_id? : ID da loja (opcional)}';
 
-    protected $description = 'Regenera registros de vendas a partir de pedidos confirmados (paid/sold)';
+    protected $description = 'Regenera registros de vendas a partir de pedidos confirmados e concluídos';
 
     public function handle(SyncSaleFromOrdersService $sync): int
     {
@@ -33,7 +33,12 @@ class SyncSalesFromOrdersCommand extends Command
         foreach ($stores as $store) {
             $anchors = Order::query()
                 ->where('store_id', $store->id)
-                ->whereIn('status', [OrderStatus::PAID->value, OrderStatus::SOLD->value])
+                ->whereIn('status', [
+                    OrderStatus::CONFIRMED->value,
+                    OrderStatus::SEPARATING->value,
+                    OrderStatus::DELIVERED->value,
+                    OrderStatus::COMPLETED->value,
+                ])
                 ->get()
                 ->unique(function (Order $order) use ($sync): string {
                     return $sync->groupKey($order);

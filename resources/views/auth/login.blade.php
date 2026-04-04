@@ -13,8 +13,8 @@
         </div>
 
         <div class="relative z-10">
-            <a href="{{ route('welcome') }}" class="inline-flex rounded-2xl transition-transform duration-300 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF914D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#33363B] motion-reduce:hover:scale-100" aria-label="Vistoo — página inicial">
-                <img src="{{ asset('img/vistoo-logo.png') }}" width="140" height="46" class="h-10 w-auto brightness-0 invert opacity-95" alt="Logotipo Vistoo">
+            <a href="{{ route('welcome') }}" class="inline-flex rounded-2xl transition-transform duration-300 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF914D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#33363B] motion-reduce:hover:scale-100" aria-label="Vistuu — página inicial">
+                <img src="{{ asset('img/vistuu-logo.png') }}" width="140" height="46" class="h-10 w-auto brightness-0 invert opacity-95" alt="Logotipo Vistuu">
             </a>
         </div>
 
@@ -27,12 +27,12 @@
             </p>
             <p class="flex items-center gap-2 text-sm font-semibold text-[#FF914D]">
                 <span class="inline-flex h-2 w-2 animate-pulse rounded-full bg-[#FF914D] motion-reduce:animate-none" aria-hidden="true"></span>
-                Vistoo — moda e vitrine mobile-first
+                Vistuu — moda e vitrine mobile-first
             </p>
         </div>
 
         <div class="relative z-10">
-            <p class="text-sm font-medium text-white/55">© {{ date('Y') }} Vistoo. Todos os direitos reservados.</p>
+            <p class="text-sm font-medium text-white/55">© {{ date('Y') }} Vistuu. Todos os direitos reservados.</p>
         </div>
     </div>
 
@@ -40,8 +40,8 @@
     <div class="relative z-[1] flex w-full items-center justify-center px-6 py-12 lg:w-1/2 lg:py-16">
         <div class="w-full max-w-md">
             <div class="mb-8 flex flex-col items-center gap-6 lg:hidden">
-                <a href="{{ route('welcome') }}" class="rounded-2xl transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6A2BBA] focus-visible:ring-offset-2" aria-label="Vistoo — página inicial">
-                    <img src="{{ asset('img/vistoo-logo.png') }}" width="130" height="43" class="h-9 w-auto" alt="Logotipo Vistoo">
+                <a href="{{ route('welcome') }}" class="rounded-2xl transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6A2BBA] focus-visible:ring-offset-2" aria-label="Vistuu — página inicial">
+                    <img src="{{ asset('img/vistuu-logo.png') }}" width="130" height="43" class="h-9 w-auto" alt="Logotipo Vistuu">
                 </a>
             </div>
 

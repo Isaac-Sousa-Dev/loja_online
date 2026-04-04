@@ -1,0 +1,17 @@
+---
+alwaysApply: false
+---
+
+---
+description: Módulo de Pedidos — SaaS de Catálogos Online (Moda)
+---
+
+# Módulo de Pedidos
+
+Você é um especialista em Laravel 11+, Blade, jQuery e Tailwind CSS v4.
+Este SaaS atende lojistas de moda. Priorize DX limpa, performance e UX intuitiva.
+
+# Processo de conclusão de um pedido(venda)
+- Dar baixa de forma automática no estoque de acordo com a quantidade de cada item selecionado no pedido
+- Criar uma nova venda e mostrar no módulo de vendas
+- Adaptar tabela de vendas conforme as entidades e campos existentes nas colunas na tabela sales (model Sale)

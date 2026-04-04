@@ -3,13 +3,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
 
 @php
-    $statusQuery = (array) request('status', []);
-    $hasActiveFilters =
-        request()->filled('date_from')
-        || request()->filled('date_to')
-        || request()->filled('client')
-        || $statusQuery !== []
-        || (request('fulfillment_type', 'all') !== 'all');
+    $hasActiveFilters = (bool) ($filtersState['hasActiveDrawerFilters'] ?? false);
 @endphp
 
 <div class="p-2 flex md:justify-center pb-28 md:pb-8">
@@ -122,69 +116,189 @@ function mergeDrawerChunks() {
 }
 mergeDrawerChunks();
 
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function formatCurrency(value) {
+    return Number(value || 0).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 2
+    });
+}
+
+function formatPaymentMethod(value) {
+    const key = String(value || '').toLowerCase();
+    const labels = {
+        pix: 'PIX',
+        credit_card: 'Cartão de crédito',
+        debit_card: 'Cartão de débito',
+        cash: 'Dinheiro',
+        boleto: 'Boleto'
+    };
+
+    return labels[key] || String(value || '—');
+}
+
+function paymentBadgeClasses(status) {
+    const key = String(status || '').toLowerCase();
+    if (['paid', 'confirmed', 'completed'].includes(key)) {
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    }
+    if (['failed'].includes(key)) {
+        return 'bg-red-50 text-red-700 border-red-200';
+    }
+    if (['cancelled', 'canceled'].includes(key)) {
+        return 'bg-slate-100 text-slate-600 border-slate-200';
+    }
+
+    return 'bg-amber-50 text-amber-700 border-amber-200';
+}
+
+function pricingBadgeClasses(mode) {
+    const key = String(mode || '').toLowerCase();
+    if (key === 'wholesale') {
+        return 'bg-violet-50 text-violet-700 border-violet-200';
+    }
+    if (key === 'mixed') {
+        return 'bg-amber-50 text-amber-700 border-amber-200';
+    }
+
+    return 'bg-slate-100 text-slate-700 border-slate-200';
+}
+
+function buildOrderProgress(status, timeline) {
+    const steps = [
+        { key: 'pending', label: 'Pendente' },
+        { key: 'confirmed', label: 'Pagamento confirmado' },
+        { key: 'separating', label: 'Em separação' },
+        { key: 'delivered', label: 'Pronto para entrega' },
+        { key: 'completed', label: 'Concluído' }
+    ];
+    const currentIndex = steps.findIndex(function (step) { return step.key === status; });
+    const entriesByStatus = {};
+
+    (timeline || []).forEach(function (item) {
+        const key = String(item.to || '').toLowerCase();
+        if (!key || entriesByStatus[key]) return;
+        entriesByStatus[key] = item;
+    });
+
+    return '<ol class="relative space-y-0">' + steps.map(function (step, index) {
+        const timelineEntry = entriesByStatus[step.key] || null;
+        const isCurrent = currentIndex === index;
+        const isDone = currentIndex > index;
+        const isUpcoming = !isCurrent && !isDone;
+        const dotClass = isCurrent
+            ? 'border-[#6A2BBA] bg-[#6A2BBA] text-white shadow-[0_0_0_4px_rgba(106,43,186,0.12)]'
+            : (isDone
+                ? 'border-emerald-500 bg-emerald-500 text-white'
+                : 'border-[#33363B]/15 bg-white text-[#33363B]/40');
+        const textClass = isCurrent
+            ? 'text-[#33363B]'
+            : (isDone ? 'text-[#33363B]/80' : 'text-[#33363B]/50');
+        const connector = index === steps.length - 1
+            ? ''
+            : '<span class="absolute left-1/2 top-7 h-[calc(100%+0.35rem)] w-px -translate-x-1/2 bg-[#D9DCE3]"></span>';
+        const meta = timelineEntry
+            ? '<p class="text-[11px] mt-1 ' + (isUpcoming ? 'text-[#94A3B8]' : 'text-[#64748B]') + '">' + escapeHtml(timelineEntry.by || 'Sistema') + ' · ' + escapeHtml(timelineEntry.at || '—') + '</p>'
+            : '';
+        const note = timelineEntry && timelineEntry.note
+            ? '<p class="text-[11px] mt-1 text-[#94A3B8]">' + escapeHtml(timelineEntry.note) + '</p>'
+            : '';
+
+        return '<li class="grid grid-cols-[2rem_minmax(0,1fr)] items-start gap-3 pb-2">' +
+            '<div class="relative flex min-h-[4.25rem] justify-center pt-0.5">' +
+                connector +
+                '<span class="relative z-[1] inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-[11px] font-bold ' + dotClass + '">' + (index + 1) + '</span>' +
+            '</div>' +
+            '<div class="min-w-0 pt-0.5 pb-4">' +
+                '<p class="text-[15px] font-semibold leading-6 ' + textClass + '">' + escapeHtml(step.label) + '</p>' +
+                meta +
+                note +
+            '</div>' +
+            '</li>';
+    }).join('') + '</ol>';
+}
+
+function advanceButtonLabel(status) {
+    if (status === 'confirmed') return 'Mover para separação';
+    if (status === 'separating') return 'Marcar como pronto';
+
+    return 'Avançar status';
+}
+
 function openOrderDrawer(orderId) {
     mergeDrawerChunks();
     const d = window.ordersDrawerData[orderId];
     if (!d) return;
     document.getElementById('drawerOrderMeta').textContent = (d.code.startsWith('#') ? d.code : '#' + d.code) + ' · ' + d.createdAt;
     let body = '';
-    body += '<div class="flex flex-wrap gap-2 mb-2">';
-    body += '<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold border bg-[#F8F7FC] text-[#33363B]">' + d.statusLabel + '</span>';
-    body += '<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold border border-[#33363B]/10 text-[#33363B]/80">' + d.fulfillmentLabel + '</span>';
+    body += '<section class="">';
+    body += '<div class="flex flex-wrap gap-2 mb-4">';
+    body += '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-white text-[#33363B] border-[#33363B]/10">' + escapeHtml(d.statusLabel) + '</span>';
+    body += '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border border-[#33363B]/10 text-[#33363B]/80 bg-white/70">' + escapeHtml(d.fulfillmentLabel) + '</span>';
+    body += '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ' + pricingBadgeClasses(d.pricingMode) + '">' + escapeHtml(d.pricingModeLabel || 'Varejo') + '</span>';
+    body += '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ' + paymentBadgeClasses(d.payment_status) + '">' + escapeHtml(d.paymentStatusLabel || d.payment_status || '—') + '</span>';
     body += '</div>';
+    body += '<div><p class="text-[10px] font-bold text-[#33363B]/45 uppercase tracking-[0.22em] mb-3">Progresso do pedido</p>' + buildOrderProgress(d.status, d.timeline || []) + '</div>';
+    body += '</section>';
 
     body += '<div class="rounded-2xl border border-[#33363B]/8 p-4 bg-[#FAFAFB]"><p class="text-[10px] font-bold text-[#33363B]/45 uppercase tracking-widest mb-2">Cliente</p>';
-    body += '<p class="font-semibold text-[#33363B]">' + d.client.name + '</p>';
-    body += '<p class="text-sm text-[#33363B]/65">' + d.client.phone + '</p>';
-    body += '<p class="text-sm text-[#33363B]/65">' + d.client.email + '</p></div>';
+    body += '<p class="font-semibold text-[#33363B]">' + escapeHtml(d.client.name) + '</p>';
+    body += '<p class="text-sm text-[#33363B]/65">' + escapeHtml(d.client.phone) + '</p>';
+    body += '<p class="text-sm text-[#33363B]/65">' + escapeHtml(d.client.email) + '</p></div>';
 
-    body += '<div class="rounded-2xl border border-[#33363B]/8 p-4"><p class="text-[10px] font-bold text-[#33363B]/45 uppercase tracking-widest mb-3">Itens</p><div class="space-y-3">';
+    body += '<div class="rounded-2xl border border-[#33363B]/8 p-4"><div class="flex items-center justify-between gap-3 mb-3"><p class="text-[10px] font-bold text-[#33363B]/45 uppercase tracking-widest">Itens</p><span class="text-xs text-[#33363B]/45">' + d.lines.length + ' linha(s)</span></div><div class="space-y-3">';
     d.lines.forEach(function (line) {
-        console.log(line, 'line');
         body += '<div class="flex gap-3 items-start">';
         body += '<div class="w-14 h-14 rounded-xl overflow-hidden bg-[#33363B]/5 border border-[#33363B]/8 flex-shrink-0">';
-        body += line.image ? '<img src="' + line.image.replace('public/', '') + '" class="w-full h-full object-cover" alt="">' : '<div class="w-full h-full flex items-center justify-center text-[#33363B]/25"><i class="fa-solid fa-image"></i></div>';
-        body += '</div><div class="min-w-0 flex-1"><p class="font-bold text-sm text-[#33363B] leading-tight">' + line.name + '</p>';
-        body += '<p class="text-xs text-[#33363B]/55">' + line.variation + ' · ' + line.qty + ' un.</p>';
-        body += '<p class="text-xs font-semibold text-[#6A2BBA] mt-1">R$ ' + line.subtotal.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + '</p></div></div>';
+        body += line.image ? '<img src="' + line.image.replace('public/', '') + '" class="w-full h-full object-cover" alt="' + escapeHtml(line.name) + '">' : '<div class="w-full h-full flex items-center justify-center text-[#33363B]/25"><i class="fa-solid fa-image"></i></div>';
+        body += '</div><div class="min-w-0 flex-1"><div class="flex items-start justify-between gap-3"><div class="min-w-0"><p class="font-bold text-sm text-[#33363B] leading-tight">' + escapeHtml(line.name) + '</p>';
+        body += '<div class="mt-1 flex flex-wrap items-center gap-2"><p class="text-xs text-[#33363B]/55">' + escapeHtml(line.variation) + ' · ' + escapeHtml(line.qty) + ' un.</p><span class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ' + pricingBadgeClasses(line.pricing_mode) + '">' + escapeHtml(line.pricingModeLabel || 'Varejo') + '</span></div></div>';
+        body += '<span class="text-[11px] font-semibold text-[#33363B]/55 whitespace-nowrap">' + formatCurrency(line.unit_price) + '/un.</span></div>';
+        body += '<p class="text-xs font-semibold text-[#6A2BBA] mt-1.5">' + formatCurrency(line.subtotal) + '</p></div></div>';
     });
     body += '</div></div>';
 
     body += '<div class="rounded-2xl border border-[#33363B]/8 p-4 grid grid-cols-2 gap-2 text-sm">';
-    body += '<div><span class="text-[10px] font-bold text-[#33363B]/45 uppercase">Subtotal</span><p class="font-bold text-[#33363B]">R$ ' + d.subtotal.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + '</p></div>';
-    body += '<div><span class="text-[10px] font-bold text-[#33363B]/45 uppercase">Frete</span><p class="font-bold text-[#33363B]">R$ ' + d.shipping.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + '</p></div>';
-    body += '<div><span class="text-[10px] font-bold text-[#33363B]/45 uppercase">Desconto</span><p class="font-bold text-[#33363B]">R$ ' + d.discount.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + '</p></div>';
-    body += '<div><span class="text-[10px] font-bold text-[#33363B]/45 uppercase">Total</span><p class="font-extrabold text-[#6A2BBA]">R$ ' + d.total.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + '</p></div>';
+    body += '<div><span class="text-[10px] font-bold text-[#33363B]/45 uppercase">Subtotal</span><p class="font-bold text-[#33363B]">' + formatCurrency(d.subtotal) + '</p></div>';
+    body += '<div><span class="text-[10px] font-bold text-[#33363B]/45 uppercase">Frete</span><p class="font-bold text-[#33363B]">' + formatCurrency(d.shipping) + '</p></div>';
+    body += '<div><span class="text-[10px] font-bold text-[#33363B]/45 uppercase">Desconto</span><p class="font-bold text-[#33363B]">' + formatCurrency(d.discount) + '</p></div>';
+    body += '<div><span class="text-[10px] font-bold text-[#33363B]/45 uppercase">Total</span><p class="font-extrabold text-[#6A2BBA]">' + formatCurrency(d.total) + '</p></div>';
     body += '</div>';
 
+    body += '<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">';
     body += '<div class="rounded-2xl border border-[#33363B]/8 p-4 text-sm"><p class="text-[10px] font-bold text-[#33363B]/45 uppercase tracking-widest mb-2">Pagamento</p>';
-    body += '<p class="text-[#33363B]">' + d.payment_method + ' · Parcelas: ' + d.payment_installments + '</p>';
-    body += '<p class="text-xs text-[#33363B]/55 mt-1">Status: ' + d.payment_status + '</p></div>';
+    body += '<p class="text-[#33363B] font-semibold">' + escapeHtml(formatPaymentMethod(d.payment_method)) + '</p>';
+    body += '<p class="text-xs text-[#33363B]/55 mt-1">Parcelas: ' + escapeHtml(d.payment_installments) + '</p>';
+    body += '<p class="text-xs mt-2"><span class="inline-flex items-center gap-1 rounded-full border px-2 py-1 font-semibold ' + paymentBadgeClasses(d.payment_status) + '">' + escapeHtml(d.paymentStatusLabel || d.payment_status || '—') + '</span></p></div>';
 
     body += '<div class="rounded-2xl border border-[#33363B]/8 p-4 text-sm"><p class="text-[10px] font-bold text-[#33363B]/45 uppercase tracking-widest mb-2">Entrega</p>';
-    body += '<p class="text-[#33363B]/75 leading-relaxed">' + d.delivery.lines + '</p></div>';
+    body += '<p class="text-[#33363B]/75 leading-relaxed">' + escapeHtml(d.delivery.lines) + '</p></div>';
+    body += '</div>';
 
     body += '<div class="rounded-2xl border border-[#33363B]/8 p-4"><p class="text-[10px] font-bold text-[#33363B]/45 uppercase tracking-widest mb-2">Mensagem</p>';
-    body += '<p class="text-sm text-[#33363B]/70 italic">' + (d.message || '—') + '</p></div>';
-
-    body += '<div class="rounded-2xl border border-[#33363B]/8 p-4"><p class="text-[10px] font-bold text-[#33363B]/45 uppercase tracking-widest mb-3">Histórico</p><ul class="space-y-2 text-xs text-[#33363B]/75">';
-    (d.timeline || []).forEach(function (t) {
-        body += '<li><span class="font-semibold text-[#33363B]">' + (t.to_label || t.to) + '</span> · ' + t.at + ' · ' + t.by + '</li>';
-    });
-    body += '</ul></div>';
+    body += '<p class="text-sm text-[#33363B]/70 italic">' + escapeHtml(d.message || '—') + '</p></div>';
 
     document.getElementById('orderDrawerBody').innerHTML = body;
 
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     let footer = '';
     if (d.can_confirm) {
-        footer += '<button type="button" class="flex-1 min-w-[120px] py-3 rounded-xl font-bold text-sm bg-[#6A2BBA] text-white" onclick="postOrderAction(\'' + '{{ url('/orders') }}' + '/' + d.id + '/confirm\', \'' + token + '\')">Confirmar</button>';
+        footer += '<button type="button" class="flex-1 min-w-[120px] py-3 rounded-xl font-bold text-sm bg-[#6A2BBA] text-white" onclick="postOrderAction(\'' + '{{ url('/orders') }}' + '/' + d.id + '/confirm\', \'' + token + '\')">Confirmar pagamento</button>';
     }
-    if (d.can_advance) {
-        footer += '<button type="button" class="flex-1 min-w-[120px] py-3 rounded-xl font-bold text-sm bg-[#33363B] text-white" onclick="postOrderAction(\'' + '{{ url('/orders') }}' + '/' + d.id + '/advance\', \'' + token + '\')">Avançar status</button>';
+    if (d.can_advance && !d.can_complete_stock) {
+        footer += '<button type="button" class="flex-1 min-w-[120px] py-3 rounded-xl font-bold text-sm bg-[#33363B] text-white" onclick="postOrderAction(\'' + '{{ url('/orders') }}' + '/' + d.id + '/advance\', \'' + token + '\')">' + escapeHtml(advanceButtonLabel(d.status)) + '</button>';
     }
     if (d.can_complete_stock) {
-        footer += '<button type="button" class="flex-1 min-w-[120px] py-3 rounded-xl font-bold text-sm bg-emerald-600 text-white" onclick="postOrderAction(\'' + '{{ url('/orders') }}' + '/' + d.id + '/complete\', \'' + token + '\')">Concluir venda</button>';
+        footer += '<button type="button" class="flex-1 min-w-[120px] py-3 rounded-xl font-bold text-sm bg-emerald-600 text-white" onclick="postOrderAction(\'' + '{{ url('/orders') }}' + '/' + d.id + '/complete\', \'' + token + '\')">Concluir pedido</button>';
     }
     if (d.can_cancel) {
         footer += '<button type="button" class="flex-1 min-w-[120px] py-3 rounded-xl font-bold text-sm border-2 border-red-200 text-red-700" onclick="postOrderAction(\'' + '{{ url('/orders') }}' + '/' + d.id + '/cancel\', \'' + token + '\')">Cancelar</button>';
@@ -311,6 +425,7 @@ function postOrderAction(url, token) {
                 mergeDrawerChunks();
                 bindPagination();
                 bindRowChecks();
+                bindQuickFilters();
                 syncOrdersFilterFeedbackFromPartial();
             },
             error: function () {
@@ -331,6 +446,51 @@ function postOrderAction(url, token) {
             if (!href) return;
             const u = new URL(href, window.location.origin);
             reloadTable(u.searchParams.toString());
+        });
+    }
+
+    function buildQuickFiltersSearch(overrides) {
+        const state = overrides || {};
+        const params = new URLSearchParams();
+        const client = $('#orders-quick-client').val();
+        const fulfillmentType = $('#orders-quick-fulfillment').val();
+        const period = state.period ?? $('#orders-quick-period').val() ?? 'today';
+        const quickStatus = state.quickStatus ?? $('#orders-quick-status-current').val() ?? 'all';
+
+        if (client) {
+            params.set('client', client);
+        }
+        if (fulfillmentType && fulfillmentType !== 'all') {
+            params.set('fulfillment_type', fulfillmentType);
+        }
+
+        params.set('period', period);
+        if (quickStatus) {
+            params.set('quick_status', quickStatus);
+        }
+
+        return params.toString();
+    }
+
+    function syncQuickFiltersHistory(params) {
+        const u = new URL(window.location.href);
+        u.search = params ? '?' + params : '';
+        window.history.replaceState({}, '', u);
+    }
+
+    function bindQuickFilters() {
+        $wrap.off('click.ordersQuickStatus').on('click.ordersQuickStatus', '[data-quick-status]', function () {
+            const quickStatus = String($(this).data('quickStatus') || 'all');
+            const params = buildQuickFiltersSearch({ quickStatus: quickStatus });
+            reloadTable(params);
+            syncQuickFiltersHistory(params);
+        });
+
+        $wrap.off('change.ordersQuickPeriod').on('change.ordersQuickPeriod', '#orders-quick-period', function () {
+            const period = String($(this).val() || 'today');
+            const params = buildQuickFiltersSearch({ period: period });
+            reloadTable(params);
+            syncQuickFiltersHistory(params);
         });
     }
 
@@ -432,6 +592,7 @@ function postOrderAction(url, token) {
 
     bindPagination();
     bindRowChecks();
+    bindQuickFilters();
     syncOrdersFilterFeedbackFromPartial();
 })();
 </script>

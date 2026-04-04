@@ -60,7 +60,9 @@ class OrderController extends Controller
                 ->update(['notified_at' => now()]);
         }
 
-        $query = $this->filteredOrdersQuery($request, $store->id)
+        $filtersState = $this->resolveOrdersFiltersState($request);
+
+        $query = $this->filteredOrdersQuery($request, $store->id, $filtersState)
             ->orderByDesc('created_at');
         $orders = $query->paginate(15)->withQueryString();
     
@@ -73,6 +75,7 @@ class OrderController extends Controller
                 'orders' => $orders,
                 'store' => $store,
                 'drawerData' => $drawerData,
+                'filtersState' => $filtersState,
             ]);
         }
         
@@ -80,6 +83,7 @@ class OrderController extends Controller
             'orders' => $orders,
             'store' => $store,
             'drawerData' => $drawerData,
+            'filtersState' => $filtersState,
         ]);
     }
 
@@ -150,14 +154,16 @@ class OrderController extends Controller
             return response()->json(['message' => 'Loja não encontrada.'], 403);
         }
 
-        $count = $this->filteredOrdersQuery($request, $store->id)->count();
+        $filtersState = $this->resolveOrdersFiltersState($request);
+
+        $count = $this->filteredOrdersQuery($request, $store->id, $filtersState)->count();
         if ($count > 500) {
             return response()->json([
                 'message' => 'Mais de 500 registros: exportação em fila ainda não configurada. Refine os filtros.',
             ], 422);
         }
 
-        $orders = $this->filteredOrdersQuery($request, $store->id)
+        $orders = $this->filteredOrdersQuery($request, $store->id, $filtersState)
             ->with(['client', 'items.product'])
             ->orderByDesc('created_at')
             ->get();
@@ -305,7 +311,6 @@ class OrderController extends Controller
                     $quantity = max(1, (int) ($item['quantity'] ?? 1));
 
                     $product = Product::query()->whereKey($productId)->firstOrFail();
-                    $unitPrice = (string) $product->price;
 
                     $lineQuery = $order->items()->where('product_id', $productId);
                     if ($variantId !== null) {
@@ -319,10 +324,11 @@ class OrderController extends Controller
                     $line = $lineQuery->first();
                     if ($line !== null) {
                         $line->quantity = (int) $line->quantity + $quantity;
-                        $line->unit_price = $unitPrice;
+                        $line->unit_price = $this->resolveUnitPriceForQuantity($product, $order->store, (int) $line->quantity);
                         $line->recalcLineSubtotal();
                         $line->save();
                     } else {
+                        $unitPrice = $this->resolveUnitPriceForQuantity($product, $order->store, $quantity);
                         OrderItem::query()->create([
                             'order_id' => $order->id,
                             'store_id' => $order->store_id,
@@ -396,17 +402,19 @@ class OrderController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    private function filteredOrdersQuery(Request $request, int $storeId)
+    private function filteredOrdersQuery(Request $request, int $storeId, ?array $filtersState = null)
     {
+        $filtersState ??= $this->resolveOrdersFiltersState($request);
+
         $query = Order::query()
             ->where('store_id', $storeId)
             ->with(['client', 'items.product.brand', 'items.variant', 'items.product.images']);
 
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->input('date_from'));
+        if ($filtersState['date_from'] !== null) {
+            $query->whereDate('created_at', '>=', $filtersState['date_from']);
         }
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->input('date_to'));
+        if ($filtersState['date_to'] !== null) {
+            $query->whereDate('created_at', '<=', $filtersState['date_to']);
         }
 
         $clientSearch = trim((string) $request->input('client', ''));
@@ -417,10 +425,7 @@ class OrderController extends Controller
             });
         }
 
-        $statuses = $request->input('status', []);
-        if (! is_array($statuses)) {
-            $statuses = $statuses !== null && $statuses !== '' ? [(string) $statuses] : [];
-        }
+        $statuses = $filtersState['statuses'];
         if ($statuses !== []) {
             $query->whereIn('status', $statuses);
         }
@@ -441,7 +446,11 @@ class OrderController extends Controller
         $order->loadMissing(['client', 'store', 'items.product.brand', 'items.variant', 'items.product.images', 'statusHistories.changedBy']);
 
         $lines = [];
+        $pricingModes = [];
+        $wholesaleMinQuantity = $order->store?->wholesale_min_quantity;
         foreach ($order->items as $item) {
+            $pricingMode = $this->resolveOrderItemPricingMode($item, $wholesaleMinQuantity);
+            $pricingModes[] = $pricingMode;
             $lines[] = [
                 'id' => $item->id,
                 'name' => $item->product?->name ?? '—',
@@ -450,10 +459,17 @@ class OrderController extends Controller
                 'unit_price' => (float) $item->unit_price,
                 'subtotal' => (float) $item->line_subtotal,
                 'image' => $this->resolveOrderItemImage($item),
+                'pricing_mode' => $pricingMode,
+                'pricingModeLabel' => $this->pricingModeLabel($pricingMode),
             ];
         }
 
-        $timeline = $order->statusHistories->map(function ($h) {
+        $orderPricingMode = $this->resolveAggregatePricingMode($pricingModes);
+
+        $timeline = $order->statusHistories
+            ->sortBy('created_at')
+            ->values()
+            ->map(function ($h) {
             $toLabel = OrderStatus::tryFrom((string) $h->to_status)?->label() ?? $h->to_status;
 
             return [
@@ -464,7 +480,7 @@ class OrderController extends Controller
                 'by' => $h->changedBy?->name ?? 'Sistema',
                 'note' => $h->note,
             ];
-        })->values()->all();
+        })->all();
 
         return [
             'id' => $order->id,
@@ -473,10 +489,13 @@ class OrderController extends Controller
             'statusLabel' => $order->status->label(),
             'fulfillment' => $order->fulfillment_type->value,
             'fulfillmentLabel' => $order->fulfillment_type->label(),
+            'pricingMode' => $orderPricingMode,
+            'pricingModeLabel' => $this->pricingModeLabel($orderPricingMode),
             'createdAt' => $order->created_at?->format('d/m/Y \à\s H:i'),
             'payment_method' => $order->payment_method ?? '—',
             'payment_installments' => $order->payment_installments ?? 1,
             'payment_status' => $order->payment_status ?? '—',
+            'paymentStatusLabel' => $this->formatPaymentStatus($order->payment_status),
             'message' => $order->message ?? '',
             'client' => [
                 'name' => $order->client?->name ?? '—',
@@ -498,7 +517,7 @@ class OrderController extends Controller
             'can_confirm' => $order->status->canConfirmFromPending(),
             'can_advance' => $order->status->nextOperational($order->store) !== null,
             'can_cancel' => $order->status->canCancel(),
-            'can_complete_stock' => in_array($order->status, [OrderStatus::CONFIRMED, OrderStatus::SEPARATING, OrderStatus::DELIVERED], true),
+            'can_complete_stock' => $order->status === OrderStatus::DELIVERED,
         ];
     }
 
@@ -550,6 +569,176 @@ class OrderController extends Controller
         }
 
         return $normalized;
+    }
+
+    private function formatPaymentStatus(?string $status): string
+    {
+        return match (mb_strtolower(trim((string) $status))) {
+            'paid', 'confirmed', 'completed' => 'Pagamento confirmado',
+            'pending' => 'Aguardando confirmação',
+            'failed' => 'Falhou',
+            'canceled', 'cancelled' => 'Cancelado',
+            'refunded' => 'Estornado',
+            default => '—',
+        };
+    }
+
+    /**
+     * @return array{
+     *     period: string,
+     *     date_from: ?string,
+     *     date_to: ?string,
+     *     statuses: array<int, string>,
+     *     hasActiveDrawerFilters: bool,
+     *     selectedQuickStatus: string
+     * }
+     */
+    private function resolveOrdersFiltersState(Request $request): array
+    {
+        $statusInput = $request->input('status', []);
+        if (! is_array($statusInput)) {
+            $statusInput = $statusInput !== null && $statusInput !== '' ? [(string) $statusInput] : [];
+        }
+
+        $explicitStatuses = collect($statusInput)
+            ->map(static fn ($status): string => (string) $status)
+            ->filter(static fn (string $status): bool => OrderStatus::tryFrom($status) !== null)
+            ->values()
+            ->all();
+
+        $hasExplicitDateRange = $request->filled('date_from') || $request->filled('date_to');
+        $hasClientFilter = trim((string) $request->input('client', '')) !== '';
+        $hasFulfillmentFilter = in_array($request->input('fulfillment_type', 'all'), ['delivery', 'pickup'], true);
+        $quickStatus = $this->normalizeQuickStatus((string) $request->input('quick_status', ''));
+        $hasPeriodParam = $request->query->has('period');
+        $hasQuickStatusParam = $request->query->has('quick_status');
+        $hasUserControlledScope = $hasExplicitDateRange
+            || $hasClientFilter
+            || $hasFulfillmentFilter
+            || $explicitStatuses !== []
+            || $hasPeriodParam
+            || $hasQuickStatusParam;
+
+        $period = $hasExplicitDateRange
+            ? 'custom'
+            : $this->normalizeOrdersPeriod((string) $request->input('period', 'today'));
+
+        [$dateFrom, $dateTo] = $hasExplicitDateRange
+            ? [
+                $request->filled('date_from') ? (string) $request->input('date_from') : null,
+                $request->filled('date_to') ? (string) $request->input('date_to') : null,
+            ]
+            : $this->resolvePeriodDateRange($period);
+
+        $statuses = $explicitStatuses;
+        if ($statuses === []) {
+            if ($quickStatus !== null && $quickStatus !== 'all') {
+                $statuses = [$quickStatus];
+            } elseif (! $hasUserControlledScope) {
+                $statuses = [OrderStatus::PENDING->value];
+            }
+        }
+
+        return [
+            'period' => $period,
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
+            'statuses' => $statuses,
+            'hasActiveDrawerFilters' => $hasExplicitDateRange || $hasClientFilter || $hasFulfillmentFilter || $explicitStatuses !== [],
+            'selectedQuickStatus' => count($statuses) === 1 ? $statuses[0] : 'all',
+        ];
+    }
+
+    private function normalizeOrdersPeriod(string $period): string
+    {
+        return match ($period) {
+            '7d', '30d', 'custom' => $period,
+            default => 'today',
+        };
+    }
+
+    /**
+     * @return array{0: string, 1: string}
+     */
+    private function resolvePeriodDateRange(string $period): array
+    {
+        $today = now()->toDateString();
+
+        return match ($period) {
+            '30d' => [now()->subDays(29)->toDateString(), $today],
+            '7d' => [now()->subDays(6)->toDateString(), $today],
+            default => [$today, $today],
+        };
+    }
+
+    private function normalizeQuickStatus(string $status): ?string
+    {
+        $normalized = trim($status);
+
+        if ($normalized === '') {
+            return null;
+        }
+
+        if ($normalized === 'all') {
+            return 'all';
+        }
+
+        return OrderStatus::tryFrom($normalized)?->value;
+    }
+
+    private function resolveUnitPriceForQuantity(Product $product, ?\App\Models\Store $store, int $quantity): string
+    {
+        $retailPrice = number_format((float) $product->price, 2, '.', '');
+        $wholesalePrice = (float) ($product->price_wholesale ?? 0);
+        $minimumQuantity = $store?->wholesale_min_quantity;
+
+        if ($minimumQuantity !== null
+            && $minimumQuantity > 0
+            && $quantity >= $minimumQuantity
+            && $wholesalePrice > 0) {
+            return number_format($wholesalePrice, 2, '.', '');
+        }
+
+        return $retailPrice;
+    }
+
+    private function resolveOrderItemPricingMode(OrderItem $item, ?int $wholesaleMinQuantity): string
+    {
+        $wholesalePrice = (float) ($item->product?->price_wholesale ?? 0);
+        $unitPrice = (float) $item->unit_price;
+        $reachedWholesaleQuantity = $wholesaleMinQuantity !== null
+            && $wholesaleMinQuantity > 0
+            && (int) $item->quantity >= $wholesaleMinQuantity;
+        $matchesWholesalePrice = $wholesalePrice > 0 && abs($unitPrice - $wholesalePrice) < 0.01;
+
+        return $reachedWholesaleQuantity && $matchesWholesalePrice ? 'wholesale' : 'retail';
+    }
+
+    /**
+     * @param  array<int, string>  $pricingModes
+     */
+    private function resolveAggregatePricingMode(array $pricingModes): string
+    {
+        $uniqueModes = array_values(array_unique($pricingModes));
+
+        if ($uniqueModes === []) {
+            return 'retail';
+        }
+
+        if (count($uniqueModes) === 1) {
+            return $uniqueModes[0];
+        }
+
+        return 'mixed';
+    }
+
+    private function pricingModeLabel(string $pricingMode): string
+    {
+        return match ($pricingMode) {
+            'wholesale' => 'Atacado',
+            'mixed' => 'Misto',
+            default => 'Varejo',
+        };
     }
 
     private function checkExistClient(string $phone, Request $req): Client

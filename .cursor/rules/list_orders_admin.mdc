@@ -1,0 +1,17 @@
+---
+alwaysApply: false
+---
+
+---
+description: Módulo de Pedidos — SaaS de Catálogos Online (Moda)
+---
+
+# Módulo de Pedidos
+
+Você é um especialista em Laravel 11+, Blade, jQuery e Tailwind CSS v4.
+Este SaaS atende lojistas de moda. Priorize DX limpa, performance e UX intuitiva.
+
+# Listagem Inicial de Pedidos
+- Ao usuário entrar na listagem de pedidos o sistema deverá mostrar somente os pedidos Pendentes do dia atual
+- Embora exista o botão de filtros o sistema também deverá mostrar botões de status rápidos para que o usuário clique e veja os pedidos do dia de acordo com o status do botão que foi clicado
+- O sistema também deverá mostrar um select que inicialmente carregará os dados do pedidos do dia atual, mas que também possibite o usuário de listar os pedidos do últimos 7 dias e dos últimos 30 dias

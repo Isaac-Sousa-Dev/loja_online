@@ -41,6 +41,7 @@ class StoreCartTest extends TestCase
             'partner_id' => $partner->id,
             'plan_id'    => $plan->id,
             'store_name' => 'Loja Teste',
+            'wholesale_min_quantity' => 3,
         ]);
 
         $category = Category::create(['name' => 'Cat', 'created_by' => $partner->id]);
@@ -49,6 +50,7 @@ class StoreCartTest extends TestCase
             'name'        => 'Camisa',
             'description' => 'Camisa de teste',
             'price'       => 50.00,
+            'price_wholesale' => 40.00,
             'stock'       => 10,
             'partner_id'  => $partner->id,
             'category_id' => $category->id,
@@ -164,5 +166,61 @@ class StoreCartTest extends TestCase
 
         $response = $this->postJson(route('orders.storeCart'), $payload);
         $response->assertStatus(422);
+    }
+
+    public function test_store_cart_applies_wholesale_price_when_minimum_quantity_is_reached(): void
+    {
+        $payload = [
+            'name' => 'Atacado',
+            'phone' => '11977776666',
+            'store_id' => $this->store->id,
+            'items' => [
+                [
+                    'product_id' => $this->product->id,
+                    'quantity' => 3,
+                    'variant_id' => $this->variantRed->id,
+                    'color' => 'Vermelho',
+                    'size' => 'M',
+                ],
+            ],
+        ];
+
+        $this->postJson(route('orders.storeCart'), $payload)->assertCreated();
+
+        $line = OrderItem::query()->where('product_variant_id', $this->variantRed->id)->first();
+
+        $this->assertNotNull($line);
+        $this->assertSame('40.00', number_format((float) $line->unit_price, 2, '.', ''));
+        $this->assertSame('120.00', number_format((float) $line->line_subtotal, 2, '.', ''));
+    }
+
+    public function test_store_cart_reprices_existing_line_when_quantity_crosses_wholesale_threshold(): void
+    {
+        $payload = [
+            'name' => 'Escalonado',
+            'phone' => '11966665555',
+            'store_id' => $this->store->id,
+            'items' => [
+                [
+                    'product_id' => $this->product->id,
+                    'quantity' => 2,
+                    'variant_id' => $this->variantBlue->id,
+                    'color' => 'Azul',
+                    'size' => 'M',
+                ],
+            ],
+        ];
+
+        $this->postJson(route('orders.storeCart'), $payload)->assertCreated();
+
+        $payload['items'][0]['quantity'] = 1;
+        $this->postJson(route('orders.storeCart'), $payload)->assertCreated();
+
+        $line = OrderItem::query()->where('product_variant_id', $this->variantBlue->id)->first();
+
+        $this->assertNotNull($line);
+        $this->assertSame(3, $line->quantity);
+        $this->assertSame('40.00', number_format((float) $line->unit_price, 2, '.', ''));
+        $this->assertSame('120.00', number_format((float) $line->line_subtotal, 2, '.', ''));
     }
 }

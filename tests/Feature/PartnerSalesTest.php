@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enums\OrderStatus;
+use App\Enums\FulfillmentType;
 use App\Models\Category;
 use App\Models\Client;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Partner;
 use App\Models\Plan;
 use App\Models\Product;
@@ -24,6 +26,7 @@ class PartnerSalesTest extends TestCase
 
     public function test_confirmed_order_syncs_and_appears_on_sales_index(): void
     {
+        /** @var User $user */
         $user = User::factory()->create();
         $partner = Partner::create(['user_id' => $user->id]);
         $plan = Plan::create([
@@ -52,17 +55,30 @@ class PartnerSalesTest extends TestCase
         ]);
 
         $order = Order::create([
+            'code' => 'ORD-SALE-TEST',
             'store_id' => $store->id,
             'client_id' => $client->id,
-            'product_id' => $product->id,
-            'status' => OrderStatus::PAID->value,
+            'status' => OrderStatus::CONFIRMED,
+            'fulfillment_type' => FulfillmentType::PICKUP,
+            'subtotal' => 240.00,
+            'shipping_amount' => 0,
+            'discount_amount' => 0,
+            'total' => 240.00,
+            'payment_method' => 'pix',
+            'payment_installments' => 1,
+            'payment_status' => 'paid',
             'message' => null,
             'shift' => false,
             'finance' => false,
-            'order_ref' => 'ORD-SALE-TEST',
+        ]);
+        OrderItem::create([
+            'order_id' => $order->id,
+            'store_id' => $store->id,
+            'client_id' => $client->id,
+            'product_id' => $product->id,
             'quantity' => 2,
-            'payment_method' => 'pix',
-            'delivery_type' => 'pickup',
+            'unit_price' => 120.00,
+            'line_subtotal' => 240.00,
         ]);
 
         app(SyncSaleFromOrdersService::class)->syncForOrder($order);
@@ -82,6 +98,7 @@ class PartnerSalesTest extends TestCase
 
     public function test_sales_search_filter_by_client_name(): void
     {
+        /** @var User $user */
         $user = User::factory()->create();
         $partner = Partner::create(['user_id' => $user->id]);
         $plan = Plan::create([
@@ -109,17 +126,30 @@ class PartnerSalesTest extends TestCase
             'email' => null,
         ]);
         $order = Order::create([
+            'code' => 'ORD-FILTER-1',
             'store_id' => $store->id,
             'client_id' => $client->id,
-            'product_id' => $product->id,
-            'status' => OrderStatus::PAID->value,
+            'status' => OrderStatus::CONFIRMED,
+            'fulfillment_type' => FulfillmentType::PICKUP,
+            'subtotal' => 30.00,
+            'shipping_amount' => 0,
+            'discount_amount' => 0,
+            'total' => 30.00,
+            'payment_method' => 'cash',
+            'payment_installments' => 1,
+            'payment_status' => 'paid',
             'message' => null,
             'shift' => false,
             'finance' => false,
-            'order_ref' => 'ORD-FILTER-1',
+        ]);
+        OrderItem::create([
+            'order_id' => $order->id,
+            'store_id' => $store->id,
+            'client_id' => $client->id,
+            'product_id' => $product->id,
             'quantity' => 1,
-            'payment_method' => 'cash',
-            'delivery_type' => 'pickup',
+            'unit_price' => 30.00,
+            'line_subtotal' => 30.00,
         ]);
         app(SyncSaleFromOrdersService::class)->syncForOrder($order);
 
@@ -129,8 +159,74 @@ class PartnerSalesTest extends TestCase
             ->assertSee('João Especial');
     }
 
+    public function test_completed_order_syncs_sale_as_completed(): void
+    {
+        /** @var User $user */
+        $user = User::factory()->create();
+        $partner = Partner::create(['user_id' => $user->id]);
+        $plan = Plan::create([
+            'name' => 'Free', 'slug' => 'free', 'price' => 0,
+            'duration' => 30, 'status' => 'active', 'type' => 'monthly',
+        ]);
+        $store = Store::create([
+            'partner_id' => $partner->id,
+            'plan_id' => $plan->id,
+            'store_name' => 'Loja Finalizada',
+        ]);
+        $category = Category::create(['name' => 'Cat', 'created_by' => $partner->id]);
+        $product = Product::create([
+            'name' => 'Vestido',
+            'description' => 'Teste',
+            'price' => 199.90,
+            'stock' => 4,
+            'partner_id' => $partner->id,
+            'category_id' => $category->id,
+            'is_active' => true,
+        ]);
+        $client = Client::create([
+            'name' => 'Carla Final',
+            'phone' => '11977776666',
+            'email' => 'carla@test.test',
+        ]);
+
+        $order = Order::create([
+            'code' => 'ORD-COMPLETE-1',
+            'store_id' => $store->id,
+            'client_id' => $client->id,
+            'status' => OrderStatus::COMPLETED,
+            'fulfillment_type' => FulfillmentType::DELIVERY,
+            'subtotal' => 199.90,
+            'shipping_amount' => 0,
+            'discount_amount' => 0,
+            'total' => 199.90,
+            'payment_method' => 'pix',
+            'payment_installments' => 1,
+            'payment_status' => 'paid',
+            'completed_at' => now(),
+        ]);
+        OrderItem::create([
+            'order_id' => $order->id,
+            'store_id' => $store->id,
+            'client_id' => $client->id,
+            'product_id' => $product->id,
+            'quantity' => 1,
+            'unit_price' => 199.90,
+            'line_subtotal' => 199.90,
+        ]);
+
+        app(SyncSaleFromOrdersService::class)->syncForOrder($order);
+
+        $this->assertDatabaseHas('sales', [
+            'store_id' => $store->id,
+            'order_ref' => 'ORD-COMPLETE-1',
+            'sale_status' => 'completed',
+            'status' => 'completed',
+        ]);
+    }
+
     public function test_dashboard_totals_reflect_filtered_sales(): void
     {
+        /** @var User $user */
         $user = User::factory()->create();
         $partner = Partner::create(['user_id' => $user->id]);
         $plan = Plan::create([

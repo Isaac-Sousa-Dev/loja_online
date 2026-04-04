@@ -19,9 +19,9 @@ enum OrderStatus: string
     {
         return match ($this) {
             self::PENDING => 'Pendente',
-            self::CONFIRMED => 'Confirmado',
+            self::CONFIRMED => 'Pagamento confirmado',
             self::SEPARATING => 'Em separação',
-            self::DELIVERED => 'Entregue',
+            self::DELIVERED => 'Pronto para entrega',
             self::COMPLETED => 'Concluído',
             self::CANCELLED => 'Cancelado',
         };
@@ -63,9 +63,7 @@ enum OrderStatus: string
     {
         return match ($this) {
             self::PENDING => self::CONFIRMED,
-            self::CONFIRMED => $store->hasFeature('separation_team')
-                ? self::SEPARATING
-                : self::DELIVERED,
+            self::CONFIRMED => self::SEPARATING,
             self::SEPARATING => self::DELIVERED,
             self::DELIVERED => self::COMPLETED,
             default => null,

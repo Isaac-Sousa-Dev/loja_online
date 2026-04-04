@@ -7,6 +7,7 @@ namespace App\Actions\Orders;
 use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\User;
+use App\Services\Sale\SyncSaleFromOrdersService;
 use InvalidArgumentException;
 
 final class UpdateOrderStatusAction
@@ -14,6 +15,7 @@ final class UpdateOrderStatusAction
     public function __construct(
         private readonly RecordOrderStatusHistoryAction $recordHistory,
         private readonly DebitOrderStockAction $debitStock,
+        private readonly SyncSaleFromOrdersService $syncSaleFromOrders,
     ) {}
 
     public function confirm(Order $order, ?User $actor = null): void
@@ -33,7 +35,7 @@ final class UpdateOrderStatusAction
     }
 
     /**
-     * Avança um passo no fluxo operacional (confirmado → separação → entregue → concluído).
+     * Avança um passo no fluxo operacional (pagamento confirmado → separação → pronto para entrega → concluído).
      */
     public function advance(Order $order, ?User $actor = null): void
     {
@@ -54,7 +56,7 @@ final class UpdateOrderStatusAction
     }
 
     /**
-     * Conclui venda: baixa estoque e marca como concluído (a partir de confirmado, separação ou entregue).
+     * Conclui venda: baixa estoque e marca como concluído após ficar pronto para entrega.
      */
     public function completeWithStock(Order $order, ?User $actor = null): void
     {
@@ -67,8 +69,8 @@ final class UpdateOrderStatusAction
         if ($order->status === OrderStatus::PENDING) {
             throw new InvalidArgumentException('Confirme o pedido antes de concluir a venda.');
         }
-        if (! in_array($order->status, [OrderStatus::CONFIRMED, OrderStatus::SEPARATING, OrderStatus::DELIVERED], true)) {
-            throw new InvalidArgumentException('Status atual não permite conclusão com estoque.');
+        if ($order->status !== OrderStatus::DELIVERED) {
+            throw new InvalidArgumentException('O pedido precisa estar pronto para entrega antes da conclusão.');
         }
 
         $from = $order->status->value;
@@ -76,8 +78,10 @@ final class UpdateOrderStatusAction
             $this->debitStock->__invoke($order);
             $order->status = OrderStatus::COMPLETED;
             $order->completed_at = now();
+            $order->payment_status = 'paid';
             $order->save();
             ($this->recordHistory)($order, $from, OrderStatus::COMPLETED->value, $actor?->id, null);
+            $this->syncSaleFromOrders->syncForOrder($order->fresh());
         });
     }
 
@@ -122,10 +126,14 @@ final class UpdateOrderStatusAction
             return;
         }
         $order->status = $to;
+        if ($to === OrderStatus::CONFIRMED) {
+            $order->payment_status = 'paid';
+        }
         if ($to === OrderStatus::COMPLETED) {
             $order->completed_at = now();
         }
         $order->save();
         ($this->recordHistory)($order, $from, $to->value, $actor?->id, $note);
+        $this->syncSaleFromOrders->syncForOrder($order->fresh());
     }
 }
