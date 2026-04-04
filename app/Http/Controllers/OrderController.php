@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\Cache\ForgetStoreDashboardMetricsAction;
 use App\Actions\Orders\UpdateOrderStatusAction;
 use App\Enums\FulfillmentType;
 use App\Enums\OrderStatus;
@@ -30,6 +31,7 @@ class OrderController extends Controller
 {
     public function __construct(
         private readonly UpdateOrderStatusAction $updateOrderStatus,
+        private readonly ForgetStoreDashboardMetricsAction $forgetStoreDashboardMetrics,
     ) {}
 
     public function index(Request $request): View|Response
@@ -345,9 +347,12 @@ class OrderController extends Controller
                 }
 
                 $order->recalculateTotals();
+                $order->forceFill(['notified_at' => null])->save();
 
                 return $order->fresh(['items']);
             });
+
+            $this->forgetStoreDashboardMetrics->execute($storeId);
 
             return response()->json([
                 'success' => true,
@@ -408,7 +413,13 @@ class OrderController extends Controller
 
         $query = Order::query()
             ->where('store_id', $storeId)
-            ->with(['client', 'items.product.brand', 'items.variant', 'items.product.images']);
+            ->with([
+                'client',
+                'items.product.brand',
+                'items.variant',
+                'items.product.images',
+                'statusHistories.changedBy',
+            ]);
 
         if ($filtersState['date_from'] !== null) {
             $query->whereDate('created_at', '>=', $filtersState['date_from']);

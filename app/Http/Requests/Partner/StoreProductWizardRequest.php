@@ -141,9 +141,9 @@ class StoreProductWizardRequest extends FormRequest
         $g = is_string($value) ? $value : (string) $value;
 
         return match ($g) {
-            'M' => 'masculine',
-            'F' => 'feminine',
-            'U' => null,
+            'M', 'masculine' => 'M',
+            'F', 'feminine' => 'F',
+            'U' => 'U',
             default => null,
         };
     }

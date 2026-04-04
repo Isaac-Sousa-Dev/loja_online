@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
+use App\Actions\Cache\FlushPartnerCatalogAndPanelCachesAction;
 use App\Models\StoreCategories;
 use App\Services\category\CategoryService;
 use Illuminate\Http\Request;
@@ -10,13 +10,10 @@ use Illuminate\Support\Facades\Auth;
 
 class CategoryController extends Controller
 {
-
-    public $categoryService;
-
-    public function __construct(CategoryService $categoryService)
-    {
-        $this->categoryService = $categoryService;
-    }
+    public function __construct(
+        private readonly CategoryService $categoryService,
+        private readonly FlushPartnerCatalogAndPanelCachesAction $flushPartnerCatalogAndPanelCaches,
+    ) {}
 
     public function index()
     {
@@ -45,6 +42,8 @@ class CategoryController extends Controller
 
         $this->categoryService->create($data, $partner);
 
+        $this->flushPartnerCatalogAndPanelCaches->execute($partner);
+
         return session()->flash('success', 'Categoria cadastrada!');
     }
 
@@ -68,6 +67,8 @@ class CategoryController extends Controller
 
         $this->categoryService->update($data, $partner);
 
+        $this->flushPartnerCatalogAndPanelCaches->execute($partner);
+
         return session()->flash('success', 'Categoria atualizada!');
     }
 
@@ -76,6 +77,7 @@ class CategoryController extends Controller
     {
         $storeCategory = StoreCategories::where('id', $id)->where('store_id', Auth::user()->partner->store->id)->first();
         $storeCategory->delete();
+        $this->flushPartnerCatalogAndPanelCaches->execute(Auth::user()->partner);
         return redirect()->route('categories.index')->with('success', 'Categoria removida!');
     }
 }

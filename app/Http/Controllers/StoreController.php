@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Cache\FlushPartnerCatalogAndPanelCachesAction;
 use App\Http\Requests\Partner\StoreRequest;
+use App\Http\Requests\Partner\UpdateStoreHoursRequest;
 use App\Models\Partner;
 use App\Models\Store;
 use App\Models\StoreHour;
@@ -10,6 +12,7 @@ use App\Models\User;
 use App\Services\store\StoreService;
 use App\Services\store\UploadFileStoreService;
 use Exception;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -21,7 +24,8 @@ class StoreController extends Controller
 
     public function __construct(
         UploadFileStoreService $uploadFileStoreService,
-        StoreService $storeService
+        StoreService $storeService,
+        private readonly FlushPartnerCatalogAndPanelCachesAction $flushPartnerCatalogAndPanelCaches,
     )
     {
         $this->uploadFileStoreService = $uploadFileStoreService;
@@ -99,19 +103,74 @@ class StoreController extends Controller
             $data['banner'] = $banner['path'];
         }
 
-        $isNewLink = $this->storeService->update($data, $id); 
+        $isNewLink = $this->storeService->update($data, $id);
+        $store = Store::query()->findOrFail($id);
+        if ($store->partner !== null) {
+            $this->flushPartnerCatalogAndPanelCaches->execute($store->partner);
+        }
         return redirect()->route('store.edit')->with('success', 'Loja atualizada com sucesso!')->with('isNewLink', $isNewLink);
     }
     
-    public function updateHour(Request $request, string $id)
-    { 
-        $data = $request->all();
-        foreach($data['hours'] as $key => $value){
-            $value['is_open'] = isset($value['is_open']) ? 1 : 0;
-            $storeHour = StoreHour::where('store_id', $id)->where('day_of_week', $key)->first();
-            $storeHour->update($value);
+    public function updateHour(UpdateStoreHoursRequest $request, string $id): RedirectResponse
+    {
+        $validated = $request->validated();
+        $storeId = (int) $id;
+
+        $weekdayOpen = $validated['weekday_open'] ?? null;
+        $weekdayClose = $validated['weekday_close'] ?? null;
+        foreach ([1, 2, 3, 4, 5] as $dayOfWeek) {
+            $this->syncStoreHourRow($storeId, $dayOfWeek, $weekdayOpen, $weekdayClose);
         }
+
+        $this->syncStoreHourRow(
+            $storeId,
+            6,
+            $validated['saturday_open'] ?? null,
+            $validated['saturday_close'] ?? null,
+        );
+        $this->syncStoreHourRow(
+            $storeId,
+            0,
+            $validated['sunday_open'] ?? null,
+            $validated['sunday_close'] ?? null,
+        );
+
+        $store = Store::query()->findOrFail($storeId);
+        if ($store->partner !== null) {
+            $this->flushPartnerCatalogAndPanelCaches->execute($store->partner);
+        }
+
         return redirect()->route('store.edit')->with('success', 'Horário de funcionamento atualizado com sucesso!');
+    }
+
+    private function syncStoreHourRow(int $storeId, int $dayOfWeek, ?string $openTime, ?string $closeTime): void
+    {
+        $isOpen = $openTime !== null && $closeTime !== null;
+
+        $payload = [
+            'open_time' => $isOpen ? $openTime : null,
+            'close_time' => $isOpen ? $closeTime : null,
+            'is_open' => $isOpen ? 1 : 0,
+        ];
+
+        $storeHour = StoreHour::query()
+            ->where('store_id', $storeId)
+            ->where('day_of_week', $dayOfWeek)
+            ->first();
+
+        if ($storeHour === null) {
+            StoreHour::query()->create(array_merge(
+                [
+                    'store_id' => $storeId,
+                    'day_of_week' => $dayOfWeek,
+                ],
+                $payload,
+            ));
+
+            return;
+        }
+
+        $storeHour->update($payload);
     }
 
 }

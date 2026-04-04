@@ -1,3 +1,17 @@
+@php
+    $hoursByDay = collect($storeHours ?? [])->keyBy('day_of_week');
+    $weekdayRow = $hoursByDay->get(1) ?? $hoursByDay->get(2) ?? $hoursByDay->get(3) ?? $hoursByDay->get(4) ?? $hoursByDay->get(5);
+    $saturdayRow = $hoursByDay->get(6);
+    $sundayRow = $hoursByDay->get(0);
+    $timeInputValue = static function (?object $row, string $field): string {
+        if ($row === null || $row->{$field} === null || $row->{$field} === '') {
+            return '';
+        }
+
+        return substr((string) $row->{$field}, 0, 5);
+    };
+@endphp
+
 <section class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100">
     <header class="mb-4 flex gap-2 items-center">
         <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
@@ -18,12 +32,12 @@
             <div class="flex items-center gap-3 w-full md:w-2/3 md:justify-end">
                 <div class="flex flex-col w-full md:w-32">
                     <span class="text-[10px] uppercase text-gray-500 font-bold mb-1 ml-1">Abertura</span>
-                    <x-text-input type="time" name="weekday_open" class="text-sm rounded-xl border-gray-300 text-gray-600" />
+                    <x-text-input type="time" name="weekday_open" value="{{ $timeInputValue($weekdayRow, 'open_time') }}" class="text-sm rounded-xl border-gray-300 text-gray-600" />
                 </div>
                 <span class="text-gray-300 mt-4">-</span>
                 <div class="flex flex-col w-full md:w-32">
                     <span class="text-[10px] uppercase text-gray-500 font-bold mb-1 ml-1">Fechamento</span>
-                    <x-text-input type="time" name="weekday_close" class="text-sm rounded-xl border-gray-300 text-gray-600" />
+                    <x-text-input type="time" name="weekday_close" value="{{ $timeInputValue($weekdayRow, 'close_time') }}" class="text-sm rounded-xl border-gray-300 text-gray-600" />
                 </div>
             </div>
         </div>
@@ -37,12 +51,12 @@
             <div class="flex items-center gap-3 w-full md:w-2/3 md:justify-end">
                 <div class="flex flex-col w-full md:w-32">
                     <span class="text-[10px] uppercase text-gray-500 font-bold mb-1 ml-1">Abertura</span>
-                    <x-text-input type="time" name="saturday_open" class="text-sm rounded-xl border-gray-300 text-gray-600" />
+                    <x-text-input type="time" name="saturday_open" value="{{ $timeInputValue($saturdayRow, 'open_time') }}" class="text-sm rounded-xl border-gray-300 text-gray-600" />
                 </div>
                 <span class="text-gray-300 mt-4">-</span>
                 <div class="flex flex-col w-full md:w-32">
                     <span class="text-[10px] uppercase text-gray-500 font-bold mb-1 ml-1">Fechamento</span>
-                    <x-text-input type="time" name="saturday_close" class="text-sm rounded-xl border-gray-300 text-gray-600" />
+                    <x-text-input type="time" name="saturday_close" value="{{ $timeInputValue($saturdayRow, 'close_time') }}" class="text-sm rounded-xl border-gray-300 text-gray-600" />
                 </div>
             </div>
         </div>
@@ -56,12 +70,12 @@
             <div class="flex items-center gap-3 w-full md:w-2/3 md:justify-end">
                 <div class="flex flex-col w-full md:w-32">
                     <span class="text-[10px] uppercase text-gray-500 font-bold mb-1 ml-1">Abertura</span>
-                    <x-text-input type="time" name="sunday_open" class="text-sm rounded-xl border-gray-300 text-gray-600" />
+                    <x-text-input type="time" name="sunday_open" value="{{ $timeInputValue($sundayRow, 'open_time') }}" class="text-sm rounded-xl border-gray-300 text-gray-600" />
                 </div>
                 <span class="text-gray-300 mt-4">-</span>
                 <div class="flex flex-col w-full md:w-32">
                     <span class="text-[10px] uppercase text-gray-500 font-bold mb-1 ml-1">Fechamento</span>
-                    <x-text-input type="time" name="sunday_close" class="text-sm rounded-xl border-gray-300 text-gray-600" />
+                    <x-text-input type="time" name="sunday_close" value="{{ $timeInputValue($sundayRow, 'close_time') }}" class="text-sm rounded-xl border-gray-300 text-gray-600" />
                 </div>
             </div>
         </div>

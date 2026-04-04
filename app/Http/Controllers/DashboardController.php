@@ -1,29 +1,40 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Actions\Dashboard\GetPartnerDashboardOrderMetricsAction;
 use App\Models\ClientStore;
-use App\Models\Plan;
+use App\Models\Product;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function __construct(
+        private readonly GetPartnerDashboardOrderMetricsAction $partnerDashboardOrderMetrics,
+    ) {
+    }
+
+    public function index(): \Illuminate\Contracts\View\View
     {
         $userAuth = Auth::user();
         if ($userAuth->role == 'admin') {
             $data = $this->getDataForAdminDashboard($userAuth);
+
             return view('admin.dashboard', $data);
         } else {
             $data = $this->getDataForPartnerDashboard($userAuth);
+
             return view('partner.dashboard', $data);
         }
     }
 
-
-    private function getDataForAdminDashboard($userAuth)
+    /**
+     * @return array<string, mixed>
+     */
+    private function getDataForAdminDashboard(User $userAuth): array
     {
         $users = User::where('role', 'partner')->with('partner')->orderBy('created_at', 'desc')->get();
 
@@ -34,14 +45,16 @@ class DashboardController extends Controller
         $data = [];
         $data['allPartners'] = $filteredUsers;
         $data['quantityPartners'] = $filteredUsers->count();
+
         return $data;
     }
 
-
-    private function getDataForPartnerDashboard($userAuth)
+    /**
+     * @return array<string, mixed>
+     */
+    private function getDataForPartnerDashboard(User $userAuth): array
     {
         $partner = $userAuth->partner;
-        // Pegar os últimos produtos cadastrados com imagens e marca
         $latestProducts = $partner->products()
             ->with(['images', 'brand'])
             ->latest()
@@ -53,21 +66,28 @@ class DashboardController extends Controller
         $brands = $partner->brands;
         $clientsByStore = ClientStore::where('store_id', $store->id)->orderBy('created_at', 'desc')->get();
 
-        $ordersByStore = $store->orders()->with(['client', 'items.product'])->latest()->get();
-        $quantityOrders = $ordersByStore->count();
+        $ordersByStore = $store->orders()
+            ->with(['client', 'items.product'])
+            ->latest()
+            ->take(5)
+            ->get();
 
-        $data = [];
-        $data['quantityStockProducts'] = $partner->products->sum('stock');
-        $data['latestProducts'] = $latestProducts;
-        $data['ordersByStore'] = $ordersByStore->take(5);
-        $data['quantityOrders'] = $store->orders->count();
-        $data['quantityClients'] = $clientsByStore->count();
-        $data['quantityOrders'] = $quantityOrders;
-        $data['user'] = $userAuth;
-        $data['store'] = $store;
-        $data['categoriesByStore'] = $categoriesByStore;
-        $data['brands'] = $brands;
+        $orderMetrics = $this->partnerDashboardOrderMetrics->execute($store);
 
-        return $data;
+        return [
+            'quantityStockProducts' => (int) Product::query()
+                ->where('partner_id', $partner->id)
+                ->sum('stock'),
+            'latestProducts' => $latestProducts,
+            'ordersByStore' => $ordersByStore,
+            'quantityClients' => $clientsByStore->count(),
+            'completedSalesThisMonth' => $orderMetrics['completed_sales_count'],
+            'newOrdersThisMonth' => $orderMetrics['new_orders_count'],
+            'monthlySalesTotal' => $orderMetrics['monthly_sales_total'],
+            'user' => $userAuth,
+            'store' => $store,
+            'categoriesByStore' => $categoriesByStore,
+            'brands' => $brands,
+        ];
     }
 }

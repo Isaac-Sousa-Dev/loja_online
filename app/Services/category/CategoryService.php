@@ -3,6 +3,7 @@
 namespace App\Services\category;
 
 use App\Models\Category;
+use App\Models\Product;
 use App\Models\StoreCategories;
 use App\Models\StoreSubcategories;
 use App\Models\Subcategories;
@@ -50,15 +51,19 @@ class CategoryService {
         $categoryId = $data['category_id'];
         $storeCategoryUpdate = StoreCategories::where('store_id', $storeId)->where('category_id', $categoryId)->first();
 
+        $previousCategoryId = (int) $storeCategoryUpdate->category_id;
+
         $checkExistenceCategory = $this->checkExistenceCategory($data['name']);
         $responseCreated = null;
         if(!$checkExistenceCategory) {
             $responseCreated = $this->categoryRepository->create($data);
         }
 
+        $newCategoryId = $responseCreated != null ? (int) $responseCreated->id : (int) $checkExistenceCategory->id;
+
         $updateData = [
             'store_id' => $partner->store->id,
-            'category_id' => $responseCreated != null ? $responseCreated->id : $checkExistenceCategory->id,
+            'category_id' => $newCategoryId,
             'description' => $data['description']
         ];
         
@@ -67,6 +72,13 @@ class CategoryService {
         }
 
         $storeCategoryUpdate->update($updateData);
+
+        if ($previousCategoryId !== $newCategoryId) {
+            Product::query()
+                ->where('partner_id', $partner->id)
+                ->where('category_id', $previousCategoryId)
+                ->update(['category_id' => $newCategoryId]);
+        }
     }
 
 

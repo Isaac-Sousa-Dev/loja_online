@@ -76,7 +76,7 @@ class PartnerOrdersIndexTest extends TestCase
         $response->assertSee($todayPending->code);
         $response->assertDontSee('ORD-TODAY-CONFIRMED');
         $response->assertDontSee('ORD-YESTERDAY-PENDING');
-        $response->assertSee('Visao rapida');
+        $response->assertSee('Pedidos');
         $response->assertSee('Hoje');
     }
 

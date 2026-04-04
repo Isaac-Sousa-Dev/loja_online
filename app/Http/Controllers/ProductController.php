@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Cache\FlushPartnerCatalogAndPanelCachesAction;
 use App\Http\Requests\Partner\DuplicateProductRequest;
 use App\Http\Requests\Partner\IndexProductsRequest;
 use App\Http\Requests\Partner\ProductRequest;
@@ -9,6 +10,7 @@ use App\Http\Requests\Partner\StoreProductWizardRequest;
 use App\Http\Requests\Partner\UpdateProductVisibilityRequest;
 use App\Http\Requests\Partner\UpdateProductWizardRequest;
 use App\Models\Brand;
+use App\Models\Partner;
 use Illuminate\Http\Request;        
 use App\Models\Product;
 use App\Models\StoreCategories;
@@ -21,13 +23,16 @@ use App\Services\product\ProductVariantSyncService;
 use App\Services\product\ProductColorImageService;
 use App\Services\product\ProductWizardService;
 use Illuminate\Http\JsonResponse;
+use App\Support\Cache\PanelCacheKeys;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class ProductController extends Controller
 {
+    private const PRODUCT_FILTER_META_TTL_SECONDS = 300;
 
     protected $uploadFileService;
     private $productService;
@@ -42,6 +47,7 @@ class ProductController extends Controller
         private readonly ProductColorImageService $productColorImageService,
         private readonly PartnerProductListingService $partnerProductListingService,
         private readonly ProductDuplicateService $productDuplicateService,
+        private readonly FlushPartnerCatalogAndPanelCachesAction $flushPartnerCatalogAndPanelCaches,
     ) {
         $this->uploadFileService = $uploadFileService;
         $this->productService = $productService;
@@ -82,8 +88,9 @@ class ProductController extends Controller
             }
         }
 
-        $categoriesByPartner = StoreCategories::where('store_id', $storeId)->with('category')->get();
-        $brandsByPartner = Brand::where('partner_id', $partner->id)->orderBy('name')->get();
+        $filterLists = $this->rememberProductFilterLists($partner, $storeId);
+        $categoriesByPartner = $filterLists['categoriesByPartner'];
+        $brandsByPartner = $filterLists['brandsByPartner'];
 
         return view('partner.products.index', [
             'products' => $products,
@@ -111,6 +118,8 @@ class ProductController extends Controller
         try {
             $newProduct = $this->productDuplicateService->duplicateForPartner($partner, $product);
 
+            $this->flushPartnerCatalogAndPanelCaches->execute($partner);
+
             return redirect()
                 ->route('products.edit', $newProduct->id)
                 ->with('success', 'Produto duplicado. Ajuste o nome e os detalhes e ative quando estiver pronto.');
@@ -127,6 +136,9 @@ class ProductController extends Controller
     {
         $product->update(['is_active' => $request->boolean('is_active')]);
 
+        $partner = Partner::query()->findOrFail($product->partner_id);
+        $this->flushPartnerCatalogAndPanelCaches->execute($partner);
+
         $message = $request->boolean('is_active')
             ? 'Produto ativado no catálogo.'
             : 'Produto desativado no catálogo.';
@@ -141,13 +153,11 @@ class ProductController extends Controller
         $partner = $userAuth->partner;
 
         $storeId = $partner->store?->id ?? $partner->id;
-        $categoriesByPartner = StoreCategories::where('store_id', $storeId)->get();
-
-        $brands = Brand::where('partner_id', $partner->id)->get();
+        $filterLists = $this->rememberProductFilterLists($partner, $storeId);
 
         return view('partner.products.create', [
-            'brandsByPartner' => $brands,
-            'categoriesByPartner' => $categoriesByPartner
+            'brandsByPartner' => $filterLists['brandsByPartner'],
+            'categoriesByPartner' => $filterLists['categoriesByPartner'],
         ]);
     }
 
@@ -178,6 +188,8 @@ class ProductController extends Controller
             $data['partner_id'] = $partner->id;
             $product = $this->productService->insert($data, $request);
             DB::commit();
+
+            $this->flushPartnerCatalogAndPanelCaches->execute($partner);
 
             if ($request->wantsJson()) {
                 return response()->json([
@@ -223,6 +235,8 @@ class ProductController extends Controller
         try {
             $product = $this->productWizardService->createPartnerProduct($partner, $request);
 
+            $this->flushPartnerCatalogAndPanelCaches->execute($partner);
+
             if ($request->wantsJson()) {
                 return response()->json([
                     'product_id' => $product->id,
@@ -259,6 +273,8 @@ class ProductController extends Controller
         try {
             $this->productWizardService->updatePartnerProduct($partner, $product, $request);
 
+            $this->flushPartnerCatalogAndPanelCaches->execute($partner);
+
             return response()->json([
                 'message' => 'Produto atualizado!',
             ]);
@@ -280,9 +296,10 @@ class ProductController extends Controller
             abort(403);
         }
 
-        $brandsByPartner = Brand::where('partner_id', $partner->id)->get();
         $storeId = $partner->store?->id ?? $partner->id;
-        $categoriesByPartner = StoreCategories::where('store_id', $storeId)->get();
+        $filterLists = $this->rememberProductFilterLists($partner, $storeId);
+        $brandsByPartner = $filterLists['brandsByPartner'];
+        $categoriesByPartner = $filterLists['categoriesByPartner'];
 
         $existingVariantsJson = $product->variants->map(fn ($v) => [
             'id' => $v->id,
@@ -312,7 +329,6 @@ class ProductController extends Controller
     public function update(ProductRequest $request, string $id)
     {
         $data = $request->all();
-        dd($data);
         $product = Product::find($id);
 
         if ($request->hasFile('crlv')): $data['crlv'] = $this->uploadFileService->getPathAndExtensionTest($request->file('crlv'), 'documents')['path'];
@@ -325,6 +341,11 @@ class ProductController extends Controller
         $this->imageProductService->initUpdate($data, $product);
         $this->productService->update($data, $product);
 
+        $partner = Partner::query()->find($product->partner_id);
+        if ($partner !== null) {
+            $this->flushPartnerCatalogAndPanelCaches->execute($partner);
+        }
+
         session()->flash('success', 'Produto atualizado!');
     }
 
@@ -333,6 +354,7 @@ class ProductController extends Controller
     {
         $data = $request->all();
         $this->productService->updatePricePromotional($data);
+        $this->flushPartnerCachesAfterProductId($data['productId'] ?? null);
     }
 
 
@@ -340,6 +362,7 @@ class ProductController extends Controller
     {
         $data = $request->all();
         $this->productService->updatePrice($data);
+        $this->flushPartnerCachesAfterProductId($data['productId'] ?? null);
     }
 
 
@@ -368,13 +391,20 @@ class ProductController extends Controller
             'active'         => true,
         ]);
 
+        $this->flushPartnerCachesAfterProductId($id);
+
         return response()->json(['success' => true, 'variant' => $variant], 201);
     }
 
 
     public function destroyVariant(string $variantId)
     {
-        \App\Models\ProductVariant::findOrFail($variantId)->delete();
+        $variant = \App\Models\ProductVariant::findOrFail($variantId);
+        $productId = $variant->product_id;
+        $variant->delete();
+
+        $this->flushPartnerCachesAfterProductId($productId);
+
         return response()->json(['success' => true]);
     }
 
@@ -388,18 +418,60 @@ class ProductController extends Controller
 
         $totalStock = \App\Models\ProductVariant::where('product_id', $id)->sum('stock');
 
+        $this->flushPartnerCachesAfterProductId($id);
+
         return response()->json(['success' => true, 'total_stock' => $totalStock]);
     }
 
     public function destroy(string $id)
     {
-        $product = Product::find($id);
+        $product = Product::query()->findOrFail($id);
+        $partner = Partner::query()->find($product->partner_id);
 
         $product->delete();
+
+        if ($partner !== null) {
+            $this->flushPartnerCatalogAndPanelCaches->execute($partner);
+        }
 
         return redirect()->route('products.index')->with('success', 'Produto deletado com sucesso!');
     }
 
+    /**
+     * @return array{categoriesByPartner: \Illuminate\Database\Eloquent\Collection<int, StoreCategories>, brandsByPartner: \Illuminate\Database\Eloquent\Collection<int, Brand>}
+     */
+    private function rememberProductFilterLists(Partner $partner, int $storeId): array
+    {
+        return Cache::remember(
+            PanelCacheKeys::productFilterMeta((int) $partner->id),
+            self::PRODUCT_FILTER_META_TTL_SECONDS,
+            function () use ($partner, $storeId): array {
+                return [
+                    'categoriesByPartner' => StoreCategories::where('store_id', $storeId)->with('category')->get(),
+                    'brandsByPartner' => Brand::where('partner_id', $partner->id)->orderBy('name')->get(),
+                ];
+            },
+        );
+    }
+
+    private function flushPartnerCachesAfterProductId(string|int|null $productId): void
+    {
+        if ($productId === null || $productId === '') {
+            return;
+        }
+
+        $product = Product::query()->find($productId);
+        if ($product === null) {
+            return;
+        }
+
+        $partner = Partner::query()->find($product->partner_id);
+        if ($partner === null) {
+            return;
+        }
+
+        $this->flushPartnerCatalogAndPanelCaches->execute($partner);
+    }
 
     public function imageToBase64($imagePath)
     {

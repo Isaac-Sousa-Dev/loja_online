@@ -1,0 +1,42 @@
+---
+description: Reserva de estoque na confirmação do pagamento do pedido e estorno no cancelamento
+globs: app/Actions/Orders/**/*.php,app/Http/Controllers/OrderController.php,app/Models/Order.php,app/Models/OrderItem.php
+alwaysApply: false
+---
+
+# Estoque e pedidos — reserva na confirmação do pagamento
+
+## Conceito
+
+- Ao **confirmar o pagamento** (`OrderStatus::PENDING` → `CONFIRMED`, `payment_status = paid`), o sistema **baixa o estoque físico** de cada linha do pedido no **produto** (`products.stock`) ou na **variação** (`product_variants.stock`: cor, tamanho, etc.), conforme `order_items.product_variant_id` ou apenas `product_id`.
+- Essa baixa representa unidades **comprometidas com o pedido** até a venda ser concluída ou o pedido cancelado (ex.: cliente desiste após pagar e a loja reembolsa).
+- Na **conclusão** da venda (`completeWithStock`, a partir de `DELIVERED` → `COMPLETED`), **não** há segunda baixa se a reserva já foi aplicada (`orders.inventory_hold_applied_at` preenchido). Pedidos legados sem esse campo continuam recebendo **uma única** baixa na conclusão (`allowOversell` no decremento).
+- No **cancelamento** em status que permitem (`pending`, `confirmed`, `separating`), se existir reserva (`inventory_hold_applied_at`), as quantidades das linhas são **devolvidas** ao estoque e o timestamp é limpo.
+
+## Camada de aplicação
+
+| Classe | Papel |
+|--------|--------|
+| `ApplyInventoryHoldWhenOrderPaymentConfirmedAction` | Decrementa estoque com checagem de disponibilidade e define `inventory_hold_applied_at`. Idempotente se o timestamp já existir. |
+| `ReleaseInventoryHoldWhenOrderCancelledAction` | Incrementa estoque das linhas e zera `inventory_hold_applied_at` quando havia reserva. |
+| `DecrementStockForOrderLineItemsAction` | Decremento por linha com `lockForUpdate`; `allowOversell = false` na confirmação (falha se insuficiente), `true` só no legado na conclusão. |
+| `IncrementStockForOrderLineItemsAction` | Incremento espelhado para estorno. |
+| `UpdateOrderStatusAction` | Orquestra transições: confirmação e cancelamento em transação com `lockForUpdate` no pedido; `completeWithStock` só decrementa se `inventory_hold_applied_at` for `null`. |
+
+## Banco de dados
+
+- `orders.inventory_hold_applied_at` — `timestamp` nullable; indica que a baixa na confirmação do pagamento já foi aplicada.
+
+## Regras de produto
+
+- Linha **com** `product_variant_id`: movimenta `product_variants.stock` e, em seguida, `SyncParentProductStockFromVariantsAction` atualiza `products.stock` como a **soma** dos estoques das variantes daquele produto (listagem do painel e `SUM(stock)` no dashboard usam `products.stock`).
+- Linha **sem** variante: movimenta apenas `products.stock` (tratando `null` como `0` para conferência na confirmação); produtos sem linhas em `product_variants` não recebem essa sincronização por soma.
+
+## Cache
+
+- Após confirmação de pagamento ou cancelamento que altera estoque, invalidar catálogo/dashboard da loja (`InvalidateStoreCatalogAndDashboardCachesAction`), pois o estoque visível ao público muda.
+
+## O que não fazer
+
+- Não duplicar baixa na conclusão quando `inventory_hold_applied_at` está definido.
+- Não liberar estoque no cancelamento sem antes verificar se houve reserva (evita inflar estoque indevidamente).

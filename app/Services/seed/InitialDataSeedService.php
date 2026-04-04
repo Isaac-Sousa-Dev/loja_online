@@ -12,6 +12,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Store;
+use App\Models\StoreHour;
 use App\Repository\seed\InitialDataRepository;
 use Faker\Generator;
 use Illuminate\Support\Carbon;
@@ -117,15 +118,33 @@ final class InitialDataSeedService
             'plan_id' => $planDemo->id,
         ]);
 
-        $this->repository->insertStoreHoursRow([
-            'store_id' => $store->id,
-            'open_in_weekdays' => '08:00:00',
-            'close_in_weekdays' => '18:00:00',
-            'open_saturday' => '09:00:00',
-            'close_saturday' => '14:00:00',
-            'open_sunday' => null,
-            'close_sunday' => null,
-        ]);
+        foreach (range(0, 6) as $dayOfWeek) {
+            if ($dayOfWeek >= 1 && $dayOfWeek <= 5) {
+                StoreHour::query()->create([
+                    'store_id' => $store->id,
+                    'day_of_week' => $dayOfWeek,
+                    'open_time' => '08:00:00',
+                    'close_time' => '18:00:00',
+                    'is_open' => 1,
+                ]);
+            } elseif ($dayOfWeek === 6) {
+                StoreHour::query()->create([
+                    'store_id' => $store->id,
+                    'day_of_week' => $dayOfWeek,
+                    'open_time' => '09:00:00',
+                    'close_time' => '14:00:00',
+                    'is_open' => 1,
+                ]);
+            } else {
+                StoreHour::query()->create([
+                    'store_id' => $store->id,
+                    'day_of_week' => $dayOfWeek,
+                    'open_time' => null,
+                    'close_time' => null,
+                    'is_open' => 0,
+                ]);
+            }
+        }
 
         $this->repository->createAddressStore([
             'store_id' => $store->id,

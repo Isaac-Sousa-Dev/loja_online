@@ -106,8 +106,8 @@
                 </div>
             @endif
 
-            {{-- Metric Widgets --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            {{-- Metric Widgets: 2 colunas no mobile, 4 a partir de lg --}}
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
 
                 {{-- Estoque --}}
                 <div
@@ -126,7 +126,7 @@
                     class="bg-white rounded-2xl p-4 shadow-sm border border-[#33363B]/8 flex items-center justify-between hover:shadow-md transition duration-300">
                     <div>
                         <p class="text-sm font-semibold text-[#33363B]/55 mb-1">Vendas Concluídas</p>
-                        <p class="text-3xl font-bold text-[#33363B]">{{ $quantityOrders }}</p>
+                        <p class="text-2xl sm:text-3xl font-bold text-[#33363B] tabular-nums">{{ $completedSalesThisMonth }}</p>
                     </div>
                     <div class="w-12 h-12 rounded-full bg-[#ecfdf5] flex items-center justify-center text-emerald-600">
                         <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"
@@ -142,7 +142,7 @@
                     class="bg-white rounded-2xl p-4 shadow-sm border border-[#33363B]/8 flex items-center justify-between hover:shadow-md transition duration-300">
                     <div>
                         <p class="text-sm font-semibold text-[#33363B]/55 mb-1">Novos Pedidos</p>
-                        <p class="text-3xl font-bold text-[#33363B]">{{ $quantityOrders }}</p>
+                        <p class="text-2xl sm:text-3xl font-bold text-[#33363B] tabular-nums">{{ $newOrdersThisMonth }}</p>
                     </div>
                     <div class="w-12 h-12 rounded-full bg-[#FFF8E7] flex items-center justify-center text-[#FF914D]">
                         <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"
@@ -158,7 +158,9 @@
                     class="bg-white rounded-2xl p-4 shadow-sm border border-[#33363B]/8 flex items-center justify-between hover:shadow-md transition duration-300">
                     <div>
                         <p class="text-sm font-semibold text-[#33363B]/55 mb-1">Saldo no mês</p>
-                        <p class="text-3xl font-bold text-[#33363B] price-mask">{{ 1000 }}</p>
+                        <p class="text-lg sm:text-2xl lg:text-3xl font-bold text-[#33363B] tabular-nums leading-tight">
+                            R$ {{ number_format((float) $monthlySalesTotal, 2, ',', '.') }}
+                        </p>
                     </div>
                     <div class="w-12 h-12 rounded-full bg-[#FCE7F3]/60 flex items-center justify-center text-[#D131A3]">
                         <svg class="w-6 h-6" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M128 128C92.7 128 64 156.7 64 192L64 448C64 483.3 92.7 512 128 512L512 512C547.3 512 576 483.3 576 448L576 192C576 156.7 547.3 128 512 128L128 128zM320 224C373 224 416 267 416 320C416 373 373 416 320 416C267 416 224 373 224 320C224 267 267 224 320 224zM512 248C512 252.4 508.4 256.1 504 255.5C475 251.9 452.1 228.9 448.5 200C448 195.6 451.6 192 456 192L504 192C508.4 192 512 195.6 512 200L512 248zM128 392C128 387.6 131.6 383.9 136 384.5C165 388.1 187.9 411.1 191.5 440C192 444.4 188.4 448 184 448L136 448C131.6 448 128 444.4 128 440L128 392zM136 255.5C131.6 256 128 252.4 128 248L128 200C128 195.6 131.6 192 136 192L184 192C188.4 192 192.1 195.6 191.5 200C187.9 229 164.9 251.9 136 255.5zM504 384.5C508.4 384 512 387.6 512 392L512 440C512 444.4 508.4 448 504 448L456 448C451.6 448 447.9 444.4 448.5 440C452.1 411 475.1 388.1 504 384.5z"/></svg>

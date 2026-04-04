@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Cache\FlushPartnerCatalogAndPanelCachesAction;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class BrandController extends Controller
 {
+    public function __construct(
+        private readonly FlushPartnerCatalogAndPanelCachesAction $flushPartnerCatalogAndPanelCaches,
+    ) {}
 
     public function index()
     {
@@ -63,13 +67,20 @@ class BrandController extends Controller
 
         $brand->update($data);
 
-        return session()->flash('success', 'Marca atualizada!');
+        $this->flushPartnerCatalogAndPanelCaches->execute(Auth::user()->partner);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['message' => 'Marca atualizada com sucesso!']);
+        }
+
+        return redirect()->route('brands.index')->with('success', 'Marca atualizada!');
     }
 
     public function destroy(string $id)
     {
         $brand = Brand::where('id', $id)->where('partner_id', Auth::user()->partner->id)->firstOrFail();
         $brand->delete();
+        $this->flushPartnerCatalogAndPanelCaches->execute(Auth::user()->partner);
         return redirect()->route('brands.index')->with('success', 'Marca removida!');
     }
 

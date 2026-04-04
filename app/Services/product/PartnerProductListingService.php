@@ -28,7 +28,12 @@ class PartnerProductListingService
         }
 
         if (! empty($filters['gender'])) {
-            $query->where('gender', $filters['gender']);
+            $columnGender = match ($filters['gender']) {
+                'masculine' => 'M',
+                'feminine' => 'F',
+                default => $filters['gender'],
+            };
+            $query->where('gender', $columnGender);
         }
 
         if ($filters['status'] === 'active') {

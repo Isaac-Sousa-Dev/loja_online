@@ -12,6 +12,22 @@
 
     <!-- Right (user info) -->
     <div class="flex items-center gap-4">
+        @if (Auth::user()->role === 'partner')
+            @php
+                $pendingOrdersAckUrl = route('orders.index', ['ack' => 1, 'status' => ['pending']]);
+            @endphp
+            <a href="{{ $pendingOrdersAckUrl }}"
+               class="js-order-pending-orders-link relative inline-flex items-center justify-center rounded-xl p-2.5 text-[#33363B] transition hover:bg-[#6A2BBA]/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6A2BBA] focus-visible:ring-offset-2"
+               aria-label="Pedidos pendentes não visualizados">
+                <svg class="h-6 w-6 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75v-.7V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                </svg>
+                <span
+                    class="js-order-notify-badge hidden absolute -right-0.5 -top-0.5 min-h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white"
+                    aria-live="polite"
+                    role="status">0</span>
+            </a>
+        @endif
 
         <div class="flex items-center gap-2">
             <div class="float-end text-right">

@@ -594,20 +594,29 @@
                     source.onmessage = function (e) {
                         try {
                             var data = JSON.parse(e.data);
-                            if (data.count > 0) {
-                                var label = data.count > 99 ? '99+' : String(data.count);
-                                badges.forEach(function (el) {
-                                    el.textContent = label;
+                            if (data.count === undefined) return;
+                            var n = parseInt(data.count, 10);
+                            if (isNaN(n) || n < 0) return;
+                            var label = n > 99 ? '99+' : String(n);
+                            badges.forEach(function (el) {
+                                el.textContent = label;
+                                if (n > 0) {
                                     el.classList.remove('hidden');
                                     el.classList.add('inline-flex');
-                                });
-                            }
+                                } else {
+                                    el.classList.add('hidden');
+                                    el.classList.remove('inline-flex');
+                                }
+                            });
                         } catch (err) { /* ignore */ }
                     };
                     source.onerror = function () { /* EventSource reconecta */ };
                 } catch (e) { /* ignore */ }
                 badges.forEach(function (el) {
                     el.setAttribute('title', 'Ver pedidos pendentes');
+                    if (el.closest('a.js-order-pending-orders-link')) {
+                        return;
+                    }
                     el.addEventListener('click', function (ev) {
                         ev.preventDefault();
                         ev.stopPropagation();

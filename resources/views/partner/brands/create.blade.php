@@ -127,9 +127,22 @@
             data: formData,
             processData: false,
             contentType: false,
+            dataType: 'json',
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
             success: function(response) {
                 hideLoader();
-                window.location.href = '{{ route('brands.index') }}';
+                var msg = (response && response.message)
+                    ? response.message
+                    : 'Marca cadastrada com sucesso!';
+                if (typeof window.toast !== 'undefined' && typeof window.toast.success === 'function') {
+                    window.toast.success(msg, false, 4500);
+                }
+                setTimeout(function() {
+                    window.location.href = '{{ route('brands.index') }}';
+                }, 2000);
             },
             error: function(xhr, status, error) {
 
@@ -162,12 +175,17 @@
                             }
                         }
                     });
+                    if (typeof window.toast !== 'undefined' && typeof window.toast.error === 'function') {
+                        window.toast.error('Corrija os erros no formulário.', false, 4500);
+                    }
+                } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                    if (typeof window.toast !== 'undefined' && typeof window.toast.error === 'function') {
+                        window.toast.error(xhr.responseJSON.message, false, 4500);
+                    }
+                } else if (typeof window.toast !== 'undefined' && typeof window.toast.error === 'function') {
+                    window.toast.error('Não foi possível salvar a marca.', false, 4500);
                 }
 
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    toastr.error(xhr.responseJSON.message);
-                }
-                
                 hideLoader();
             }
         });

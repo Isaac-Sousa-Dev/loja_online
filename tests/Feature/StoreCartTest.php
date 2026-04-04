@@ -223,4 +223,33 @@ class StoreCartTest extends TestCase
         $this->assertSame('40.00', number_format((float) $line->unit_price, 2, '.', ''));
         $this->assertSame('120.00', number_format((float) $line->line_subtotal, 2, '.', ''));
     }
+
+    public function test_store_cart_clears_notified_at_on_existing_pending_order(): void
+    {
+        $payload = [
+            'name' => 'Cliente Notify',
+            'phone' => '11955554444',
+            'store_id' => $this->store->id,
+            'payment_method' => 'pix',
+            'items' => [
+                [
+                    'product_id' => $this->product->id,
+                    'quantity' => 1,
+                    'variant_id' => $this->variantRed->id,
+                    'color' => 'Vermelho',
+                    'size' => 'M',
+                ],
+            ],
+        ];
+
+        $this->postJson(route('orders.storeCart'), $payload)->assertCreated();
+        $order = Order::query()->where('store_id', $this->store->id)->first();
+        $this->assertNotNull($order);
+        $order->forceFill(['notified_at' => now()])->save();
+
+        $this->postJson(route('orders.storeCart'), $payload)->assertCreated();
+        $order->refresh();
+
+        $this->assertNull($order->notified_at);
+    }
 }

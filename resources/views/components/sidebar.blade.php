@@ -22,7 +22,7 @@
                     </div>
                 @else
                     <div class="h-20 w-20 flex">
-                        <img src="/img/logo.png" class="object-cover rounded-full w-full object-center" alt="">
+                        <img src="/img/vistuu-logo.png" class="object-cover rounded-full w-full object-center" alt="">
                     </div>
                 @endif
             
@@ -157,6 +157,10 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.678 48.678 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3-3 3" />
                                             </svg>
                                             {{ __('Pedidos') }}
+                                            <span
+                                                class="js-order-notify-badge hidden ml-1 min-h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white"
+                                                aria-live="polite"
+                                                role="status">0</span>
                                             @if(!in_array('orders', $modules) && !in_array('requests', $modules))
                                                 <span class="text-[10px] font-bold bg-[#6A2BBA] text-white px-1.5 py-0.5 rounded-md">Upgrade</span>
                                             @endif

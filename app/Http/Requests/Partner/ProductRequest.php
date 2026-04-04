@@ -41,10 +41,10 @@ class ProductRequest extends FormRequest
         $mapped = null;
         if (is_string($gender) && $gender !== '') {
             $mapped = match ($gender) {
-                'M' => 'masculine',
-                'F' => 'feminine',
-                'U' => null,
-                default => $gender,
+                'M', 'masculine' => 'M',
+                'F', 'feminine' => 'F',
+                'U' => 'U',
+                default => in_array($gender, ['M', 'F', 'U'], true) ? $gender : null,
             };
         }
 

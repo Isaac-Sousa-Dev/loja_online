@@ -32,6 +32,7 @@ class Order extends Model
         'assigned_to',
         'separator_id',
         'completed_at',
+        'inventory_hold_applied_at',
         'seller_id',
     ];
 
@@ -51,6 +52,7 @@ class Order extends Model
             'finance' => 'boolean',
             'notified_at' => 'datetime',
             'completed_at' => 'datetime',
+            'inventory_hold_applied_at' => 'datetime',
             'payment_installments' => 'integer',
         ];
     }

@@ -4,20 +4,30 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\Partner;
+use App\Models\Product;
+use App\Models\StoreCategories;
+use App\Support\Catalog\CatalogStoreCacheVersion;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
-use App\Models\Partner;
-use App\Models\Product;
-use App\Models\StoreCategories;
+use Illuminate\Support\Facades\Cache;
 
 class CatalogController extends Controller
 {
     private const PRODUCTS_PER_PAGE = 12;
 
+    private const CATALOG_LIST_TTL_SECONDS = 600;
+
+    private const CATALOG_INDEX_META_TTL_SECONDS = 300;
+
     public ?string $logoStore = null;
+
+    public function __construct(
+        private readonly CatalogStoreCacheVersion $catalogStoreCacheVersion,
+    ) {}
 
     public function index(string $partner_link): View
     {
@@ -35,13 +45,25 @@ class CatalogController extends Controller
             $bannerStore = '/storage/'.$store->banner;
         }
 
-        $categoriesByPartner = StoreCategories::with('category')
-            ->where('store_id', $store->id)
-            ->get();
-
-        $qtdProducts = $partner->publishedProducts()
-            ->where('products.stock', '>', 0)
-            ->count();
+        $version = $this->catalogStoreCacheVersion->current($store->id);
+        $indexMetaKey = $this->catalogIndexMetaKey($store->id, $version);
+        /** @var array{categories: \Illuminate\Database\Eloquent\Collection<int, StoreCategories>, qtdProducts: int} $cachedMeta */
+        $cachedMeta = Cache::remember(
+            $indexMetaKey,
+            self::CATALOG_INDEX_META_TTL_SECONDS,
+            function () use ($partner, $store): array {
+                return [
+                    'categories' => StoreCategories::with('category')
+                        ->where('store_id', $store->id)
+                        ->get(),
+                    'qtdProducts' => $partner->publishedProducts()
+                        ->where('products.stock', '>', 0)
+                        ->count(),
+                ];
+            },
+        );
+        $categoriesByPartner = $cachedMeta['categories'];
+        $qtdProducts = $cachedMeta['qtdProducts'];
 
         return view('orders.catalog.index', [
             'partner' => $partner,
@@ -61,13 +83,31 @@ class CatalogController extends Controller
             return response()->json([], 404);
         }
 
-        return response()->json(
-            $this->paginateCatalogProducts(
+        $store = $partner->store;
+        if ($store === null) {
+            return response()->json([], 404);
+        }
+
+        $version = $this->catalogStoreCacheVersion->current($store->id);
+        $key = $this->catalogProductListKey(
+            $store->id,
+            $version,
+            request()->query('search'),
+            request()->query('category_id'),
+            (int) request()->query('page', 1),
+        );
+
+        $payload = Cache::remember(
+            $key,
+            self::CATALOG_LIST_TTL_SECONDS,
+            fn (): array => $this->paginateCatalogProducts(
                 $partner,
                 request()->query('search'),
                 request()->query('category_id'),
-            ),
+            )->toArray(),
         );
+
+        return response()->json($payload);
     }
 
     public function search(): JsonResponse
@@ -78,13 +118,31 @@ class CatalogController extends Controller
             return response()->json([]);
         }
 
-        return response()->json(
-            $this->paginateCatalogProducts(
+        $store = $partner->store;
+        if ($store === null) {
+            return response()->json([]);
+        }
+
+        $version = $this->catalogStoreCacheVersion->current($store->id);
+        $key = $this->catalogProductListKey(
+            $store->id,
+            $version,
+            $searchTerm,
+            request()->query('category_id'),
+            (int) request()->query('page', 1),
+        );
+
+        $payload = Cache::remember(
+            $key,
+            self::CATALOG_LIST_TTL_SECONDS,
+            fn (): array => $this->paginateCatalogProducts(
                 $partner,
                 $searchTerm,
                 request()->query('category_id'),
-            ),
+            )->toArray(),
         );
+
+        return response()->json($payload);
     }
 
     public function getProductsByCategory(int|string $category_id): JsonResponse
@@ -94,13 +152,31 @@ class CatalogController extends Controller
             return response()->json([]);
         }
 
-        return response()->json(
-            $this->paginateCatalogProducts(
+        $store = $partner->store;
+        if ($store === null) {
+            return response()->json([]);
+        }
+
+        $version = $this->catalogStoreCacheVersion->current($store->id);
+        $key = $this->catalogProductListKey(
+            $store->id,
+            $version,
+            request()->query('search'),
+            $category_id,
+            (int) request()->query('page', 1),
+        );
+
+        $payload = Cache::remember(
+            $key,
+            self::CATALOG_LIST_TTL_SECONDS,
+            fn (): array => $this->paginateCatalogProducts(
                 $partner,
                 request()->query('search'),
                 $category_id,
-            ),
+            )->toArray(),
         );
+
+        return response()->json($payload);
     }
 
     public function getProductPage(string $partnerLink, int|string $productId): View
@@ -151,21 +227,37 @@ class CatalogController extends Controller
                 return [$color => $urls->values()];
             });
 
-        $related = Product::with(['images'])
-            ->where('partner_id', $partner->id)
-            ->where('id', '!=', $productId)
-            ->where('stock', '>', 0)
-            ->where('is_active', true)
-            ->where(function ($q) use ($product) {
-                if ($product->category_id) {
-                    $q->orWhere('category_id', $product->category_id);
-                }
-                if ($product->brand_id) {
-                    $q->orWhere('brand_id', $product->brand_id);
-                }
-            })
-            ->take(8)
-            ->get();
+        $version = $this->catalogStoreCacheVersion->current($store->id);
+        $relatedKey = sprintf(
+            'catalog:s:%d:v%d:related:p:%s:c:%s:b:%s',
+            $store->id,
+            $version,
+            (string) $productId,
+            $product->category_id !== null ? (string) $product->category_id : '0',
+            $product->brand_id !== null ? (string) $product->brand_id : '0',
+        );
+
+        $related = Cache::remember(
+            $relatedKey,
+            self::CATALOG_LIST_TTL_SECONDS,
+            function () use ($partner, $productId, $product) {
+                return Product::with(['images'])
+                    ->where('partner_id', $partner->id)
+                    ->where('id', '!=', $productId)
+                    ->where('stock', '>', 0)
+                    ->where('is_active', true)
+                    ->where(function ($q) use ($product): void {
+                        if ($product->category_id) {
+                            $q->orWhere('category_id', $product->category_id);
+                        }
+                        if ($product->brand_id) {
+                            $q->orWhere('brand_id', $product->brand_id);
+                        }
+                    })
+                    ->take(8)
+                    ->get();
+            },
+        );
 
         $category = $product->category;
 
@@ -215,6 +307,28 @@ class CatalogController extends Controller
         }
 
         return $query->paginate(self::PRODUCTS_PER_PAGE)->withQueryString();
+    }
+
+    private function catalogIndexMetaKey(int $storeId, int $version): string
+    {
+        return 'catalog:s:'.$storeId.':v'.$version.':index_meta';
+    }
+
+    /**
+     * @param mixed $searchTerm
+     * @param mixed $categoryId
+     */
+    private function catalogProductListKey(
+        int $storeId,
+        int $version,
+        mixed $searchTerm,
+        mixed $categoryId,
+        int $page,
+    ): string {
+        $searchPart = is_string($searchTerm) ? trim($searchTerm) : '';
+        $catPart = $categoryId === null || $categoryId === '' ? 'all' : (string) $categoryId;
+
+        return 'catalog:s:'.$storeId.':v'.$version.':list:p'.$page.':c:'.$catPart.':q:'.hash('sha256', $searchPart);
     }
 
     private function resolvePartner(): ?Partner

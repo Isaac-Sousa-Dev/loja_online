@@ -147,9 +147,9 @@ class UpdateProductWizardRequest extends FormRequest
         $g = is_string($value) ? $value : (string) $value;
 
         return match ($g) {
-            'M' => 'M',
-            'F' => 'F',
-            'U' => null,
+            'M', 'masculine' => 'M',
+            'F', 'feminine' => 'F',
+            'U' => 'U',
             default => null,
         };
     }
