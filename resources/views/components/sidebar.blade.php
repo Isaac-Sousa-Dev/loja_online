@@ -30,9 +30,11 @@
                     {{ Auth::user()->partner?->store?->store_name ?? Auth::user()->name }}
                 </div>
             @else
-                <div class="p-2">
-                    <img src="/img/logos/logo.png" width="150" height="150" class="object-contain rounded-xl" alt="">
-                </div> 
+                <div class="flex items-center gap-2">
+                    <div class="h-20 w-20 flex">
+                        <img src="/img/vistuu-logo.png" class="object-cover rounded-full w-full object-center" alt="">
+                    </div> 
+                </div>
 
                 <div class="font-bold text-white">
                     {{Auth::user()->name}}
@@ -90,23 +92,37 @@
                                         @endif
                                         <span class="text-[10px] font-bold bg-[#FF914D] text-[#33363B] px-1.5 py-0.5 rounded-md">Em breve</span>
                                     </x-nav-link> --}}
-                
-                                    @if (Auth::user()->role == 'admin')
-                                    
-                                        <x-nav-link :href="route('partners.index')" :active="request()->routeIs('partners.index') || request()->routeIs('partners.create') || request()->routeIs('partners.edit')" >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
-                                            </svg>
-                                            {{ __('Motivados') }}
-                                        </x-nav-link>
+                                </div>
 
-                                        <x-nav-link :href="route('plans.index')" :active="request()->routeIs('plans.index') || request()->routeIs('plans.create') || request()->routeIs('plans.edit')" >
-                                            <svg class="w-5 h-5 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 4h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m0 3h6m-6 7 2 2 4-4m-5-9v4h4V3h-4Z"/>
-                                            </svg>                                      
-                                            {{ __('Planos') }}
-                                        </x-nav-link>
-                                    @endif
+                            @else
+                                <div class="p-2 flex flex-col space-y-2">
+                                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+                                        </svg>
+                                        {{ __('Dashboard') }}
+                                    </x-nav-link>
+
+                                    <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.index')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M18 13v-1.5a4.5 4.5 0 0 0-4.5-4.5h-1.5M9 13v-1.5A4.5 4.5 0 0 1 13.5 7h1.5m-9 6.75A2.25 2.25 0 1 1 6 11.25a2.25 2.25 0 0 1 2.25 2.25Zm9 0A2.25 2.25 0 1 1 15 11.25a2.25 2.25 0 0 1 2.25 2.25Z" />
+                                        </svg>
+                                        {{ __('Usuários (equipe)') }}
+                                    </x-nav-link>
+
+                                    <x-nav-link :href="route('partners.index')" :active="request()->routeIs('partners.index') || request()->routeIs('partners.create') || request()->routeIs('partners.edit')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H20m-9.5 0H9.5m4.5-7.5V9.75A2.25 2.25 0 0 0 11.75 7.5h-1.5A2.25 2.25 0 0 0 8 9.75V21m8.25-10.5h3.375c.621 0 1.125.504 1.125 1.125v4.125M8 21V9.75A2.25 2.25 0 0 1 10.25 7.5h3.5A2.25 2.25 0 0 1 16 9.75V21" />
+                                        </svg>
+                                        {{ __('Lojas (parceiros)') }}
+                                    </x-nav-link>
+
+                                    <x-nav-link :href="route('plans.index')" :active="request()->routeIs('plans.index') || request()->routeIs('plans.create') || request()->routeIs('plans.edit')">
+                                        <svg class="w-5 h-5 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 4h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m0 3h6m-6 7 2 2 4-4m-5-9v4h4V3h-4Z"/>
+                                        </svg>
+                                        {{ __('Planos') }}
+                                    </x-nav-link>
                                 </div>
                             @endif
 
@@ -124,7 +140,7 @@
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.678 48.678 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3-3 3" />
                                         </svg>
-                                        {{ __('Solicitações (Admin)') }}
+                                        {{ __('Solicitações') }}
                                     </x-nav-link>
                                 @endif
                                 <x-nav-link :href="route('index.agent_ai')" :active="request()->routeIs('index.agent_ai')">
@@ -190,7 +206,7 @@
                                             {{ __('Clientes') }}
                                         </x-nav-link> --}}
 
-                                        @php
+                                        {{-- @php
                                             $teamRoute = in_array('team', $modules)
                                                 ? route('members.index')
                                                 : route('upgrade.index');
@@ -205,8 +221,8 @@
                                             @if(!in_array('team', $modules))
                                                 <span class="text-[10px] font-bold bg-[#6A2BBA] text-white px-1.5 py-0.5 rounded-md">Upgrade</span>
                                             @endif
-                                            {{-- <span class="text-[10px] font-bold bg-[#FF914D] text-[#33363B] px-1.5 py-0.5 rounded-md">Em breve</span> --}}
-                                        </x-nav-link>
+                                            <span class="text-[10px] font-bold bg-[#FF914D] text-[#33363B] px-1.5 py-0.5 rounded-md">Em breve</span>
+                                        </x-nav-link> --}}
                                     @endif
                                 </div>
                             @endif        

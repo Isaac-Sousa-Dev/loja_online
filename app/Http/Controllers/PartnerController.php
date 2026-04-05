@@ -1,128 +1,185 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Actions\SysAdmin\GetPartnerDrawerDataAction;
+use App\Actions\SysAdmin\RegisterManualPartnerAction;
+use App\Actions\SysAdmin\UpdatePartnerFromAdminAction;
+use App\Http\Requests\SysAdmin\PartnerStoreSuspensionRequest;
+use App\Http\Requests\SysAdmin\StoreManualPartnerRequest;
+use App\Http\Requests\SysAdmin\UpdatePartnerFromAdminRequest;
 use App\Mail\SendVerificationCodeMail;
 use App\Models\Partner;
+use App\Models\Plan;
 use App\Models\User;
-use App\Services\partner\PartnerService;
-use App\Services\store\StoreService;
-use App\Services\subscription\SubscriptionService;
-use App\Services\user\UserService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\View\View;
 
 class PartnerController extends Controller
 {
-    protected $userService;
-    protected $partnerService;
-    protected $storeService;
-    protected $subscriptionService;
-    public function __construct(
-        UserService $userService,
-        PartnerService $partnerService,
-        StoreService $storeService,
-        SubscriptionService $subscriptionService
-    )
+    public function index(Request $request): View
     {
-        $this->userService = $userService;
-        $this->partnerService = $partnerService;
-        $this->storeService = $storeService;
-        $this->subscriptionService = $subscriptionService;
-    }
-   
-    public function index()
-    {
-        $users = User::where('role', 'partner')->with('partner')->get();
-        return view('admin.partners.index', ['users' => $users]);
-    }
+        $query = User::query()
+            ->where('role', 'partner')
+            ->with(['partner.store', 'partner.subscription.plan', 'partner.salesTeamMembers.user'])
+            ->orderByDesc('created_at');
 
-
-    public function create()
-    {
-        return view('admin.partners.create');
-    }
-   
-    public function store(Request $request)
-    {
-        DB::beginTransaction();
-        try {
-            $data = $request->all();
-            $data['phone'] = str_replace(['(', ')', '-', ' '], '', $data['phone']);
-            $user = $this->userService->userRegistration($data);
-
-            if($request->hasFile('manual_receipt')): $manualReceiptUrl = $request->file('manual_receipt')->store('manual_receipts', 'public'); endif;
-            
-            $data['user_id'] = $user->id;
-            $data['manual_receipt_url'] = $manualReceiptUrl ?? null;
-            
-            $data['partner_id'] = $this->partnerService->insert($data, $request)->id;
-            $this->storeService->insert($data, $request);
-
-            $data['start_date'] = date('Y-m-d');
-            $data['appellant'] = false;
-            $this->subscriptionService->insert($data, null, false);
-            
-            $data['user'] = $user;
-            Mail::to($data['email'])->send(new SendVerificationCodeMail($data));
-
-            DB::commit();
-            
-            session()->flash('success', 'Novo motivado na área!');
-        } catch(\Exception $e) {
-            DB::rollBack();
-            
-            session()->flash('error', 'Ocorreu um erro ao processar seu cadastro. Por favor, tente novamente.');
-            throw $e;
+        $search = $request->query('q');
+        if (is_string($search) && $search !== '') {
+            $term = '%' . trim($search) . '%';
+            $query->where(function ($q) use ($term): void {
+                $q->where('name', 'like', $term)
+                    ->orWhere('email', 'like', $term)
+                    ->orWhereHas('partner.store', static function ($s) use ($term): void {
+                        $s->where('store_name', 'like', $term);
+                    });
+            });
         }
 
-    }
+        $storeStatus = $request->query('store_status');
+        if ($storeStatus === 'suspended_manual') {
+            $query->whereHas('partner.store', static function ($s): void {
+                $s->whereNotNull('suspended_at');
+            });
+        } elseif ($storeStatus === 'operational') {
+            $query->whereHas('partner.store', static function ($s): void {
+                $s->whereNull('suspended_at');
+            });
+        }
 
+        $users = $query->paginate(15)->withQueryString();
 
-    public function edit(string $id)
-    {
-        $user = User::find($id);
-        return view('admin.partners.edit', ['user' => $user]);
-    }
-
-
-    public function update(Request $request, string $id)
-    {
-        $user = User::find($id);
-        $data = $request->all();
-
-        $user->update([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role' => $data['role']
+        return view('admin.partners.index', [
+            'users' => $users,
+            'filterQ' => is_string($search) ? $search : '',
+            'filterStoreStatus' => is_string($storeStatus) ? $storeStatus : 'all',
         ]);
-
-        $partner = Partner::where('user_id', $id)->first();
-
-        $partner->update([
-            'phone' => $data['phone'],
-            'status' => $data['status'],
-            'address' => $data['address'],
-            'city' => $data['city'],
-            'zip_code' => $data['zip_code'],
-            'neighborhood' => $data['neighborhood'],
-            'number' => $data['number']
-        ]);
-
-        return redirect()->route('partners.index')->with('success', 'Sócio atualizado com sucesso!');;
-
     }
 
-
-    public function destroy(string $id)
+    public function drawerData(Partner $partner, GetPartnerDrawerDataAction $action): JsonResponse
     {
-        $user = User::find($id);
-        $partner = Partner::where('user_id', $id)->first();
+        return response()->json($action->execute($partner));
+    }
 
-        $partner->delete();
+    public function suspendStore(Partner $partner, PartnerStoreSuspensionRequest $request): RedirectResponse
+    {
+        $store = $partner->store;
+        if ($store === null) {
+            return redirect()
+                ->route('partners.index')
+                ->with('error', 'Esta conta de parceiro ainda não possui loja cadastrada.');
+        }
+
+        $store->update(['suspended_at' => now()]);
+
+        return redirect()
+            ->route('partners.index')
+            ->with('success', 'Loja inativada manualmente. Parceiros e consultores não acessam o painel até a reativação.');
+    }
+
+    public function reactivateStore(Partner $partner, PartnerStoreSuspensionRequest $request): RedirectResponse
+    {
+        $store = $partner->store;
+        if ($store === null) {
+            return redirect()
+                ->route('partners.index')
+                ->with('error', 'Esta conta de parceiro ainda não possui loja cadastrada.');
+        }
+
+        $store->update(['suspended_at' => null]);
+
+        return redirect()
+            ->route('partners.index')
+            ->with('success', 'Loja reativada. O acesso ao painel foi restabelecido.');
+    }
+
+    public function create(): View
+    {
+        $plans = Plan::query()
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.partners.create', ['plans' => $plans]);
+    }
+
+    public function store(StoreManualPartnerRequest $request, RegisterManualPartnerAction $action): RedirectResponse
+    {
+        try {
+            $user = $action->execute($request);
+            Mail::to($user->email)->send(new SendVerificationCodeMail(['user' => $user]));
+
+            return redirect()
+                ->route('partners.index')
+                ->with('success', 'Loja e usuário criados com sucesso. O parceiro pode entrar com o e-mail e a senha definidos no cadastro.');
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()
+                ->withInput()
+                ->with('error', 'Não foi possível concluir o cadastro. Verifique os dados e tente novamente.');
+        }
+    }
+
+    public function edit(string $id): View
+    {
+        $user = User::query()
+            ->where('role', 'partner')
+            ->with([
+                'partner.store.plan',
+                'partner.subscription.plan',
+                'partner.store.addressStore',
+            ])
+            ->findOrFail($id);
+
+        if ($user->partner === null || $user->partner->store === null || $user->partner->subscription === null) {
+            abort(404);
+        }
+
+        $currentPlanId = $user->partner->store->plan_id ?? $user->partner->subscription?->plan_id;
+        $plans = Plan::query()
+            ->where(static function ($query) use ($currentPlanId): void {
+                $query->where('status', 'active');
+                if ($currentPlanId !== null) {
+                    $query->orWhere('id', $currentPlanId);
+                }
+            })
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.partners.edit', [
+            'user' => $user,
+            'plans' => $plans,
+        ]);
+    }
+
+    public function update(UpdatePartnerFromAdminRequest $request, string $id, UpdatePartnerFromAdminAction $action): RedirectResponse
+    {
+        $user = User::query()
+            ->where('role', 'partner')
+            ->with(['partner.store', 'partner.subscription'])
+            ->findOrFail($id);
+
+        $action->execute($user, $request->validated());
+
+        return redirect()
+            ->route('partners.index')
+            ->with('success', 'Loja e dados do parceiro atualizados com sucesso.');
+    }
+
+    public function destroy(string $id): RedirectResponse
+    {
+        $user = User::query()->findOrFail($id);
+        $partner = Partner::query()->where('user_id', $id)->first();
+
+        if ($partner !== null) {
+            $partner->delete();
+        }
         $user->delete();
 
         return redirect()->route('partners.index')->with('success', 'Sócio deletado com sucesso!');

@@ -1,0 +1,9 @@
+---
+alwaysApply: false
+---
+
+
+### Módulo de Usuários (Sysadmin)
+- listagem de usuários
+- botão para cadastro de novo usuário
+    - Nome, Email, Telefone, Nome da loja, Plano, Data de inicio, Comprovante de pagamento entre outros campos relevantes para o cadastro de uma nova loja de forma manual

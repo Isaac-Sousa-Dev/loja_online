@@ -25,13 +25,20 @@ class Store extends Model
         'accepted_card_brands',
         'partner_id',
         'plan_id',
+        'suspended_at',
     ];
 
     protected $casts = [
         'wholesale_min_quantity' => 'integer',
         'accepted_payment_methods' => 'array',
         'accepted_card_brands' => 'array',
+        'suspended_at' => 'datetime',
     ];
+
+    public function isSuspendedManually(): bool
+    {
+        return $this->suspended_at !== null;
+    }
 
     public function partner()
     {

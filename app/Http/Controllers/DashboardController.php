@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\Dashboard\GetPartnerDashboardOrderMetricsAction;
+use App\Actions\Dashboard\GetSysAdminDashboardDataAction;
 use App\Models\ClientStore;
 use App\Models\Product;
 use App\Models\User;
@@ -14,6 +15,7 @@ class DashboardController extends Controller
 {
     public function __construct(
         private readonly GetPartnerDashboardOrderMetricsAction $partnerDashboardOrderMetrics,
+        private readonly GetSysAdminDashboardDataAction $sysAdminDashboardData,
     ) {
     }
 
@@ -36,17 +38,7 @@ class DashboardController extends Controller
      */
     private function getDataForAdminDashboard(User $userAuth): array
     {
-        $users = User::where('role', 'partner')->with('partner')->orderBy('created_at', 'desc')->get();
-
-        $filteredUsers = $users->filter(function ($user) {
-            return $user->partner->status != 'pending';
-        });
-
-        $data = [];
-        $data['allPartners'] = $filteredUsers;
-        $data['quantityPartners'] = $filteredUsers->count();
-
-        return $data;
+        return $this->sysAdminDashboardData->execute();
     }
 
     /**

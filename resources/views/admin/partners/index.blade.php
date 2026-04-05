@@ -1,267 +1,392 @@
 <x-app-layout>
-
     @section('content')
-    <div class="p-2 flex md:justify-center">
-        <div class="md:flex md:max-w-[1200px] flex-col w-full ml-2 mr-2">
-            <div class="">
-
-                <div class="flex justify-between items-center mt-4">
-                    <h2 class="font-semibold text-2xl mb-3 mt-3 text-gray-800">
-                        {{ __('Motivados') }}
-                    </h2>
-
-                    <div class="flex gap-2 items-center">
-                        <div>
-                            <input type="text" class="rounded-xl h-9 border-gray-300" placeholder="Pesquisar...">
-                        </div>
-                        <button class="btn-sm" href="javascript:void(0)">
-                            <a href="{{ route('partners.create') }}"
-                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm leading-5 font-semibold rounded-xl text-white bg-gradient-to-r from-[#6A2BBA] to-[#D131A3] hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6A2BBA] focus-visible:ring-offset-2 transition ease-in-out duration-150 shadow-md shadow-[#6A2BBA]/20">
-                                {{ __('Novo Motivado') }}
-                            </a>
-                        </button>
+        <script>
+            function partnerDrawer() {
+                return {
+                    open: false,
+                    loading: false,
+                    error: null,
+                    payload: null,
+                    title: 'Detalhes da loja',
+                    currentPartnerId: null,
+                    get suspendUrl() {
+                        return this.currentPartnerId ? `{{ url('/partners') }}/${this.currentPartnerId}/suspend` : '#';
+                    },
+                    get reactivateUrl() {
+                        return this.currentPartnerId ? `{{ url('/partners') }}/${this.currentPartnerId}/reactivate` : '#';
+                    },
+                    moneyBr(n) {
+                        const v = Number(n) || 0;
+                        return new Intl.NumberFormat('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL'
+                        }).format(v);
+                    },
+                    formatAddress(a) {
+                        if (!a) return '—';
+                        const parts = [a.street, a.number, a.neighborhood, a.city, a.state, a.zip_code].filter(Boolean);
+                        return parts.join(', ') || '—';
+                    },
+                    async openDrawer(partnerId) {
+                        this.currentPartnerId = partnerId;
+                        this.open = true;
+                        this.loading = true;
+                        this.error = null;
+                        this.payload = null;
+                        this.title = 'Detalhes da loja';
+                        try {
+                            const res = await fetch(`{{ url('/partners') }}/${partnerId}/drawer`, {
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                }
+                            });
+                            if (!res.ok) throw new Error();
+                            this.payload = await res.json();
+                            this.title = this.payload.store?.store_name || 'Loja';
+                        } catch (e) {
+                            this.error = 'Não foi possível carregar os detalhes.';
+                        } finally {
+                            this.loading = false;
+                        }
+                    },
+                    closeDrawer() {
+                        this.open = false;
+                    }
+                };
+            }
+        </script>
+        <div class="p-2 flex md:justify-center"
+            x-data="partnerDrawer()"
+            @keydown.escape.window="closeDrawer()">
+            <div class="md:flex md:max-w-[1200px] flex-col w-full ml-2 mr-2">
+                <div class="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start mt-4">
+                    <div>
+                        <h2 class="font-semibold text-2xl text-gray-800">{{ __('Lojas (parceiros)') }}</h2>
+                        <p class="text-sm text-gray-600 mt-1 max-w-2xl">
+                            Gerencie lojas, assinaturas e suspensão manual por inadimplência. Clique em uma linha para ver
+                            dados da loja, faturamento do mês e usuários vinculados.
+                        </p>
                     </div>
-
+                    <a href="{{ route('partners.create') }}"
+                        class="inline-flex shrink-0 items-center justify-center px-4 py-2 text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-[#6A2BBA] to-[#D131A3] hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6A2BBA] focus-visible:ring-offset-2 shadow-md shadow-[#6A2BBA]/20">
+                        {{ __('Nova loja') }}
+                    </a>
                 </div>
 
+                @if (session('success'))
+                    <div class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"
+                        role="status">
+                        {{ session('success') }}
+                    </div>
+                @endif
+                @if (session('error'))
+                    <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"
+                        role="alert">
+                        {{ session('error') }}
+                    </div>
+                @endif
 
-                <!-- component -->
-                <div class="overflow-auto md:overflow-hidden rounded-xl border border-gray-200 shadow-md mt-3">
-                    <table class="table-responsive w-full border-collapse bg-white text-left text-sm text-gray-500">
+                <form method="get" action="{{ route('partners.index') }}"
+                    class="mt-5 flex flex-col lg:flex-row lg:flex-wrap lg:items-end gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+                    role="search"
+                    aria-label="Filtros de lojas">
+                    <div class="flex-1 min-w-[200px]">
+                        <label for="partner-q" class="block text-xs font-medium text-gray-600 mb-1">Buscar</label>
+                        <input id="partner-q" type="search" name="q" value="{{ $filterQ }}"
+                            placeholder="Loja, titular ou e-mail"
+                            class="w-full rounded-xl border-gray-300 text-sm shadow-sm focus:border-[#6A2BBA] focus:ring-[#6A2BBA] py-2 px-3 border"
+                            autocomplete="off">
+                    </div>
+                    <div class="w-full sm:w-auto sm:min-w-[220px]">
+                        <label for="store-status" class="block text-xs font-medium text-gray-600 mb-1">Situação da
+                            loja</label>
+                        <select id="store-status" name="store_status"
+                            class="w-full rounded-xl border-gray-300 text-sm shadow-sm focus:border-[#6A2BBA] focus:ring-[#6A2BBA] py-2 px-3 border">
+                            <option value="all" @selected($filterStoreStatus === 'all')>Todas</option>
+                            <option value="operational" @selected($filterStoreStatus === 'operational')>Em operação (não suspensas)</option>
+                            <option value="suspended_manual" @selected($filterStoreStatus === 'suspended_manual')>Suspensas manualmente</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="submit"
+                            class="inline-flex h-10 items-center justify-center rounded-xl bg-[#6A2BBA] px-5 text-sm font-semibold text-white shadow-sm hover:bg-[#5a2499] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6A2BBA] focus-visible:ring-offset-2">
+                            {{ __('Aplicar filtros') }}
+                        </button>
+                        @if ($filterQ !== '' || $filterStoreStatus !== 'all')
+                            <a href="{{ route('partners.index') }}"
+                                class="inline-flex h-10 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2">
+                                {{ __('Limpar') }}
+                            </a>
+                        @endif
+                    </div>
+                </form>
+
+                <div class="overflow-auto rounded-xl border border-gray-200 shadow-md mt-4">
+                    <table class="min-w-full border-collapse bg-white text-left text-sm text-gray-600" role="table"
+                        aria-label="Lista de lojas parceiras">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th scope="col" class="px-6 py-2 font-medium text-gray-900">Nome</th>
-                                <th scope="col" class="px-6 py-2 font-medium text-gray-900">Status</th>
-                                <th scope="col" class="px-6 py-2 font-medium text-gray-900">Assinatura</th>
-                                <th scope="col" class="px-6 py-2 font-medium text-gray-900">Telefone</th>
-                                <th scope="col" class="px-6 py-2 font-medium text-gray-900">Ações</th>
+                                <th scope="col" class="px-4 py-3 font-medium text-gray-900">Loja / titular</th>
+                                <th scope="col" class="px-4 py-3 font-medium text-gray-900">Assinatura</th>
+                                <th scope="col" class="px-4 py-3 font-medium text-gray-900">Situação</th>
+                                <th scope="col" class="px-4 py-3 font-medium text-gray-900 text-right">Ações</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100 border-t border-gray-100">
-
-                            @if ($users->isEmpty())
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse ($users as $user)
+                                @php
+                                    $partner = $user->partner;
+                                    $subscription = $partner?->subscription;
+                                    $subPlan = $subscription?->plan;
+                                    $store = $partner?->store;
+                                    $subStatus = $subscription?->status;
+                                    $manualSuspended = $store?->suspended_at !== null;
+                                @endphp
+                                <tr
+                                    class="hover:bg-violet-50/60 transition-colors {{ $partner ? 'cursor-pointer' : 'cursor-default' }}"
+                                    @if ($partner)
+                                        @click="openDrawer({{ $partner->id }})"
+                                        @keydown.enter.prevent="openDrawer({{ $partner->id }})"
+                                        tabindex="0"
+                                        role="button"
+                                        aria-label="Abrir detalhes: {{ $store?->store_name ?? $user->name }}"
+                                    @endif>
+                                    <td class="px-4 py-3">
+                                        <div class="flex gap-3 items-center">
+                                            <div class="relative h-10 w-10 shrink-0">
+                                                <img width="40" height="40"
+                                                    class="h-10 w-10 rounded-full object-cover object-center border border-gray-200"
+                                                    src="{{ $user->image_profile ? asset('storage/' . $user->image_profile) : asset('img/logos/logo.png') }}"
+                                                    alt="" />
+                                            </div>
+                                            <div>
+                                                <div class="font-medium text-gray-900">{{ $store?->store_name ?? '—' }}
+                                                </div>
+                                                <div class="text-xs text-gray-500">{{ $user->name }}</div>
+                                                <div class="text-xs text-gray-400">{{ $user->email }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="font-medium text-gray-800">{{ $subPlan?->name ?? '—' }}</div>
+                                        @if ($subPlan)
+                                            <div class="text-xs text-gray-500 mt-0.5">R$
+                                                {{ number_format((float) $subPlan->price, 2, ',', '.') }} / mês</div>
+                                        @endif
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex flex-col gap-1">
+                                            <span
+                                                class="inline-flex w-fit items-center gap-1 rounded-lg px-2 py-0.5 text-xs font-semibold {{ $subStatus === 'active' ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900' }}">
+                                                <span
+                                                    class="h-1.5 w-1.5 rounded-full {{ $subStatus === 'active' ? 'bg-emerald-600' : 'bg-amber-600' }}"></span>
+                                                Assinatura:
+                                                {{ $subStatus === 'active' ? 'Ativa' : ($subStatus ? ucfirst((string) $subStatus) : '—') }}
+                                            </span>
+                                            @if ($manualSuspended)
+                                                <span
+                                                    class="inline-flex w-fit rounded-lg bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-900">Painel
+                                                    suspenso (manual)</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-right" @click.stop>
+                                        <a href="{{ route('partners.edit', $user->id) }}"
+                                            class="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6A2BBA]">
+                                            <svg class="h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg"
+                                                fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                            </svg>
+                                            Editar
+                                        </a>
+                                    </td>
+                                </tr>
+                            @empty
                                 <tr>
-                                    <td class="px-6 py-4 text-gray-900" colspan="5">Nenhum motivado encontrado.</td>
-                                </tr>
-                            @endif
-                            @foreach ($users as $user)
-                                <tr class="hover:bg-gray-50">
-                                    <th class="flex gap-10 px-6 py-4 font-normal text-gray-900">
-                                        <div class="relative h-10 w-10">
-                                            <img width="50"
-                                                class="h-full w-12 rounded-full object-cover object-center"
-                                                src="{{ $user->image_profile ? asset('storage/' . $user->image_profile) : asset('img/logos/logo.png') }}"
-                                                alt="" />
-                                            {{-- <span
-                                                class="absolute right-0 bottom-0 h-2 w-2 rounded-full bg-green-400 ring ring-white"></span> --}}
-                                        </div>
-                                        <div class="text-sm">
-                                            <div class="font-medium text-gray-700">{{ $user->name }}</div>
-                                            <div class="text-gray-400 font-medium text-xs">{{ $user->email }}</div>
-                                            
-                                        </div>
-                                    </th>
-                                    <td class="px-6 py-4">
-                                        <span
-                                            class="inline-flex items-center gap-1 rounded-lg px-2 text-xs font-semibold {{ $user->partner->subscription->status == 'active' ? 'bg-green-300 text-green-800' : 'bg-red-300 text-red-800' }}">
-                                            <span class="h-1.5 w-1.5 rounded-full {{ $user->partner->subscription->status == 'active' ? 'bg-green-800' : 'bg-red-800' }}"></span>
-                                            {{ $user->partner->subscription->status == 'active' ? 'Ativo' : 'Inativa' }}
-                                        </span>
-                                        <div class="text-xs mt-1 font-medium">
-                                            Inicio: {{$user->partner->store->created_at->format('d/m/Y')}}
-                                        </div>
-                                    </td>
-                                    <td class="px-0 py-4">
-                            
-                                        <div class="text-md space-y-0.5 border-gray-400 border rounded-xl px-2 py-1 flex gap-1 items-center justify-between">
-                                            <div class="bg-gray-500 rounded-md text-white text-center px-2 font-medium w-2/3">
-                                                {{$user->partner->subscription->plan->name}}
-                                            </div>
-                                            <div class="bg-[#6A2BBA] rounded-md text-white text-center px-2 font-medium w-1/3">
-                                                <span class="mr-1">R$</span><span class="price-mask">{{$user->partner->subscription->plan->price}}</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex gap-2">
-                                            <span class="phone-mask">{{ $user->phone }}</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex justify-end gap-4 items-center">
-
-                                            {{-- <div class="delete-action-container" data-id="{{ $user->id }}">
-                                                <button onclick="showDeleteConfirmationModal(event)" x-data="{ tooltip: 'Delete' }">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                        class="h-6 w-6" x-tooltip="tooltip">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                                    </svg>
-                                                </button>
-                                                <form action="{{ route('partners.destroy', $user->id) }}" id="deleteForm" method="POST">
-                                                    @method('DELETE')
-                                                    @csrf
-                                                </form>
-                                            </div> --}}
-
-                                            <a x-data="{ tooltip: 'Edite' }" href="{{ route('partners.edit', $user->id) }}">
-                                                <svg class="w-7 h-7 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z"/>
-                                                    <path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-                                                </svg>                                                  
-                                            </a>
-
-                                        </div>
+                                    <td colspan="4" class="px-4 py-8 text-center text-gray-600">Nenhuma loja encontrada.
                                     </td>
                                 </tr>
-                            @endforeach
-
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
 
+                <div class="mt-4" role="navigation" aria-label="Paginação">
+                    {{ $users->links() }}
+                </div>
             </div>
-        </div>
-    </div>
 
-
-    <!-- Modal de confirmação -->
-    <div id="deleteConfirmationModal" class="hidden fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title"
-        role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
-                role="dialog" aria-modal="true" aria-labelledby="modal-headline">
-                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <div class="sm:flex sm:items-start">
-                        <div
-                            class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                            <!-- Heroicon name: exclamation -->
-                            <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 9v2m0 4h.01m-6.938 3h13.856c1.54 0 2.288-.738 2.94-1.386.653-.648 1.386-1.397 1.386-2.937v-6.354c0-1.54-.738-2.288-1.386-2.94-.648-.653-1.397-1.386-2.937-1.386H8.062c-1.54 0-2.288.738-2.94 1.386-.653.652-1.386 1.4-1.386 2.94v6.353c0 1.54.738 2.288 1.386 2.94.652.648 1.4 1.386 2.94 1.386z" />
+            {{-- Drawer --}}
+            <div x-show="open" x-cloak class="fixed inset-0 z-50" aria-modal="true" role="dialog"
+                aria-labelledby="drawer-title">
+                <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-[1px]" @click="closeDrawer()"></div>
+                <div
+                    class="absolute right-0 top-0 flex h-full w-full max-w-lg flex-col bg-white shadow-2xl ring-1 ring-black/5"
+                    x-transition:enter="transition transform duration-200 ease-out"
+                    x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
+                    x-transition:leave="transition transform duration-150 ease-in"
+                    x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full"
+                    @click.stop>
+                    <div class="flex items-start justify-between gap-3 border-b border-gray-100 px-5 py-4">
+                        <div>
+                            <h2 id="drawer-title" class="text-lg font-semibold text-gray-900" x-text="title">Detalhes da
+                                loja</h2>
+                            <p class="text-xs text-gray-500 mt-0.5" x-show="payload?.partner?.partner_link">Link:
+                                <span class="font-mono text-gray-700" x-text="payload?.partner?.partner_link"></span>
+                            </p>
+                        </div>
+                        <button type="button"
+                            class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6A2BBA]"
+                            @click="closeDrawer()" aria-label="Fechar painel">
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                             </svg>
-                        </div>
-                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-headline">
-                                Excluir sócio
-                            </h3>
-                            <div class="mt-2">
-                                <p class="text-sm text-gray-500">
-                                    Tem certeza de que deseja excluir este sócio? Esta ação não pode ser desfeita.
-                                </p>
+                        </button>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto px-5 py-4 space-y-6">
+                        <template x-if="loading">
+                            <div class="flex flex-col items-center justify-center py-16 gap-3 text-gray-500">
+                                <svg class="h-8 w-8 animate-spin text-[#6A2BBA]" xmlns="http://www.w3.org/2000/svg"
+                                    fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                    </path>
+                                </svg>
+                                <span class="text-sm">Carregando…</span>
                             </div>
-                        </div>
+                        </template>
+
+                        <template x-if="error && !loading">
+                            <p class="text-sm text-red-600" x-text="error"></p>
+                        </template>
+
+                        <template x-if="payload && !loading">
+                            <div class="space-y-6">
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="rounded-xl border border-gray-100 bg-gray-50/80 p-3">
+                                        <div class="text-[11px] font-medium uppercase tracking-wide text-gray-500">Pedidos
+                                            no mês</div>
+                                        <div class="mt-1 text-xl font-semibold text-gray-900"
+                                            x-text="payload.monthly.orders_count"></div>
+                                        <div class="text-xs text-gray-500 mt-0.5" x-text="payload.monthly.period_label">
+                                        </div>
+                                    </div>
+                                    <div class="rounded-xl border border-gray-100 bg-gray-50/80 p-3">
+                                        <div class="text-[11px] font-medium uppercase tracking-wide text-gray-500">
+                                            Faturamento (concluídos)</div>
+                                        <div class="mt-1 text-xl font-semibold text-[#6A2BBA]"
+                                            x-text="moneyBr(payload.monthly.revenue_completed_only)"></div>
+                                        <div class="text-xs text-gray-500 mt-0.5">Exceto cancelados</div>
+                                    </div>
+                                </div>
+                                <div class="rounded-xl border border-violet-100 bg-violet-50/50 p-3">
+                                    <div class="text-[11px] font-medium uppercase tracking-wide text-violet-800">Volume no
+                                        mês (não cancelados)</div>
+                                    <div class="mt-1 text-lg font-semibold text-violet-950"
+                                        x-text="moneyBr(payload.monthly.revenue_ex_cancelled)"></div>
+                                </div>
+
+                                <div>
+                                    <h3 class="text-sm font-semibold text-gray-900 mb-2">Dados da loja</h3>
+                                    <dl class="space-y-2 text-sm">
+                                        <div class="flex justify-between gap-2">
+                                            <dt class="text-gray-500">Nome</dt>
+                                            <dd class="font-medium text-gray-900 text-right"
+                                                x-text="payload.store?.store_name ?? '—'"></dd>
+                                        </div>
+                                        <div class="flex justify-between gap-2">
+                                            <dt class="text-gray-500">E-mail</dt>
+                                            <dd class="text-gray-900 text-right break-all"
+                                                x-text="payload.store?.store_email ?? '—'"></dd>
+                                        </div>
+                                        <div class="flex justify-between gap-2">
+                                            <dt class="text-gray-500">Telefone</dt>
+                                            <dd class="text-gray-900 text-right"
+                                                x-text="payload.store?.store_phone ?? '—'"></dd>
+                                        </div>
+                                        <div class="flex justify-between gap-2">
+                                            <dt class="text-gray-500">CNPJ / CPF</dt>
+                                            <dd class="text-gray-900 text-right"
+                                                x-text="payload.store?.store_cpf_cnpj ?? '—'"></dd>
+                                        </div>
+                                        <div class="flex justify-between gap-2" x-show="payload.store?.address">
+                                            <dt class="text-gray-500">Endereço</dt>
+                                            <dd class="text-gray-900 text-right text-xs"
+                                                x-text="formatAddress(payload.store?.address)"></dd>
+                                        </div>
+                                    </dl>
+                                </div>
+
+                                <div x-show="payload.subscription">
+                                    <h3 class="text-sm font-semibold text-gray-900 mb-2">Assinatura</h3>
+                                    <dl class="space-y-2 text-sm">
+                                        <div class="flex justify-between gap-2">
+                                            <dt class="text-gray-500">Plano</dt>
+                                            <dd class="font-medium text-gray-900 text-right"
+                                                x-text="payload.subscription?.plan?.name ?? '—'"></dd>
+                                        </div>
+                                        <div class="flex justify-between gap-2">
+                                            <dt class="text-gray-500">Status</dt>
+                                            <dd class="text-gray-900 text-right capitalize"
+                                                x-text="payload.subscription?.status ?? '—'"></dd>
+                                        </div>
+                                    </dl>
+                                </div>
+
+                                <div>
+                                    <h3 class="text-sm font-semibold text-gray-900 mb-2">Usuários vinculados</h3>
+                                    <ul class="divide-y divide-gray-100 rounded-xl border border-gray-200">
+                                        <template x-for="u in (payload.linked_users || [])" :key="u.id">
+                                            <li class="px-3 py-2.5">
+                                                <div class="font-medium text-gray-900 text-sm" x-text="u.name"></div>
+                                                <div class="text-xs text-gray-500" x-text="u.role_label"></div>
+                                                <div class="text-xs text-gray-500" x-text="u.email"></div>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </div>
+
+                                <div class="border-t border-gray-100 pt-4 space-y-3" x-show="currentPartnerId">
+                                    <template x-if="payload.store && !payload.store.suspended_at">
+                                        <form :action="suspendUrl" method="post" class="space-y-2"
+                                            onsubmit="return confirm('Inativar o painel desta loja? Parceiros e consultores não poderão acessar até reativar.');">
+                                            @csrf
+                                            <button type="submit"
+                                                class="w-full rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2">
+                                                Inativar loja manualmente
+                                            </button>
+                                            <p class="text-xs text-gray-500">Use para mensalidade em atraso ou outro motivo
+                                                administrativo.</p>
+                                        </form>
+                                    </template>
+                                    <template x-if="payload.store && payload.store.suspended_at">
+                                        <form :action="reactivateUrl" method="post">
+                                            @csrf
+                                            <button type="submit"
+                                                class="w-full rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2">
+                                                Reativar loja
+                                            </button>
+                                        </form>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
                     </div>
                 </div>
-                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button onclick="confirmDeleteButton()" id="confirmDeleteButton" type="button"
-                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
-                        Excluir
-                    </button>
-                    <button onclick="cancelDeleteButton()"  type="button"
-                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                        Cancelar
-                    </button>
-                </div>
             </div>
         </div>
-    </div>
-    @endsection
 
-</x-app-layout>
-
-<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-<script>
-    function showToast(message, type) {
-        Toastify({
-            text: message,
-            duration: 4000, // duração em milissegundos
-            gravity: 'top', // posição do toast
-            stopOnFocus: true,
-            position: 'right', // alinhamento horizontal do toast
-            style: {
-                background: type === 'success' ? 'green' : 'red',
-                height: '50px',
-                color: 'white',
-                display: 'flex',
-                margin: '10px',
-                marginTop: '63px',
-                padding: '20px',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'absolute',
-                right: '0',
-                borderRadius: '10px',
-                boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
-                animation: 'slideInRight 0.5s',
-                overflow: 'hidden',
+        <style>
+            [x-cloak] {
+                display: none !important;
             }
-            //backgroundColor: type === 'success' ? 'green' : 'red', // cor de fundo do toast
-        }).showToast();
-    }
-
-    // Função para mostrar um toast de sucesso
-    function showSuccessToast(message) {
-        showToast(message, 'success');
-    }
-
-    // Função para mostrar um toast de erro
-    function showErrorToast(message) {
-        showToast(message, 'error');
-    }
-
-    // Função para mostrar o modal de confirmação
-    function showDeleteConfirmationModal(event) {
-        const userId = event.target.closest('.delete-action-container').dataset.id;
-        document.querySelector('#deleteConfirmationModal').dataset.userId = userId;
-        document.getElementById('deleteConfirmationModal').classList.remove('hidden');
-    }
-
-    // Função para ocultar o modal de confirmação
-    function hideDeleteConfirmationModal() {
-        document.getElementById('deleteConfirmationModal').classList.add('hidden');
-    }
-
-    // Evento de clique no botão de confirmar exclusão
-    function confirmDeleteButton() {
-        const userId = document.querySelector('#deleteConfirmationModal').dataset.userId;
-        const form = document.querySelector('#deleteForm');
-        form.action = `partners/destroy/${userId}`;
-        form.submit();
-    }
-
-    // Evento de clique no botão de cancelar exclusão
-    function cancelDeleteButton() {
-        hideDeleteConfirmationModal();
-    }
-</script>
-
-<!-- Seu código Blade para verificar mensagens de sucesso e exibir os toasts -->
-@if(session('success'))
-    <script>
-        showSuccessToast("{{ session('success') }}");
-    </script>
-@endif
-
-
-
-<style>
-    /* Animação de entrada */
-    @keyframes slideInRight {
-        from {
-            transform: translateX(1%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-</style>
+        </style>
+    @endsection
+</x-app-layout>

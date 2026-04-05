@@ -25,6 +25,7 @@ use App\Http\Controllers\SellerController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\SubscriptionTestController;
+use App\Http\Controllers\SysAdmin\SysAdminUserController;
 use App\Http\Controllers\UpgradeController;
 use App\Http\Controllers\UserController;
 use App\Mail\UserRegistrationMail;
@@ -57,20 +58,28 @@ Route::get('/', function () {
 })->name('welcome');
 
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'partner.store.active'])->group(function () {
+
+    Route::get('loja-suspensa', static function () {
+        return view('partner.store-suspended');
+    })->name('partner.store.suspended');
 
     Route::middleware('role:admin')->group(function () {
 
         Route::get('populate/brands/{type}', [PopulateController::class, 'populateBrands']);
 
+        Route::get('admin/users', [SysAdminUserController::class, 'index'])->name('admin.users.index');
 
-        // Routes for Partners
+        // Routes for Partners (rotas literais antes de partners/{partner}/...)
         Route::get('partners', [PartnerController::class, 'index'])->name('partners.index');
         Route::get('partners/create', [PartnerController::class, 'create'])->name('partners.create');
         Route::post('partners/store', [PartnerController::class, 'store'])->name('partners.store');
         Route::delete('partners/destroy/{id}', [PartnerController::class, 'destroy'])->name('partners.destroy');
         Route::get('partners/edit/{id}', [PartnerController::class, 'edit'])->name('partners.edit');
         Route::put('partners/update/{id}', [PartnerController::class, 'update'])->name('partners.update');
+        Route::get('partners/{partner}/drawer', [PartnerController::class, 'drawerData'])->name('partners.drawer');
+        Route::post('partners/{partner}/suspend', [PartnerController::class, 'suspendStore'])->name('partners.suspend');
+        Route::post('partners/{partner}/reactivate', [PartnerController::class, 'reactivateStore'])->name('partners.reactivate');
 
         // Routes for plans
         Route::get('plans', [PlanController::class, 'index'])->name('plans.index'); 

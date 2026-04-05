@@ -19,6 +19,10 @@ class OrderSseController extends Controller
      */
     public function stream(Request $request): StreamedResponse
     {
+        if (! config('orders.sse_enabled')) {
+            abort(404);
+        }
+
         $user = $request->user();
         if ($user === null || $user->role === 'admin' || $user->partner === null) {
             abort(403);

@@ -58,6 +58,16 @@ class Partner extends Model
         return $this->hasManyThrough(Order::class, Store::class, 'partner_id', 'store_id');
     }
 
+    /**
+     * Consultores / vendedores vinculados à loja (tabela sales_teams).
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<SalesTeam, Partner>
+     */
+    public function salesTeamMembers()
+    {
+        return $this->hasMany(SalesTeam::class, 'partner_id', 'id');
+    }
+
     public function brands()
     {
         return $this->hasMany(Brand::class, 'partner_id', 'id');
