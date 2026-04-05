@@ -6,11 +6,13 @@ namespace Tests\Feature;
 
 use App\Mail\SendVerificationCodeMail;
 use App\Models\Partner;
+use App\Providers\RouteServiceProvider;
 use App\Models\Plan;
 use App\Models\Store;
 use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
@@ -55,8 +57,6 @@ class SysAdminUsersAndPartnerRegistrationTest extends TestCase
             'name' => 'João Lojista',
             'email' => 'joao.loja@example.com',
             'phone' => '(11) 98888-7777',
-            'password' => 'senhaSegura1',
-            'password_confirmation' => 'senhaSegura1',
             'store_name' => 'Moda Solar',
             'plan_id' => $plan->id,
             'start_date' => '2026-01-15',
@@ -72,6 +72,8 @@ class SysAdminUsersAndPartnerRegistrationTest extends TestCase
         $user = User::query()->where('email', 'joao.loja@example.com')->first();
         $this->assertNotNull($user);
         $this->assertSame('partner', $user->role);
+        $this->assertTrue($user->must_change_password);
+        $this->assertTrue(Hash::check((string) config('partner.default_manual_store_password'), $user->password));
         $this->assertNotNull($user->verification_code);
         $this->assertNotNull($user->email_verified_at);
 
@@ -105,8 +107,6 @@ class SysAdminUsersAndPartnerRegistrationTest extends TestCase
             'name' => 'Maria Lojista',
             'email' => 'maria.loja@example.com',
             'phone' => '21999998888',
-            'password' => 'outraSenha2',
-            'password_confirmation' => 'outraSenha2',
             'store_name' => 'Boutique Lua',
             'plan_id' => $plan->id,
             'start_date' => '2026-02-01',
@@ -142,8 +142,6 @@ class SysAdminUsersAndPartnerRegistrationTest extends TestCase
             'name' => 'Fake',
             'email' => 'fake@example.com',
             'phone' => '11999999999',
-            'password' => 'senhaSegura1',
-            'password_confirmation' => 'senhaSegura1',
             'store_name' => 'Fake Store',
             'plan_id' => $plan->id,
             'start_date' => '2026-03-01',
@@ -405,5 +403,57 @@ class SysAdminUsersAndPartnerRegistrationTest extends TestCase
         $subscription = Subscription::query()->where('partner_id', $partner->id)->first();
         $this->assertNotNull($subscription);
         $this->assertSame('pending', $subscription->status);
+    }
+
+    public function test_manual_partner_is_redirected_to_change_password_and_can_complete_it(): void
+    {
+        Mail::fake();
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $plan = Plan::query()->create([
+            'name' => 'Fluxo Senha',
+            'slug' => 'fluxo-senha-test',
+            'price' => 19.99,
+            'duration' => 30,
+            'status' => 'active',
+            'type' => 'monthly',
+        ]);
+
+        $this->actingAs($admin)->post(route('partners.store'), [
+            'name' => 'Titular Senha',
+            'email' => 'titular.senha@example.com',
+            'phone' => '11888887777',
+            'store_name' => 'Loja Senha',
+            'plan_id' => $plan->id,
+            'start_date' => '2026-04-05',
+            'grant_access' => '1',
+        ])->assertRedirect(route('partners.index'));
+
+        $user = User::query()->where('email', 'titular.senha@example.com')->first();
+        $this->assertNotNull($user);
+        $this->assertTrue($user->must_change_password);
+
+        $this->post(route('logout'));
+
+        $provisional = (string) config('partner.default_manual_store_password');
+
+        $this->post('/login', [
+            'email' => $user->email,
+            'password' => $provisional,
+        ]);
+
+        $this->assertAuthenticatedAs($user);
+
+        $this->get(route('dashboard'))->assertRedirect(route('partner.first-password.edit'));
+
+        $this->put(route('partner.first-password.update'), [
+            'current_password' => $provisional,
+            'password' => 'NovaSenhaForte9!',
+            'password_confirmation' => 'NovaSenhaForte9!',
+        ])->assertRedirect(RouteServiceProvider::HOME);
+
+        $user->refresh();
+        $this->assertFalse($user->must_change_password);
+        $this->assertTrue(Hash::check('NovaSenhaForte9!', $user->password));
     }
 }

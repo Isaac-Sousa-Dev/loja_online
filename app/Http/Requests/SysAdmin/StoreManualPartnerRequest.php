@@ -22,7 +22,6 @@ class StoreManualPartnerRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:32'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
             'store_name' => ['required', 'string', 'max:255'],
             'plan_id' => ['required', 'integer', 'exists:plans,id'],
             'start_date' => ['required', 'date'],

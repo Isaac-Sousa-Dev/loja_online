@@ -27,6 +27,7 @@ class User extends Authenticatable
         'instagran_profile',
         'facebook_page',
         'first_login',
+        'must_change_password',
         'phone',
         'password',
     ];
@@ -49,6 +50,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'must_change_password' => 'boolean',
     ];
 
     public function partner()

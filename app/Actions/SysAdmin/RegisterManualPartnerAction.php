@@ -12,7 +12,6 @@ use App\Services\store\StoreService;
 use App\Services\subscription\SubscriptionService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 final class RegisterManualPartnerAction
 {
@@ -31,15 +30,18 @@ final class RegisterManualPartnerAction
         return DB::transaction(function () use ($request, $validated, $phone): User {
             $verificationCode = (string) random_int(100000, 999999);
 
+            $provisionalPassword = (string) config('partner.default_manual_store_password');
+
             $user = User::query()->create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $phone,
-                'password' => Hash::make($validated['password']),
+                'password' => Hash::make($provisionalPassword),
                 'role' => 'partner',
                 'verification_code' => $verificationCode,
                 'email_verified_at' => $validated['grant_access'] ? now() : null,
                 'first_login' => true,
+                'must_change_password' => true,
             ]);
 
             $manualReceiptUrl = null;

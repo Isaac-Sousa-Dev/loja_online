@@ -16,5 +16,6 @@
     </head>
     <body class="font-jakarta min-h-screen antialiased bg-[#F8F9FC] text-[#33363B] selection:bg-[#D131A3]/25 selection:text-[#33363B]">
         {{ $slot }}
+        @stack('scripts')
     </body>
 </html>

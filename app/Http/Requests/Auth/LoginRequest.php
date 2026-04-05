@@ -2,13 +2,14 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Support\PartnerFirstLogin;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Hash;
 
 class LoginRequest extends FormRequest
 {
@@ -48,6 +49,9 @@ class LoginRequest extends FormRequest
     public function messages()
     {
         return [
+            'email.required' => 'Informe o e-mail cadastrado na sua conta.',
+            'email.email' => 'Digite um e-mail válido (ex.: nome@suaempresa.com.br).',
+            'password.required' => 'Informe sua senha.',
             'password.confirmed' => 'As senhas não conferem.',
             'password_confirmation.required' => 'Por favor, confirme sua senha.',
         ];
@@ -95,11 +99,19 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'credentials' => 'E-mail ou senha incorretos. Tente novamente.',
             ]);
         }
 
         RateLimiter::clear($this->throttleKey());
+
+        $user = Auth::user();
+        if ($user !== null && $user->must_change_password) {
+            $this->session()->put(
+                PartnerFirstLogin::SESSION_PLAIN_PASSWORD_KEY,
+                (string) $this->input('password', '')
+            );
+        }
     }
 
     /**
@@ -117,11 +129,13 @@ class LoginRequest extends FormRequest
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
+        $throttleMessage = sprintf(
+            'Muitas tentativas. Aguarde %d segundos e tente de novo.',
+            $seconds
+        );
+
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
+            'credentials' => $throttleMessage,
         ]);
     }
 

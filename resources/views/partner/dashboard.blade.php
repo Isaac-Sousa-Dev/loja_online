@@ -178,8 +178,8 @@
                             <i class="fa-solid fa-list-ol text-[#33363B]/70"></i>
                             <h3 class="font-semibold text-lg text-[#33363B]">Últimos Pedidos</h3>
                         </div>
-                        <a href="{{ route('orders.index') }}" class="text-xs font-semibold text-[#6A2BBA] hover:text-[#D131A3] transition px-1">
-                            Ver todos →
+                        <a href="{{ route('orders.index') }}" class="text-md font-semibold text-[#6A2BBA] hover:text-[#D131A3] transition px-1">
+                            Ver todos
                         </a>
                     </div>
                     <p class="text-sm text-[#33363B]/55 mb-3 px-1">Pedidos recentes recebidos pelo catálogo.</p>
@@ -259,8 +259,8 @@
                             <i class="fa-solid fa-layer-group text-[#33363B]/70"></i>
                             <h3 class="font-semibold text-lg text-[#33363B]">Produtos Recentes</h3>
                         </div>
-                        <a href="{{ route('products.index') }}" class="text-xs font-semibold text-[#6A2BBA] hover:text-[#D131A3] transition px-1">
-                            Ver todos →
+                        <a href="{{ route('products.index') }}" class="text-md font-semibold text-[#6A2BBA] hover:text-[#D131A3] transition px-1">
+                            Ver todos
                         </a>
                     </div>
                     <p class="text-sm text-[#33363B]/55 mb-3 px-1">Últimos produtos adicionados ao catálogo.</p>

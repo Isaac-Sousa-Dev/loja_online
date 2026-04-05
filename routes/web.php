@@ -58,7 +58,7 @@ Route::get('/', function () {
 })->name('welcome');
 
 
-Route::middleware(['auth', 'partner.store.active'])->group(function () {
+Route::middleware(['auth', 'partner.must_change_password', 'partner.store.active'])->group(function () {
 
     Route::get('loja-suspensa', static function () {
         return view('partner.store-suspended');

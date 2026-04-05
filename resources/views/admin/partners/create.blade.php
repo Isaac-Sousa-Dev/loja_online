@@ -13,9 +13,11 @@
                         </nav>
                         <h1 class="font-semibold text-2xl text-gray-900 tracking-tight">{{ __('Nova loja (parceiro)') }}</h1>
                         <p class="text-sm text-gray-600 max-w-xl leading-relaxed">
-                            Cadastre manualmente o titular, a loja e o plano. O parceiro recebe o código de verificação por
-                            e-mail para o primeiro acesso. O link público do catálogo é gerado automaticamente a partir do
-                            nome da loja (você pode ajustá-lo depois em <strong>Editar loja</strong>).
+                            Cadastre manualmente o titular, a loja e o plano. A senha de acesso é gerada automaticamente
+                            (a mesma para todas as lojas criadas manualmente); informe-a ao titular com segurança.
+                            No primeiro login ele deverá definir uma senha própria. O link público do catálogo é gerado
+                            automaticamente a partir do nome da loja (você pode ajustá-lo depois em
+                            <strong>Editar loja</strong>).
                         </p>
                     </div>
                     <a href="{{ route('partners.index') }}"
@@ -74,7 +76,8 @@
                             <div>
                                 <h2 id="create-section-owner" class="text-base font-semibold text-gray-900">Titular da
                                     conta</h2>
-                                <p class="text-xs text-gray-500">Credenciais de acesso ao painel da loja.</p>
+                                <p class="text-xs text-gray-500">E-mail e telefone do titular; a senha provisória é definida
+                                    pelo sistema após salvar.</p>
                             </div>
                         </div>
                         <div class="grid gap-4 md:grid-cols-2">
@@ -97,18 +100,11 @@
                                     type="text" :value="old('phone')" required autocomplete="tel" />
                                 <x-input-error class="mt-1" :messages="$errors->get('phone')" />
                             </div>
-                            <div>
-                                <x-input-label for="create-password" :value="__('Senha')" />
-                                <x-text-input id="create-password" class="mt-1 block w-full rounded-xl border-gray-300"
-                                    name="password" type="password" required autocomplete="new-password" />
-                                <x-input-error class="mt-1" :messages="$errors->get('password')" />
-                            </div>
-                            <div>
-                                <x-input-label for="create-password_confirmation" :value="__('Confirmar senha')" />
-                                <x-text-input id="create-password_confirmation"
-                                    class="mt-1 block w-full rounded-xl border-gray-300" name="password_confirmation"
-                                    type="password" required autocomplete="new-password" />
-                                <x-input-error class="mt-1" :messages="$errors->get('password_confirmation')" />
+                            <div class="md:col-span-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+                                role="status">
+                                <p class="font-semibold">Senha provisória automática</p>
+                                <p class="mt-1 text-amber-900/90">Após criar a loja, use a senha provisória padrão do sistema
+                                    junto ao e-mail do titular. Ele será obrigado a trocar a senha no primeiro acesso.</p>
                             </div>
                         </div>
                     </section>

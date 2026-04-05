@@ -32,6 +32,7 @@ final class UpdatePartnerFromAdminAction
 
             if (! empty($validated['password'])) {
                 $userData['password'] = Hash::make((string) $validated['password']);
+                $userData['must_change_password'] = false;
             }
 
             $user->update($userData);

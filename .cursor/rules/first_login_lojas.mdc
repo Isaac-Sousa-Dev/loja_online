@@ -1,0 +1,9 @@
+---
+alwaysApply: false
+---
+
+### First login de Lojas
+
+Ao criar uma nova loja de forma manual como Sysadmin, quero que a aplicação crie uma senha automática para a loja, a senha será: vistuu@1234
+
+Ao dono da loja realizar o seu primeiro login, o sistema deverá solicitar a alteração da senha para que a loja tenha seu acesso individual e seguro

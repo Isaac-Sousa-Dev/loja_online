@@ -72,35 +72,13 @@
                             <x-input-error :messages="$errors->get('verification_code')" class="mt-1" />
                         </div>
 
-                        <div>
-                            <label for="password" class="mb-1 block text-sm font-semibold text-[#33363B]">
-                                Nova senha
-                            </label>
-                            <input
-                                id="password"
-                                type="password"
-                                name="password"
-                                placeholder="Mínimo 8 caracteres"
-                                autocomplete="new-password"
-                                class="w-full rounded-2xl border border-[#33363B]/12 bg-white px-4 py-3 text-[#33363B] shadow-sm placeholder:text-[#33363B]/40 transition focus:border-[#6A2BBA]/40 focus:outline-none focus:ring-2 focus:ring-[#6A2BBA]/35"
-                            >
-                            <x-input-error :messages="$errors->get('password')" class="mt-1" />
-                        </div>
+                        <x-password-field label="Nova senha" id="first-access-password" name="password"
+                            :value="old('password')" placeholder="Mínimo 8 caracteres" autocomplete="new-password"
+                            :required="true" />
 
-                        <div>
-                            <label for="password_confirmation" class="mb-1 block text-sm font-semibold text-[#33363B]">
-                                Confirmar senha
-                            </label>
-                            <input
-                                id="password_confirmation"
-                                type="password"
-                                name="password_confirmation"
-                                placeholder="Repita a senha"
-                                autocomplete="new-password"
-                                class="w-full rounded-2xl border border-[#33363B]/12 bg-white px-4 py-3 text-[#33363B] shadow-sm placeholder:text-[#33363B]/40 transition focus:border-[#6A2BBA]/40 focus:outline-none focus:ring-2 focus:ring-[#6A2BBA]/35"
-                            >
-                            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1" />
-                        </div>
+                        <x-password-field label="Confirmar senha" id="first-access-password-confirmation"
+                            name="password_confirmation" :value="old('password_confirmation')" placeholder="Repita a senha"
+                            autocomplete="new-password" :required="true" />
 
                         <label for="remember_me" class="flex cursor-pointer select-none items-center gap-3">
                             <input id="remember_me" type="checkbox" name="remember"
@@ -123,6 +101,13 @@
                     <form method="POST" action="{{ route('login') }}" class="space-y-5">
                         @csrf
 
+                        @if ($errors->has('credentials'))
+                            <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-900"
+                                role="alert" aria-live="assertive">
+                                {{ $errors->first('credentials') }}
+                            </div>
+                        @endif
+
                         <div>
                             <label for="email" class="mb-1 block text-sm font-semibold text-[#33363B]">
                                 E-mail
@@ -141,21 +126,8 @@
                             <x-input-error :messages="$errors->get('email')" class="mt-1" />
                         </div>
 
-                        <div>
-                            <label for="password" class="mb-1 block text-sm font-semibold text-[#33363B]">
-                                Senha
-                            </label>
-                            <input
-                                id="password"
-                                type="password"
-                                name="password"
-                                placeholder="••••••••"
-                                required
-                                autocomplete="current-password"
-                                class="w-full rounded-2xl border border-[#33363B]/12 bg-white px-4 py-3 text-[#33363B] shadow-sm placeholder:text-[#33363B]/40 transition focus:border-[#6A2BBA]/40 focus:outline-none focus:ring-2 focus:ring-[#6A2BBA]/35"
-                            >
-                            <x-input-error :messages="$errors->get('password')" class="mt-1" />
-                        </div>
+                        <x-password-field label="Senha" id="login-password" name="password" placeholder="••••••••"
+                            autocomplete="current-password" :required="true" />
 
                         <label for="remember_me" class="flex cursor-pointer select-none items-center gap-3">
                             <input id="remember_me" type="checkbox" name="remember"
@@ -181,7 +153,7 @@
                 @endif
 
                 <p class="mt-8 text-center text-sm font-medium text-[#33363B]/55">
-                    <a href="{{ route('welcome') }}" class="font-bold text-[#6A2BBA] transition hover:text-[#D131A3] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6A2BBA] focus-visible:ring-offset-2 rounded-lg">← Voltar ao site</a>
+                    <a href="{{ route('welcome') }}" class="font-bold text-[#6A2BBA] transition hover:text-[#D131A3] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6A2BBA] focus-visible:ring-offset-2 rounded-lg">Voltar ao site</a>
                 </p>
             </div>
         </div>
