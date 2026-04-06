@@ -113,11 +113,11 @@ class PartnerController extends Controller
         try {
             $user = $action->execute($request);
 
-            try {
-                Mail::to($user->email)->send(new SendVerificationCodeMail(['user' => $user]));
-            } catch (\Throwable $mailException) {
-                report($mailException);
-            }
+            // try {
+            //     Mail::to($user->email)->send(new SendVerificationCodeMail(['user' => $user]));
+            // } catch (\Throwable $mailException) {
+            //     report($mailException);
+            // }
 
             $defaultPassword = (string) config('partner.default_manual_store_password');
 
@@ -131,6 +131,7 @@ class PartnerController extends Controller
                         .' (Se o e-mail de verificação não for entregue, o acesso continua válido com a senha provisória.)'
                 );
         } catch (\Throwable $e) {
+            dd($e);
             report($e);
 
             return back()
