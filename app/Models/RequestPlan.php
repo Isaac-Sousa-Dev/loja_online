@@ -14,7 +14,7 @@ class RequestPlan extends Model
         'email',
         'phone',
         'store_name',
-        'qtd_vehicles_in_stock',
+        'qtd_products_in_stock',
         'plan_slug',
         'payment_method',
         'notes',

@@ -98,15 +98,15 @@
                         @enderror
                     </div>
                     <div class="sm:col-span-2">
-                        <label for="qtd_vehicles_in_stock" class="mb-1.5 block text-sm font-bold text-[#33363B]">Volume aproximado de produtos</label>
-                        <select name="qtd_vehicles_in_stock" id="qtd_vehicles_in_stock"
-                            class="w-full rounded-2xl border border-[#33363B]/15 bg-[#F8F9FC] px-4 py-3 text-sm font-medium outline-none transition focus:border-[#6A2BBA] focus:bg-white focus:ring-2 focus:ring-[#6A2BBA]/25 @error('qtd_vehicles_in_stock') border-red-400 @enderror">
+                        <label for="qtd_products_in_stock" class="mb-1.5 block text-sm font-bold text-[#33363B]">Volume aproximado de produtos</label>
+                        <select name="qtd_products_in_stock" id="qtd_products_in_stock"
+                            class="w-full rounded-2xl border border-[#33363B]/15 bg-[#F8F9FC] px-4 py-3 text-sm font-medium outline-none transition focus:border-[#6A2BBA] focus:bg-white focus:ring-2 focus:ring-[#6A2BBA]/25 @error('qtd_products_in_stock') border-red-400 @enderror">
                             <option value="">Selecione (opcional)</option>
-                            <option value="ate-50" @selected(old('qtd_vehicles_in_stock') === 'ate-50')>Até 50 produtos</option>
-                            <option value="51-200" @selected(old('qtd_vehicles_in_stock') === '51-200')>De 51 a 200 produtos</option>
-                            <option value="201-plus" @selected(old('qtd_vehicles_in_stock') === '201-plus')>Mais de 200 produtos</option>
+                            <option value="ate-50" @selected(old('qtd_products_in_stock') === 'ate-50')>Até 50 produtos</option>
+                            <option value="51-200" @selected(old('qtd_products_in_stock') === '51-200')>De 51 a 200 produtos</option>
+                            <option value="201-plus" @selected(old('qtd_products_in_stock') === '201-plus')>Mais de 200 produtos</option>
                         </select>
-                        @error('qtd_vehicles_in_stock')
+                        @error('qtd_products_in_stock')
                             <p class="mt-1 text-xs font-semibold text-red-600">{{ $message }}</p>
                         @enderror
                     </div>

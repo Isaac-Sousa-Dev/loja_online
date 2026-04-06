@@ -187,13 +187,13 @@
                             </div>
                             <div class="md:col-span-2">
                                 <x-input-label for="edit-qtd" :value="__('Porte do catálogo')" />
-                                <select id="edit-qtd" name="qtd_vehicles_in_stock"
+                                <select id="edit-qtd" name="qtd_products_in_stock"
                                     class="mt-1 w-full rounded-xl border-gray-300 shadow-sm focus:border-[#6A2BBA] focus:ring-[#6A2BBA] py-2.5 px-3 border text-sm">
                                     <option value="">{{ __('—') }}</option>
-                                    <option value="10-products" @selected(old('qtd_vehicles_in_stock', $store->qtd_vehicles_in_stock) === '10-products')>Até 10 produtos</option>
-                                    <option value="25-products" @selected(old('qtd_vehicles_in_stock', $store->qtd_vehicles_in_stock) === '25-products')>Até 25 produtos</option>
-                                    <option value="60-products" @selected(old('qtd_vehicles_in_stock', $store->qtd_vehicles_in_stock) === '60-products')>Até 60 produtos</option>
-                                    <option value="plus-products" @selected(old('qtd_vehicles_in_stock', $store->qtd_vehicles_in_stock) === 'plus-products')>Mais de 60 produtos</option>
+                                    <option value="10-products" @selected(old('qtd_products_in_stock', $store->qtd_products_in_stock) === '10-products')>Até 10 produtos</option>
+                                    <option value="25-products" @selected(old('qtd_products_in_stock', $store->qtd_products_in_stock) === '25-products')>Até 25 produtos</option>
+                                    <option value="60-products" @selected(old('qtd_products_in_stock', $store->qtd_products_in_stock) === '60-products')>Até 60 produtos</option>
+                                    <option value="plus-products" @selected(old('qtd_products_in_stock', $store->qtd_products_in_stock) === 'plus-products')>Mais de 60 produtos</option>
                                 </select>
                             </div>
                         </div>

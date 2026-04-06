@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
             $table->string('store_name')->nullable();
-            $table->string('qtd_vehicles_in_stock')->nullable();
+            $table->string('qtd_products_in_stock')->nullable();
             $table->string('payment_method')->nullable();
             $table->string('plan_slug')->nullable();
 

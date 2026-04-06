@@ -16,7 +16,8 @@ class Plan extends Model
         'price',
         'duration',
         'status',
-        'type'
+        'type',
+        'qtd_products',
     ];
 
     public function subscription()

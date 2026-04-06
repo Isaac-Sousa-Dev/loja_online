@@ -26,8 +26,8 @@
 
                         <div class="flex gap-4">
                             <div class="w-full mb-3">
-                                <x-input-label for="qtd_vehicles" :value="__('Quantidade de produtos *')" />
-                                <x-text-input id="qtd_vehicles" class="required" placeholder="10" name="qtd_vehicles" type="text" />
+                                <x-input-label for="qtd_products" :value="__('Quantidade de produtos *')" />
+                                <x-text-input id="qtd_products" class="required" placeholder="10" name="qtd_products" type="text" />
                             </div>
 
                             <div class="w-full mb-3">
@@ -100,8 +100,8 @@
                                 <label for="subcategories" class="font-medium text-gray-700">Marcas</label>
                             </div> --}}
                             <div class="mt-2 flex py-1 px-2 bg-[#EDE9FE]/60 rounded-lg border border-[#6A2BBA]/10 items-center gap-1">
-                                <input id="vehicles" checked name="vehicles" type="checkbox" class="module rounded-sm border-gray-300">
-                                <label for="vehicles" class="font-medium text-gray-700">Produtos</label>
+                                <input id="products" checked name="products" type="checkbox" class="module rounded-sm border-gray-300">
+                                <label for="products" class="font-medium text-gray-700">Produtos</label>
                             </div>
                         </div>
                     </div>
@@ -148,7 +148,7 @@
         // Crie um objeto FormData
         const formData = new FormData();
         formData.append('name', $('#name').val());
-        formData.append('qtd_vehicles', $('#qtd_vehicles').val());
+        formData.append('qtd_products', $('#qtd_products').val());
         formData.append('description', $('#description').val());
         formData.append('price', $('#price').val());
         formData.append('status', $('#status').val());
@@ -164,7 +164,7 @@
         // formData.append('team', $('#team').is(':checked') ? 1 : 0);
         // formData.append('categories', $('#categories').is(':checked') ? 1 : 0);
         // formData.append('subcategories', $('#subcategories').is(':checked') ? 1 : 0);
-        // formData.append('vehicles', $('#vehicles').is(':checked') ? 1 : 0);
+        // formData.append('products', $('#products').is(':checked') ? 1 : 0);
 
         $.ajax({
             url: '{{ route('plans.store') }}',

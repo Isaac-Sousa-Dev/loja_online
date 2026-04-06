@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('store_email')->nullable();
             $table->string('store_phone')->nullable();
             $table->string('store_cpf_cnpj')->nullable();
-            $table->string('qtd_vehicles_in_stock')->nullable();
+            $table->string('qtd_products_in_stock')->nullable();
             $table->string('logo')->nullable();
             $table->string('banner')->nullable();
             $table->boolean('configured_store')->default(false)->nullable();

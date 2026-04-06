@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug');
             $table->string('mercadopago_plan_id')->nullable();
-            $table->integer('qtd_vehicles')->nullable();
+            $table->integer('qtd_products')->nullable();
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2);
             $table->integer('duration')->default(30);

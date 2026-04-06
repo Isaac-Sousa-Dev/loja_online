@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Models\Plan;
+use App\Models\PlanModules;
 use App\Models\User;
 use Illuminate\Console\Command;
 
@@ -22,7 +24,24 @@ class InitialDataProd extends Command
      *
      * @var string
      */
-    protected $description = 'Cria o usuário SysAdmin inicial (credenciais via SYSADMIN_* no .env).';
+    protected $description = 'Garante planos Essencial e Profissional e cria o SysAdmin (SYSADMIN_* no .env).';
+
+    /**
+     * Módulos alinhados ao seed de desenvolvimento (plan_modules).
+     *
+     * @var list<string>
+     */
+    private const PLAN_MODULE_KEYS = [
+        'dashboard',
+        'analitycs',
+        'orders',
+        'agentia',
+        'sales',
+        'team',
+        'products',
+        'categories',
+        'brands',
+    ];
 
     /**
      * Execute the console command.
@@ -37,6 +56,8 @@ class InitialDataProd extends Command
             return self::FAILURE;
         }
 
+        $this->ensureSubscriptionPlans();
+
         $name = config('sysadmin.name');
         $email = config('sysadmin.email');
         $password = config('sysadmin.password');
@@ -47,17 +68,11 @@ class InitialDataProd extends Command
             return self::FAILURE;
         }
 
-        if (! is_string($password) || $password === '') {
-            $this->components->error('Defina SYSADMIN_PASSWORD no .env (senha inicial do SysAdmin).');
-
-            return self::FAILURE;
-        }
-
         $existing = User::query()->where('email', $email)->first();
 
         if ($existing !== null) {
             if ($existing->role === 'admin') {
-                $this->components->info('SysAdmin já existe para este e-mail; nada a fazer.');
+                $this->components->info('SysAdmin já existe para este e-mail; planos foram sincronizados.');
 
                 return self::SUCCESS;
             }
@@ -67,6 +82,12 @@ class InitialDataProd extends Command
                 $email,
                 (string) $existing->role,
             ));
+
+            return self::FAILURE;
+        }
+
+        if (! is_string($password) || $password === '') {
+            $this->components->error('Defina SYSADMIN_PASSWORD no .env (senha inicial do SysAdmin).');
 
             return self::FAILURE;
         }
@@ -84,6 +105,53 @@ class InitialDataProd extends Command
         $this->components->info(sprintf('Usuário SysAdmin criado: %s.', $email));
 
         return self::SUCCESS;
+    }
+
+    private function ensureSubscriptionPlans(): void
+    {
+        $definitions = [
+            [
+                'slug' => 'essencial',
+                'name' => 'Essencial',
+                'description' => 'Plano Essencial — vitrine, pedidos e catálogo.',
+                'price' => 39.90,
+            ],
+            [
+                'slug' => 'profissional',
+                'name' => 'Profissional',
+                'description' => 'Plano Profissional — operação completa e equipe.',
+                'price' => 69.90,
+            ],
+        ];
+
+        foreach ($definitions as $planData) {
+            $plan = Plan::query()->updateOrCreate(
+                ['slug' => $planData['slug']],
+                [
+                    'name' => $planData['name'],
+                    'description' => $planData['description'],
+                    'price' => $planData['price'],
+                    'duration' => 30,
+                    'status' => 'active',
+                    'type' => 'monthly',
+                ],
+            );
+
+            foreach (self::PLAN_MODULE_KEYS as $moduleKey) {
+                PlanModules::query()->firstOrCreate(
+                    [
+                        'plan_id' => $plan->id,
+                        'module' => $moduleKey,
+                    ],
+                );
+            }
+
+            $this->components->info(sprintf(
+                'Plano "%s" garantido (R$ %s/mês).',
+                $planData['name'],
+                number_format((float) $planData['price'], 2, ',', '.'),
+            ));
+        }
     }
 
     private function environmentAllowsExecution(): bool

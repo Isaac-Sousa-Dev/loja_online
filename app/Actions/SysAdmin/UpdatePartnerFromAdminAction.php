@@ -60,7 +60,7 @@ final class UpdatePartnerFromAdminAction
                 'store_email' => $validated['store_email'] ?? null,
                 'store_phone' => $validated['store_phone'] ?? null,
                 'store_cpf_cnpj' => $validated['store_cpf_cnpj'] ?? null,
-                'qtd_vehicles_in_stock' => $validated['qtd_vehicles_in_stock'] ?? null,
+                'qtd_products_in_stock' => $validated['qtd_products_in_stock'] ?? null,
                 'plan_id' => $planId,
                 'suspended_at' => $suspendedAt,
             ]);

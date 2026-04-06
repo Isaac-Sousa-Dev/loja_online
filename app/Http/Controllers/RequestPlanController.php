@@ -39,7 +39,7 @@ class RequestPlanController extends Controller
     {
         $data = $request->validated();
         $data['payment_method'] = 'pendente';
-        $data['qtd_vehicles_in_stock'] = $data['qtd_vehicles_in_stock'] ?? '';
+        $data['qtd_products_in_stock'] = $data['qtd_products_in_stock'] ?? '';
 
         $response = $this->requestPlanService->insert($data);
 

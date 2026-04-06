@@ -54,7 +54,7 @@ final class UpdatePartnerFromAdminRequest extends FormRequest
             'store_email' => ['nullable', 'string', 'lowercase', 'email', 'max:255'],
             'store_phone' => ['nullable', 'string', 'max:32'],
             'store_cpf_cnpj' => ['nullable', 'string', 'max:32'],
-            'qtd_vehicles_in_stock' => ['nullable', 'string', 'max:64'],
+            'qtd_products_in_stock' => ['nullable', 'string', 'max:64'],
             'plan_id' => ['required', 'integer', 'exists:plans,id'],
             'subscription_status' => ['required', 'string', Rule::in(['active', 'pending', 'cancelled'])],
             'start_date' => ['required', 'date'],

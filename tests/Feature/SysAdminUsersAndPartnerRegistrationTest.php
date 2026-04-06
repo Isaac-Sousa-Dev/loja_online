@@ -374,7 +374,7 @@ class SysAdminUsersAndPartnerRegistrationTest extends TestCase
             'store_email' => 'loja@example.com',
             'store_phone' => '',
             'store_cpf_cnpj' => '',
-            'qtd_vehicles_in_stock' => '',
+            'qtd_products_in_stock' => '',
             'plan_id' => (string) $plan->id,
             'subscription_status' => 'pending',
             'start_date' => '2026-02-01',

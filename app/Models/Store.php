@@ -17,7 +17,7 @@ class Store extends Model
         'store_email',
         'store_phone',
         'store_cpf_cnpj',
-        'qtd_vehicles_in_stock',
+        'qtd_products_in_stock',
         'logo',
         'banner',
         'wholesale_min_quantity',

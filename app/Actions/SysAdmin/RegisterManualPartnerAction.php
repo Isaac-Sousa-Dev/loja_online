@@ -56,7 +56,7 @@ final class RegisterManualPartnerAction
                 'store_email' => $user->email,
                 'store_phone' => $phone,
                 'store_cpf_cnpj' => $validated['store_cpf_cnpj'] ?? null,
-                'qtd_vehicles_in_stock' => $validated['qtd_vehicles_in_stock'] ?? null,
+                'qtd_products_in_stock' => $validated['qtd_products_in_stock'] ?? null,
                 'is_testing' => $validated['is_testing'],
                 'payment_method' => $validated['payment_method'] ?? null,
                 'start_date' => $validated['start_date'],

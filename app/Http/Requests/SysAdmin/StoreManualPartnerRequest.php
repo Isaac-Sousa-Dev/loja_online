@@ -26,7 +26,7 @@ class StoreManualPartnerRequest extends FormRequest
             'plan_id' => ['required', 'integer', 'exists:plans,id'],
             'start_date' => ['required', 'date'],
             'payment_method' => ['nullable', 'string', 'max:64'],
-            'qtd_vehicles_in_stock' => ['nullable', 'string', 'max:64'],
+            'qtd_products_in_stock' => ['nullable', 'string', 'max:64'],
             'store_cpf_cnpj' => ['nullable', 'string', 'max:32'],
             'is_testing' => ['sometimes', 'boolean'],
             'grant_access' => ['sometimes', 'boolean'],
