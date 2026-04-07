@@ -348,7 +348,7 @@
 
             <!-- Navbar -->
             <div
-                class="bg-white/95 backdrop-blur-sm h-16 flex items-center justify-between px-2 md:px-4 border-b border-[#6A2BBA]/10 shadow-sm fixed top-0 z-30 w-full md:left-64 md:w-[calc(100%-16rem)]">
+                class="bg-white/95 backdrop-blur-sm h-16 flex min-w-0 items-center justify-between px-2 md:px-4 border-b border-[#6A2BBA]/10 shadow-sm fixed top-0 z-30 w-full md:left-64 md:w-[calc(100%-16rem)]">
                 @include('components.navbar')
             </div>
 
