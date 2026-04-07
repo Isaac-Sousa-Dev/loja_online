@@ -6,12 +6,16 @@ namespace App\Services\product;
 
 use App\Http\Requests\Partner\StoreProductWizardRequest;
 use App\Http\Requests\Partner\UpdateProductWizardRequest;
+use App\Loggable;
 use App\Models\Partner;
 use App\Models\Product;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ProductWizardService
 {
+    use Loggable;
+
     public function __construct(
         private readonly ProductService $productService,
         private readonly ProductVariantSyncService $variantSyncService,
@@ -26,6 +30,13 @@ class ProductWizardService
             $data['partner_id'] = $partner->id;
 
             $product = $this->productService->insert($data, $request);
+            $this->logEvent('product.created', [
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'partner_id' => $partner->id,
+                'store_id' => $partner->store?->id,
+                'user_id' => Auth::user()?->id,
+            ]);
 
             $variants = json_decode((string) $request->input('variants_payload', ''), true);
             if (is_array($variants) && $variants !== []) {
@@ -50,6 +61,13 @@ class ProductWizardService
 
             $data = $request->getProductAttributes();
             $this->productService->applyWizardAttributesToExistingProduct($data, $product);
+            $this->logEvent('product.updated', [
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'partner_id' => $product->partner_id,
+                'store_id' => $product->partner?->store?->id,
+                'user_id' => Auth::user()?->id,
+            ]);
 
             $variants = json_decode((string) $request->input('variants_payload', ''), true);
             if (is_array($variants) && $variants !== []) {

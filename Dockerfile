@@ -45,6 +45,14 @@ COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
+ARG UID=1000
+ARG GID=1000
+
+RUN groupadd -g ${GID} appgroup && \
+    useradd -u ${UID} -g appgroup -m appuser
+
+USER appuser
+
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
 CMD ["php-fpm"]

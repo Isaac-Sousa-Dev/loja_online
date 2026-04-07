@@ -52,6 +52,28 @@ return [
     */
 
     'channels' => [
+
+        'access' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/access.log'),
+            'level' => 'info',
+            'days' => 30,
+        ],
+
+        'app' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/app.log'),
+            'level'  => 'debug',
+            'days'   => 60,
+        ],
+
+        'errors' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/errors.log'),
+            'level'  => 'error',
+            'days'   => 90,
+        ],
+
         'stack' => [
             'driver' => 'stack',
             'channels' => ['single'],
