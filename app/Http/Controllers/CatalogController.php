@@ -8,6 +8,7 @@ use App\Models\Partner;
 use App\Models\Product;
 use App\Models\StoreCategories;
 use App\Support\Catalog\CatalogStoreCacheVersion;
+use App\Services\Wholesale\WholesalePriceResolver;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,6 +28,7 @@ class CatalogController extends Controller
 
     public function __construct(
         private readonly CatalogStoreCacheVersion $catalogStoreCacheVersion,
+        private readonly WholesalePriceResolver $wholesalePriceResolver,
     ) {}
 
     public function index(string $partner_link): View
@@ -190,7 +192,7 @@ class CatalogController extends Controller
             $this->logoStore = '/storage/'.$store->logo;
         }
 
-        $product = Product::with(['images', 'brand', 'variants', 'category'])
+        $product = Product::with(['images', 'brand', 'variants', 'category', 'wholesalePrices'])
             ->where('partner_id', $partner->id)
             ->where('is_active', true)
             ->find($productId);
@@ -275,6 +277,8 @@ class CatalogController extends Controller
             'category' => $category,
             'related' => $related,
             'wholesaleMinQty' => $store->wholesale_min_quantity,
+            'wholesaleLevels' => $this->wholesalePriceResolver->levelsWithProductPrices($product, $store),
+            'wholesaleCountMode' => $this->wholesalePriceResolver->resolveCountMode($store)->value,
         ]);
     }
 

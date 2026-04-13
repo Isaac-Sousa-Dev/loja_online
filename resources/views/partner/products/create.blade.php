@@ -110,10 +110,22 @@
                                     <span id="msgCostGreaterPrice" class="text-amber-700 font-medium text-sm"></span>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-3 gap-3 mb-3">
+                            <div class="grid grid-cols-1 gap-3 mb-3 md:grid-cols-2 xl:grid-cols-3">
                                 <div><x-input-label for="price" :value="__('Varejo *')" /><x-text-input id="price" placeholder="0,00" name="price" type="text" class="price-mask step1-required mt-1 w-full" /></div>
-                                <div><x-input-label for="price_wholesale" :value="__('Atacado')" /><x-text-input id="price_wholesale" placeholder="0,00" name="price_wholesale" type="text" class="price-mask mt-1 w-full" /></div>
                                 <div><x-input-label for="price_promotional" :value="__('Promocional')" /><x-text-input id="price_promotional" placeholder="0,00" name="price_promotional" type="text" class="price-mask mt-1 w-full" /></div>
+                                @foreach ($wholesaleLevels as $level)
+                                    <div>
+                                        <x-input-label :for="'wholesale_price_'.$level['position']" :value="'Preço atacado '.$level['position']" />
+                                        <x-text-input
+                                            :id="'wholesale_price_'.$level['position']"
+                                            placeholder="0,00"
+                                            :name="'wholesale_prices['.$level['id'].']'"
+                                            type="text"
+                                            class="price-mask mt-1 w-full"
+                                        />
+                                        <p class="mt-1 text-xs text-gray-400">Ativa a partir de {{ $level['min_quantity'] }} peças. Se ficar vazio, o sistema usa o preço de varejo.</p>
+                                    </div>
+                                @endforeach
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 <div><x-input-label for="cost" :value="__('Custo')" /><x-text-input id="cost" placeholder="0,00" name="cost" type="text" class="price-mask mt-1 w-full" /></div>

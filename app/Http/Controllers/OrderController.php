@@ -17,6 +17,8 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\RequestPlan;
+use App\Models\Store;
+use App\Services\Wholesale\WholesalePriceResolver;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -32,6 +34,7 @@ class OrderController extends Controller
     public function __construct(
         private readonly UpdateOrderStatusAction $updateOrderStatus,
         private readonly ForgetStoreDashboardMetricsAction $forgetStoreDashboardMetrics,
+        private readonly WholesalePriceResolver $wholesalePriceResolver,
     ) {}
 
     public function index(Request $request): View|Response
@@ -312,7 +315,10 @@ class OrderController extends Controller
                     $variantId = isset($item['variant_id']) ? (int) $item['variant_id'] : null;
                     $quantity = max(1, (int) ($item['quantity'] ?? 1));
 
-                    $product = Product::query()->whereKey($productId)->firstOrFail();
+                    $product = Product::query()
+                        ->with('wholesalePrices')
+                        ->whereKey($productId)
+                        ->firstOrFail();
 
                     $lineQuery = $order->items()->where('product_id', $productId);
                     if ($variantId !== null) {
@@ -326,26 +332,27 @@ class OrderController extends Controller
                     $line = $lineQuery->first();
                     if ($line !== null) {
                         $line->quantity = (int) $line->quantity + $quantity;
-                        $line->unit_price = $this->resolveUnitPriceForQuantity($product, $order->store, (int) $line->quantity);
                         $line->recalcLineSubtotal();
                         $line->save();
                     } else {
-                        $unitPrice = $this->resolveUnitPriceForQuantity($product, $order->store, $quantity);
                         OrderItem::query()->create([
                             'order_id' => $order->id,
                             'store_id' => $order->store_id,
                             'client_id' => $order->client_id,
                             'product_id' => $productId,
                             'product_variant_id' => $variantId ?: null,
+                            'store_wholesale_level_id' => null,
+                            'wholesale_applied_mode' => null,
                             'selected_color' => $item['color'] ?? null,
                             'selected_size' => $item['size'] ?? null,
                             'quantity' => $quantity,
-                            'unit_price' => $unitPrice,
-                            'line_subtotal' => bcmul($unitPrice, (string) $quantity, 2),
+                            'unit_price' => number_format((float) $product->price, 2, '.', ''),
+                            'line_subtotal' => bcmul(number_format((float) $product->price, 2, '.', ''), (string) $quantity, 2),
                         ]);
                     }
                 }
 
+                $this->repriceOrderItems($order);
                 $order->recalculateTotals();
                 $order->forceFill(['notified_at' => null])->save();
 
@@ -454,13 +461,12 @@ class OrderController extends Controller
      */
     private function drawerPayload(Order $order): array
     {
-        $order->loadMissing(['client', 'store', 'items.product.brand', 'items.variant', 'items.product.images', 'statusHistories.changedBy']);
+        $order->loadMissing(['client', 'store.wholesaleLevels', 'items.product.brand', 'items.product.wholesalePrices', 'items.variant', 'items.wholesaleLevel', 'items.product.images', 'statusHistories.changedBy']);
 
         $lines = [];
         $pricingModes = [];
-        $wholesaleMinQuantity = $order->store?->wholesale_min_quantity;
         foreach ($order->items as $item) {
-            $pricingMode = $this->resolveOrderItemPricingMode($item, $wholesaleMinQuantity);
+            $pricingMode = $this->resolveOrderItemPricingMode($item, $order->store);
             $pricingModes[] = $pricingMode;
             $lines[] = [
                 'id' => $item->id,
@@ -472,6 +478,9 @@ class OrderController extends Controller
                 'image' => $this->resolveOrderItemImage($item),
                 'pricing_mode' => $pricingMode,
                 'pricingModeLabel' => $this->pricingModeLabel($pricingMode),
+                'wholesaleLevelLabel' => $item->wholesaleLevel?->label,
+                'wholesaleLevelPosition' => $item->wholesaleLevel?->position,
+                'wholesaleAppliedMode' => $item->wholesale_applied_mode,
             ];
         }
 
@@ -697,32 +706,69 @@ class OrderController extends Controller
         return OrderStatus::tryFrom($normalized)?->value;
     }
 
-    private function resolveUnitPriceForQuantity(Product $product, ?\App\Models\Store $store, int $quantity): string
+    /**
+     * @return array{
+     *     unit_price:string,
+     *     pricing_mode:string,
+     *     store_wholesale_level_id:?int,
+     *     wholesale_level_label:?string,
+     *     wholesale_level_position:?int,
+     *     wholesale_applied_mode:?string
+     * }
+     */
+    private function resolvePricingForOrderItem(Product $product, ?Store $store, int $productQuantity, int $cartQuantity): array
     {
-        $retailPrice = number_format((float) $product->price, 2, '.', '');
-        $wholesalePrice = (float) ($product->price_wholesale ?? 0);
-        $minimumQuantity = $store?->wholesale_min_quantity;
-
-        if ($minimumQuantity !== null
-            && $minimumQuantity > 0
-            && $quantity >= $minimumQuantity
-            && $wholesalePrice > 0) {
-            return number_format($wholesalePrice, 2, '.', '');
-        }
-
-        return $retailPrice;
+        return $this->wholesalePriceResolver->resolveForQuantities(
+            $product,
+            $store,
+            $productQuantity,
+            $cartQuantity,
+        );
     }
 
-    private function resolveOrderItemPricingMode(OrderItem $item, ?int $wholesaleMinQuantity): string
+    private function resolveOrderItemPricingMode(OrderItem $item, ?Store $store): string
     {
-        $wholesalePrice = (float) ($item->product?->price_wholesale ?? 0);
-        $unitPrice = (float) $item->unit_price;
-        $reachedWholesaleQuantity = $wholesaleMinQuantity !== null
-            && $wholesaleMinQuantity > 0
-            && (int) $item->quantity >= $wholesaleMinQuantity;
-        $matchesWholesalePrice = $wholesalePrice > 0 && abs($unitPrice - $wholesalePrice) < 0.01;
+        if ($item->store_wholesale_level_id !== null) {
+            return 'wholesale';
+        }
 
-        return $reachedWholesaleQuantity && $matchesWholesalePrice ? 'wholesale' : 'retail';
+        $wholesalePrice = (float) ($item->product?->price_wholesale ?? 0);
+        $minimumQuantity = (int) ($store?->wholesale_min_quantity ?? 0);
+        $matchesWholesalePrice = $wholesalePrice > 0 && abs((float) $item->unit_price - $wholesalePrice) < 0.01;
+        if ($minimumQuantity >= 2 && (int) $item->quantity >= $minimumQuantity && $matchesWholesalePrice) {
+            return 'wholesale';
+        }
+
+        return 'retail';
+    }
+
+    private function repriceOrderItems(Order $order): void
+    {
+        $order->loadMissing(['store.wholesaleLevels', 'items.product.wholesalePrices']);
+        $cartQuantity = (int) $order->items->sum('quantity');
+        $productQuantities = $order->items
+            ->groupBy('product_id')
+            ->map(static fn ($items): int => (int) $items->sum('quantity'));
+
+        foreach ($order->items as $item) {
+            $product = $item->product;
+            if ($product === null) {
+                continue;
+            }
+
+            $pricing = $this->resolvePricingForOrderItem(
+                $product,
+                $order->store,
+                (int) ($productQuantities[$item->product_id] ?? 0),
+                $cartQuantity
+            );
+
+            $item->unit_price = $pricing['unit_price'];
+            $item->store_wholesale_level_id = $pricing['store_wholesale_level_id'];
+            $item->wholesale_applied_mode = $pricing['wholesale_applied_mode'];
+            $item->recalcLineSubtotal();
+            $item->saveQuietly();
+        }
     }
 
     /**

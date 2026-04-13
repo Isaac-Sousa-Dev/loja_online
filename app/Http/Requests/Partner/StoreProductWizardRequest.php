@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Requests\Partner;
 
 use App\Models\Brand;
+use App\Models\Partner;
+use App\Models\StoreWholesaleLevel;
 use App\Models\StoreCategories;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -37,6 +39,8 @@ class StoreProductWizardRequest extends FormRequest
             'description'   => ['required', 'string'],
             'price'         => ['required', 'string'],
             'price_wholesale' => ['nullable', 'string'],
+            'wholesale_prices' => ['nullable', 'array'],
+            'wholesale_prices.*' => ['nullable', 'string'],
             'price_promotional' => ['nullable', 'string'],
             'cost'          => ['nullable', 'string'],
             'profit'        => ['nullable', 'string'],
@@ -76,6 +80,7 @@ class StoreProductWizardRequest extends FormRequest
             'profit' => $this->normalizeProfit($this->input('profit')),
             'price' => $this->normalizePriceString($this->input('price')),
             'price_wholesale' => $this->normalizePriceString($this->input('price_wholesale')),
+            'wholesale_prices' => $this->normalizeWholesalePricesInput(),
             'price_promotional' => $this->normalizePriceString($this->input('price_promotional')),
             'cost' => $this->normalizePriceString($this->input('cost')),
         ];
@@ -110,6 +115,7 @@ class StoreProductWizardRequest extends FormRequest
         ]);
         $attrs['gender'] = $this->mapGender($this->input('gender'));
         $attrs['is_active'] = $this->boolean('is_active');
+        $attrs['wholesale_prices'] = $this->normalizedWholesalePrices();
 
         return $attrs;
     }
@@ -146,6 +152,66 @@ class StoreProductWizardRequest extends FormRequest
             'U' => 'U',
             default => null,
         };
+    }
+
+    /**
+     * @return array<int, array{store_wholesale_level_id:int,price:?string}>
+     */
+    public function normalizedWholesalePrices(): array
+    {
+        $partner = Auth::user()?->partner;
+        if (! $partner instanceof Partner) {
+            return [];
+        }
+
+        $store = $partner->store;
+        if ($store === null) {
+            return [];
+        }
+
+        $validLevelIds = StoreWholesaleLevel::query()
+            ->where('store_id', $store->id)
+            ->pluck('id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
+
+        if ($validLevelIds === []) {
+            return [];
+        }
+
+        $validLookup = array_fill_keys($validLevelIds, true);
+        $prices = [];
+        foreach ($this->input('wholesale_prices', []) as $levelId => $value) {
+            $intLevelId = (int) $levelId;
+            if (! isset($validLookup[$intLevelId])) {
+                continue;
+            }
+
+            $prices[] = [
+                'store_wholesale_level_id' => $intLevelId,
+                'price' => $this->normalizePriceString($value),
+            ];
+        }
+
+        return $prices;
+    }
+
+    /**
+     * @return array<string, ?string>
+     */
+    private function normalizeWholesalePricesInput(): array
+    {
+        $raw = $this->input('wholesale_prices', []);
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        $normalized = [];
+        foreach ($raw as $key => $value) {
+            $normalized[(string) $key] = $this->normalizePriceString($value);
+        }
+
+        return $normalized;
     }
 
     public function withValidator($validator): void

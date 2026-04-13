@@ -7,6 +7,7 @@ namespace App\Services\product;
 use App\Models\Image;
 use App\Models\Partner;
 use App\Models\Product;
+use App\Models\ProductWholesalePrice;
 use App\Models\ProductVariant;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -31,7 +32,7 @@ class ProductDuplicateService
         }
 
         return DB::transaction(function () use ($partner, $source): Product {
-            $source->load(['allVariants', 'images']);
+            $source->load(['allVariants', 'images', 'wholesalePrices']);
 
             $copyName = $this->buildCopyName((string) $source->name);
 
@@ -47,6 +48,14 @@ class ProductDuplicateService
                     'price_override' => $variant->price_override,
                     'sku' => null,
                     'active' => (bool) $variant->active,
+                ]);
+            }
+
+            foreach ($source->wholesalePrices as $wholesalePrice) {
+                ProductWholesalePrice::create([
+                    'product_id' => $newProduct->id,
+                    'store_wholesale_level_id' => $wholesalePrice->store_wholesale_level_id,
+                    'price' => $wholesalePrice->price,
                 ]);
             }
 

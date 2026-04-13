@@ -5,6 +5,7 @@ namespace App\Services\product;
 use App\DTO\ProductDTO;
 use App\Models\Image;
 use App\Models\Product;
+use App\Models\ProductWholesalePrice;
 use App\Repository\product\ProductRepository;
 use App\Services\UploadFileService;
 
@@ -37,6 +38,7 @@ class ProductService
         $data['cost'] = $this->formattedPrice($data['cost'] ?? null);
 
         $productCreated = $this->productRepository->create($data);
+        $this->syncWholesalePrices($productCreated, $data['wholesale_prices'] ?? []);
         if ($request !== null) {
             $this->uploadFileService->getPathAndExtension($request, $productCreated);
         }
@@ -89,6 +91,7 @@ class ProductService
         }
 
         $product->update($update);
+        $this->syncWholesalePrices($product, $data['wholesale_prices'] ?? []);
     }
 
     public function updatePricePromotional($data)
@@ -200,5 +203,41 @@ class ProductService
         $price = str_replace(',', '.', $price);
 
         return $price;
+    }
+
+    /**
+     * @param array<int, array{store_wholesale_level_id:int,price:?string}> $wholesalePrices
+     */
+    public function syncWholesalePrices(Product $product, array $wholesalePrices): void
+    {
+        $persistedLevelIds = [];
+
+        foreach ($wholesalePrices as $row) {
+            $levelId = (int) ($row['store_wholesale_level_id'] ?? 0);
+            if ($levelId < 1) {
+                continue;
+            }
+
+            $persistedLevelIds[] = $levelId;
+            ProductWholesalePrice::query()->updateOrCreate(
+                [
+                    'product_id' => $product->id,
+                    'store_wholesale_level_id' => $levelId,
+                ],
+                [
+                    'price' => $this->formattedPrice($row['price'] ?? null),
+                ]
+            );
+        }
+
+        if ($persistedLevelIds === []) {
+            $product->wholesalePrices()->delete();
+
+            return;
+        }
+
+        $product->wholesalePrices()
+            ->whereNotIn('store_wholesale_level_id', $persistedLevelIds)
+            ->delete();
     }
 }

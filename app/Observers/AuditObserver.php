@@ -26,14 +26,14 @@ class AuditObserver
     private function record(Model $model, string $operation, array $before, array $after): void
     {
         AuditLog::create([
-            'request_id' => app('request_id'),
+            'request_id' => app()->bound('request_id') ? app('request_id') : null,
             'user_id'    => Auth::user()?->id,
             'store_id'    => Auth::user()?->partner?->store?->id,
             'table'      => $model->getTable(),
             'entity_id'  => $model->getKey(),
             'operation'  => $operation,
-            'before'      => $before,
-            'after'     => $after,
+            'before'      => json_encode($before, JSON_PRETTY_PRINT),
+            'after'     => json_encode($after, JSON_PRETTY_PRINT),
         ]);
     }
 }

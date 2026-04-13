@@ -10,8 +10,10 @@ use App\Models\OrderItem;
 use App\Models\Partner;
 use App\Models\Plan;
 use App\Models\Product;
+use App\Models\ProductWholesalePrice;
 use App\Models\ProductVariant;
 use App\Models\Store;
+use App\Models\StoreWholesaleLevel;
 use App\Models\User;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -25,6 +27,8 @@ class StoreCartTest extends TestCase
     private Product $product;
     private ProductVariant $variantRed;
     private ProductVariant $variantBlue;
+    private StoreWholesaleLevel $wholesaleLevelOne;
+    private StoreWholesaleLevel $wholesaleLevelTwo;
 
     protected function setUp(): void
     {
@@ -42,6 +46,7 @@ class StoreCartTest extends TestCase
             'plan_id'    => $plan->id,
             'store_name' => 'Loja Teste',
             'wholesale_min_quantity' => 3,
+            'wholesale_count_mode' => 'product',
         ]);
 
         $category = Category::create(['name' => 'Cat', 'created_by' => $partner->id]);
@@ -55,6 +60,29 @@ class StoreCartTest extends TestCase
             'partner_id'  => $partner->id,
             'category_id' => $category->id,
             'is_active'   => true,
+        ]);
+
+        $this->wholesaleLevelOne = StoreWholesaleLevel::create([
+            'store_id' => $this->store->id,
+            'position' => 1,
+            'label' => 'Atacado 1',
+            'min_quantity' => 3,
+        ]);
+        $this->wholesaleLevelTwo = StoreWholesaleLevel::create([
+            'store_id' => $this->store->id,
+            'position' => 2,
+            'label' => 'Atacado 2',
+            'min_quantity' => 5,
+        ]);
+        ProductWholesalePrice::create([
+            'product_id' => $this->product->id,
+            'store_wholesale_level_id' => $this->wholesaleLevelOne->id,
+            'price' => 40.00,
+        ]);
+        ProductWholesalePrice::create([
+            'product_id' => $this->product->id,
+            'store_wholesale_level_id' => $this->wholesaleLevelTwo->id,
+            'price' => 35.00,
         ]);
 
         $this->variantRed = ProductVariant::create([
@@ -222,6 +250,122 @@ class StoreCartTest extends TestCase
         $this->assertSame(3, $line->quantity);
         $this->assertSame('40.00', number_format((float) $line->unit_price, 2, '.', ''));
         $this->assertSame('120.00', number_format((float) $line->line_subtotal, 2, '.', ''));
+    }
+
+    public function test_store_cart_uses_highest_wholesale_level_for_same_product_across_variants(): void
+    {
+        $payload = [
+            'name' => 'Mix Produto',
+            'phone' => '11912345678',
+            'store_id' => $this->store->id,
+            'items' => [
+                [
+                    'product_id' => $this->product->id,
+                    'quantity' => 2,
+                    'variant_id' => $this->variantRed->id,
+                    'color' => 'Vermelho',
+                    'size' => 'M',
+                ],
+                [
+                    'product_id' => $this->product->id,
+                    'quantity' => 3,
+                    'variant_id' => $this->variantBlue->id,
+                    'color' => 'Azul',
+                    'size' => 'M',
+                ],
+            ],
+        ];
+
+        $this->postJson(route('orders.storeCart'), $payload)->assertCreated();
+
+        $lines = OrderItem::query()->orderBy('id')->get();
+        $this->assertCount(2, $lines);
+        $this->assertSame('35.00', number_format((float) $lines[0]->unit_price, 2, '.', ''));
+        $this->assertSame($this->wholesaleLevelTwo->id, $lines[0]->store_wholesale_level_id);
+        $this->assertSame('35.00', number_format((float) $lines[1]->unit_price, 2, '.', ''));
+        $this->assertSame($this->wholesaleLevelTwo->id, $lines[1]->store_wholesale_level_id);
+    }
+
+    public function test_store_cart_falls_back_to_retail_price_when_wholesale_level_has_no_specific_price(): void
+    {
+        ProductWholesalePrice::query()
+            ->where('product_id', $this->product->id)
+            ->where('store_wholesale_level_id', $this->wholesaleLevelTwo->id)
+            ->delete();
+
+        $payload = [
+            'name' => 'Fallback',
+            'phone' => '11933334444',
+            'store_id' => $this->store->id,
+            'items' => [
+                [
+                    'product_id' => $this->product->id,
+                    'quantity' => 5,
+                    'variant_id' => $this->variantRed->id,
+                    'color' => 'Vermelho',
+                    'size' => 'M',
+                ],
+            ],
+        ];
+
+        $this->postJson(route('orders.storeCart'), $payload)->assertCreated();
+
+        $line = OrderItem::query()->where('product_variant_id', $this->variantRed->id)->first();
+        $this->assertNotNull($line);
+        $this->assertSame('50.00', number_format((float) $line->unit_price, 2, '.', ''));
+        $this->assertSame($this->wholesaleLevelTwo->id, $line->store_wholesale_level_id);
+    }
+
+    public function test_store_cart_can_apply_cart_mode_across_different_products(): void
+    {
+        $category = Category::create(['name' => 'Outra Cat', 'created_by' => $this->product->partner_id]);
+        $secondProduct = Product::create([
+            'name' => 'Bermuda',
+            'description' => 'Bermuda de teste',
+            'price' => 70.00,
+            'stock' => 10,
+            'partner_id' => $this->product->partner_id,
+            'category_id' => $category->id,
+            'is_active' => true,
+        ]);
+
+        ProductWholesalePrice::create([
+            'product_id' => $secondProduct->id,
+            'store_wholesale_level_id' => $this->wholesaleLevelOne->id,
+            'price' => 60.00,
+        ]);
+
+        $this->store->update(['wholesale_count_mode' => 'cart']);
+
+        $payload = [
+            'name' => 'Cart Mode',
+            'phone' => '11955556666',
+            'store_id' => $this->store->id,
+            'items' => [
+                [
+                    'product_id' => $this->product->id,
+                    'quantity' => 2,
+                    'variant_id' => $this->variantRed->id,
+                    'color' => 'Vermelho',
+                    'size' => 'M',
+                ],
+                [
+                    'product_id' => $secondProduct->id,
+                    'quantity' => 1,
+                ],
+            ],
+        ];
+
+        $this->postJson(route('orders.storeCart'), $payload)->assertCreated();
+
+        $shirtLine = OrderItem::query()->where('product_id', $this->product->id)->first();
+        $shortsLine = OrderItem::query()->where('product_id', $secondProduct->id)->first();
+        $this->assertNotNull($shirtLine);
+        $this->assertNotNull($shortsLine);
+        $this->assertSame('40.00', number_format((float) $shirtLine->unit_price, 2, '.', ''));
+        $this->assertSame('60.00', number_format((float) $shortsLine->unit_price, 2, '.', ''));
+        $this->assertSame('cart', $shirtLine->wholesale_applied_mode);
+        $this->assertSame('cart', $shortsLine->wholesale_applied_mode);
     }
 
     public function test_store_cart_clears_notified_at_on_existing_pending_order(): void

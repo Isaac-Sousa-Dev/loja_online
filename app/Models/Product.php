@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
@@ -62,6 +63,11 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(Category::class, 'category_id', 'id');
+    }
+
+    public function wholesalePrices(): HasMany
+    {
+        return $this->hasMany(ProductWholesalePrice::class)->orderBy('store_wholesale_level_id');
     }
 
     // Retorna cores únicas disponíveis nas variantes

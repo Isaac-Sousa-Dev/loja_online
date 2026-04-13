@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\store;
 
+use App\Enums\WholesaleCountMode;
 use App\Interfaces\AbstractServiceInterface;
 use App\Models\AddressStore;
 use App\Models\Store;
 use App\Models\StoreHour;
+use App\Models\StoreWholesaleLevel;
 use App\Repository\store\StoreRepository;
 use App\Services\requests\RequestPlanService;
+use Illuminate\Support\Facades\DB;
 
 class StoreService implements AbstractServiceInterface {
 
@@ -51,10 +54,16 @@ class StoreService implements AbstractServiceInterface {
 
         $data['accepted_payment_methods'] = $this->sanitizeSelection($data['accepted_payment_methods'] ?? null);
         $data['accepted_card_brands'] = $this->sanitizeSelection($data['accepted_card_brands'] ?? null);
-        
+        $data['wholesale_count_mode'] = $this->sanitizeWholesaleCountMode($data['wholesale_count_mode'] ?? null);
+        $wholesaleLevels = $this->sanitizeWholesaleLevels($data['wholesale_levels'] ?? null);
+
         $addressStore = AddressStore::firstOrCreate(['store_id' => $storeId]);
-        $addressStore->update($data);
-        $store->update($data);
+
+        DB::transaction(function () use ($addressStore, $data, $store, $wholesaleLevels): void {
+            $addressStore->update($data);
+            $store->update($data);
+            $this->syncWholesaleLevels($store, $wholesaleLevels);
+        });
 
         return $response;
     }
@@ -94,5 +103,77 @@ class StoreService implements AbstractServiceInterface {
         $selection = array_values(array_filter($value, static fn (mixed $item): bool => is_string($item) && $item !== ''));
 
         return $selection === [] ? null : $selection;
+    }
+
+    private function sanitizeWholesaleCountMode(mixed $value): string
+    {
+        $normalized = is_string($value) ? trim($value) : '';
+
+        return WholesaleCountMode::tryFrom($normalized)?->value ?? WholesaleCountMode::PRODUCT->value;
+    }
+
+    /**
+     * @return array<int, array{position:int,label:string,min_quantity:int}>
+     */
+    private function sanitizeWholesaleLevels(mixed $value): array
+    {
+        if (! is_array($value)) {
+            return [];
+        }
+
+        $levels = [];
+        foreach ($value as $index => $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+
+            $minQuantity = (int) ($row['min_quantity'] ?? 0);
+            if ($minQuantity < 2) {
+                continue;
+            }
+
+            $position = count($levels) + 1;
+            $levels[] = [
+                'position' => $position,
+                'label' => 'Atacado '.$position,
+                'min_quantity' => $minQuantity,
+            ];
+        }
+
+        return $levels;
+    }
+
+    /**
+     * @param array<int, array{position:int,label:string,min_quantity:int}> $levels
+     */
+    private function syncWholesaleLevels(Store $store, array $levels): void
+    {
+        $store->loadMissing('wholesaleLevels');
+        $existingIds = [];
+
+        foreach ($levels as $levelData) {
+            $level = StoreWholesaleLevel::query()->updateOrCreate(
+                [
+                    'store_id' => $store->id,
+                    'position' => $levelData['position'],
+                ],
+                [
+                    'label' => $levelData['label'],
+                    'min_quantity' => $levelData['min_quantity'],
+                ]
+            );
+
+            $existingIds[] = $level->id;
+        }
+
+        if ($existingIds === []) {
+            $store->wholesaleLevels()->delete();
+
+            return;
+        }
+
+        $store->wholesaleLevels()
+            ->whereNotIn('id', $existingIds)
+            ->delete();
     }
 }

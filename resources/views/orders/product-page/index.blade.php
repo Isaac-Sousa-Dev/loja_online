@@ -781,14 +781,27 @@
                     </div>
                 </div>
 
-                @if($product->price_wholesale && $product->price_wholesale > 0)
+                @if(!empty($wholesaleLevels))
                     <div class="mt-4" id="wholesaleInfo">
-                        <span class="inline-flex rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700">
-                            Atacado: R$ {{ number_format($product->price_wholesale, 2, ',', '.') }}
-                            @if($wholesaleMinQty)
-                                — a partir de {{ $wholesaleMinQty }} pecas
-                            @endif
-                        </span>
+                        <div class="rounded-2xl border border-indigo-100 bg-indigo-50/80 p-4">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-indigo-700">Níveis de atacado</p>
+                            <div class="mt-3 space-y-2">
+                                @foreach($wholesaleLevels as $level)
+                                    <div class="flex items-center justify-between gap-3 rounded-xl bg-white/90 px-3 py-2 text-sm">
+                                        {{-- <span class="font-semibold text-gray-800">{{ $level['label'] }}</span> --}}
+                                        <span class="text-gray-600">A partir de {{ $level['min_quantity'] }} peças</span>
+                                        <span class="font-bold text-indigo-700">R$ {{ number_format((float) ($level['price'] ?? $basePrice), 2, ',', '.') }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <p class="mt-3 text-xs text-indigo-700">
+                                @if($wholesaleCountMode === 'cart')
+                                    O atacado considera a soma total de peças no carrinho.
+                                @else
+                                    O atacado considera a soma das variantes do mesmo produto.
+                                @endif
+                            </p>
+                        </div>
                     </div>
                 @endif
 
@@ -1079,6 +1092,7 @@
         <p class="text-gray-400 font-semibold text-sm">Carrinho vazio</p>
     </div>
     <div id="cartFooter" class="hidden px-5 py-4 border-t border-gray-100 space-y-3">
+        <div id="cartWholesaleUpsell" class="hidden rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3" aria-live="polite"></div>
         <div class="flex justify-between items-center">
             <span class="text-sm text-gray-500">Total</span>
             <span id="cartTotal" class="text-xl font-extrabold text-[var(--brand-blue)]">R$ 0,00</span>
@@ -1128,8 +1142,8 @@
     const BASE_PRICE      = {{ $basePrice }};
     const REFERENCE_PRICE = {{ $referencePrice ?? 0 }};
     const PRODUCT_STOCK   = {{ $product->stock ?? 0 }};
-    const WHOLESALE_PRICE = {{ $product->price_wholesale ?? 0 }};
-    const WHOLESALE_MIN   = {{ $wholesaleMinQty ?? 0 }};
+    const WHOLESALE_LEVELS = @json($wholesaleLevels);
+    const WHOLESALE_COUNT_MODE = @json($wholesaleCountMode);
     const DISCOUNT_PIX    = {{ $product->discount_pix ?? 0 }};
     const INSTALLMENTS_COUNT = {{ $product->installments ?? 0 }};
 
@@ -1499,17 +1513,131 @@
         });
     }
 
-    function computeItemPrice(item) {
-        if (WHOLESALE_PRICE > 0 && WHOLESALE_MIN > 0 && item.qty >= WHOLESALE_MIN) {
-            return WHOLESALE_PRICE;
+    function getCartTotalQuantity() {
+        return cart.reduce((sum, current) => sum + current.qty, 0);
+    }
+
+    function getProductQuantityInCart(productId) {
+        return cart
+            .filter((item) => item.id === productId)
+            .reduce((sum, current) => sum + current.qty, 0);
+    }
+
+    function getSortedWholesaleLevels() {
+        if (!Array.isArray(WHOLESALE_LEVELS) || WHOLESALE_LEVELS.length === 0) {
+            return [];
         }
+
+        return [...WHOLESALE_LEVELS].sort((left, right) => {
+            const leftMinQuantity = Number(left.min_quantity || 0);
+            const rightMinQuantity = Number(right.min_quantity || 0);
+
+            if (leftMinQuantity !== rightMinQuantity) {
+                return leftMinQuantity - rightMinQuantity;
+            }
+
+            return Number(left.position || 0) - Number(right.position || 0);
+        });
+    }
+
+    function getWholesaleComparisonQuantity(productId = PRODUCT_ID) {
+        return WHOLESALE_COUNT_MODE === 'cart'
+            ? getCartTotalQuantity()
+            : getProductQuantityInCart(productId);
+    }
+
+    function resolveNextWholesaleLevel(productId = PRODUCT_ID) {
+        const comparisonQuantity = getWholesaleComparisonQuantity(productId);
+        const nextLevel = getSortedWholesaleLevels()
+            .find((level) => Number(level.min_quantity || 0) > comparisonQuantity);
+
+        if (!nextLevel) {
+            return null;
+        }
+
+        return {
+            level: nextLevel,
+            missingQuantity: Number(nextLevel.min_quantity || 0) - comparisonQuantity,
+        };
+    }
+
+    function resolveWholesaleLevel(item) {
+        const wholesaleLevels = getSortedWholesaleLevels();
+        if (!wholesaleLevels.length) {
+            return null;
+        }
+
+        const comparisonQuantity = getWholesaleComparisonQuantity(item.id);
+
+        const eligibleLevels = wholesaleLevels
+            .filter((level) => comparisonQuantity >= Number(level.min_quantity || 0));
+        if (!eligibleLevels.length) {
+            return null;
+        }
+
+        eligibleLevels.sort((left, right) => Number(right.position || 0) - Number(left.position || 0));
+
+        return eligibleLevels[0];
+    }
+
+    function computeItemPrice(item) {
+        const wholesaleLevel = resolveWholesaleLevel(item);
+        if (wholesaleLevel && wholesaleLevel.price) {
+            return Number(wholesaleLevel.price);
+        }
+
         return item.retail_price;
+    }
+
+    function renderWholesaleUpsell() {
+        const upsell = $('#cartWholesaleUpsell');
+
+        if (!cart.length) {
+            upsell.addClass('hidden').empty();
+            return;
+        }
+
+        const nextWholesaleLevel = resolveNextWholesaleLevel(PRODUCT_ID);
+        if (!nextWholesaleLevel || nextWholesaleLevel.missingQuantity !== 1) {
+            upsell.addClass('hidden').empty();
+            return;
+        }
+
+        const { level } = nextWholesaleLevel;
+        const scopeLabel = WHOLESALE_COUNT_MODE === 'cart'
+            ? 'no carrinho'
+            : 'deste produto';
+        const priceHighlight = level.price
+            ? ` e pagar <strong class="font-extrabold text-amber-950">R$ ${formatPrice(Number(level.price))}</strong> por peça`
+            : ' e liberar um valor ainda melhor por peça';
+
+        upsell
+            .removeClass('hidden')
+            .html(`
+                <div class="flex items-start gap-3">
+                    <div class="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-extrabold text-amber-950">Adicione mais um item para ter um desconto especial</p>
+                        <p class="mt-1 text-xs leading-5 text-amber-900">
+                            Falta só mais 1 peça ${scopeLabel} para desbloquear <strong class="font-bold">${level.label}</strong>${priceHighlight}. Aproveite antes de finalizar o pedido.
+                        </p>
+                    </div>
+                </div>
+            `);
     }
 
     function renderCart() {
         const container = $('#cartItems'), empty = $('#cartEmpty'), footer = $('#cartFooter');
         container.empty();
-        if (!cart.length) { container.addClass('hidden'); empty.removeClass('hidden'); footer.addClass('hidden'); return; }
+        if (!cart.length) {
+            container.addClass('hidden');
+            empty.removeClass('hidden');
+            footer.addClass('hidden');
+            renderWholesaleUpsell();
+            return;
+        }
         container.removeClass('hidden'); empty.addClass('hidden'); footer.removeClass('hidden');
         let total = 0;
         cart.forEach((item, idx) => {
@@ -1518,7 +1646,8 @@
             total += lineTotal;
             const variantInfo = [item.color, item.size].filter(Boolean).join(' · ');
             const paymentLabel = { pix: 'PIX', credit_card: 'Cartão', cash: 'À vista' }[item.payment] || '';
-            const isWholesale = WHOLESALE_PRICE > 0 && WHOLESALE_MIN > 0 && item.qty >= WHOLESALE_MIN;
+            const wholesaleLevel = resolveWholesaleLevel(item);
+            const isWholesale = Boolean(wholesaleLevel);
             const maxReached  = item.max_stock > 0 && item.qty >= item.max_stock;
             container.append(`
                 <div class="flex gap-3 items-start bg-gray-50 rounded-xl p-3">
@@ -1527,7 +1656,7 @@
                         <p class="text-sm font-semibold text-gray-800 truncate">${item.name}</p>
                         ${variantInfo ? `<p class="text-xs text-gray-500 mt-0.5">${variantInfo}</p>` : ''}
                         ${paymentLabel ? `<p class="text-xs font-semibold mt-0.5" style="color: var(--brand-blue-light);">${paymentLabel}</p>` : ''}
-                        <p class="font-bold text-sm mt-0.5" style="color: var(--brand-blue);">R$ ${formatPrice(unitPrice)}${isWholesale ? ' <span class="text-indigo-600 text-[10px] font-semibold">(atacado)</span>' : ''}</p>
+                        <p class="font-bold text-sm mt-0.5" style="color: var(--brand-blue);">R$ ${formatPrice(unitPrice)}${isWholesale ? ` <span class="text-indigo-600 text-[10px] font-semibold">(${wholesaleLevel.label.toLowerCase()})</span>` : ''}</p>
                         <div class="flex items-center gap-2 mt-2">
                             <button onclick="changeQty(${idx},-1)" class="qty-btn text-gray-600">−</button>
                             <span class="text-sm font-semibold w-5 text-center">${item.qty}</span>
@@ -1540,6 +1669,7 @@
                     </button>
                 </div>`);
         });
+        renderWholesaleUpsell();
         $('#cartTotal').text('R$ ' + formatPrice(total));
     }
 

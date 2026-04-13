@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\WholesaleCountMode;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
 class Store extends Model
@@ -21,6 +23,7 @@ class Store extends Model
         'logo',
         'banner',
         'wholesale_min_quantity',
+        'wholesale_count_mode',
         'accepted_payment_methods',
         'accepted_card_brands',
         'partner_id',
@@ -30,6 +33,7 @@ class Store extends Model
 
     protected $casts = [
         'wholesale_min_quantity' => 'integer',
+        'wholesale_count_mode' => WholesaleCountMode::class,
         'accepted_payment_methods' => 'array',
         'accepted_card_brands' => 'array',
         'suspended_at' => 'datetime',
@@ -81,6 +85,11 @@ class Store extends Model
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function wholesaleLevels(): HasMany
+    {
+        return $this->hasMany(StoreWholesaleLevel::class)->orderBy('position');
     }
 
     public function hasFeature(string $module): bool

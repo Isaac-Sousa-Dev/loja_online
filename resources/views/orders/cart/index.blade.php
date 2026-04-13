@@ -129,11 +129,15 @@
     const STORE_KEY = 'pdp_cart_{{ $partner->store->id }}';
     let cart = JSON.parse(localStorage.getItem(STORE_KEY) || '[]');
 
-    function saveCart() { localStorage.setItem(STORE_KEY, JSON.stringify(cart)); }
-
     function formatPrice(val) {
         return val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
+
+    function computeCartItemPrice(item) {
+        return Number(item.retail_price ?? item.price ?? 0);
+    }
+
+    function saveCart() { localStorage.setItem(STORE_KEY, JSON.stringify(cart)); }
 
     function renderCart() {
         const list = $('#cartItemsList');
@@ -156,7 +160,8 @@
         let totalQty = 0;
 
         cart.forEach((item, idx) => {
-            const subtotal = item.price * item.qty;
+            const unitPrice = computeCartItemPrice(item);
+            const subtotal = unitPrice * item.qty;
             total += subtotal;
             totalQty += item.qty;
 
@@ -165,7 +170,7 @@
                     <img src="${item.image}" class="w-20 h-20 object-cover rounded-xl flex-shrink-0 bg-gray-50 border border-gray-100">
                     <div class="flex-1 min-w-0">
                         <p class="font-semibold text-gray-800 text-sm leading-tight">${item.name}</p>
-                        <p class="text-blue-700 font-bold mt-1">R$ ${formatPrice(item.price)}</p>
+                        <p class="text-blue-700 font-bold mt-1">R$ ${formatPrice(unitPrice)}</p>
                         <div class="flex items-center gap-2 mt-3">
                             <button onclick="changeQty(${idx}, -1)" class="qty-btn text-gray-600">−</button>
                             <span class="text-sm font-bold w-6 text-center">${item.qty}</span>
@@ -217,8 +222,8 @@
         if (!valid) return;
 
         let msg = `Olá! Sou *${name}* (${phone}) e gostaria de finalizar meu pedido:\n\n`;
-        cart.forEach(i => { msg += `• ${i.name} x${i.qty} — R$ ${formatPrice(i.price * i.qty)}\n`; });
-        const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+        cart.forEach(i => { msg += `• ${i.name} x${i.qty} — R$ ${formatPrice(computeCartItemPrice(i) * i.qty)}\n`; });
+        const total = cart.reduce((s, i) => s + computeCartItemPrice(i) * i.qty, 0);
         msg += `\n*Total: R$ ${formatPrice(total)}*`;
 
         window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');

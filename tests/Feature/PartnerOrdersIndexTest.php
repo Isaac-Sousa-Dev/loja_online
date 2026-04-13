@@ -13,6 +13,7 @@ use App\Models\OrderItem;
 use App\Models\Partner;
 use App\Models\Plan;
 use App\Models\Product;
+use App\Models\StoreWholesaleLevel;
 use App\Models\Store;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -27,6 +28,7 @@ class PartnerOrdersIndexTest extends TestCase
     private Store $store;
 
     private Product $product;
+    private StoreWholesaleLevel $wholesaleLevel;
 
     protected function setUp(): void
     {
@@ -47,6 +49,12 @@ class PartnerOrdersIndexTest extends TestCase
             'plan_id' => $plan->id,
             'store_name' => 'Loja Pedidos',
             'wholesale_min_quantity' => 3,
+        ]);
+        $this->wholesaleLevel = StoreWholesaleLevel::create([
+            'store_id' => $this->store->id,
+            'position' => 1,
+            'label' => 'Atacado 1',
+            'min_quantity' => 3,
         ]);
         $category = Category::create([
             'name' => 'Cat',
@@ -148,6 +156,8 @@ class PartnerOrdersIndexTest extends TestCase
             'store_id' => $this->store->id,
             'client_id' => $client->id,
             'product_id' => $this->product->id,
+            'store_wholesale_level_id' => $unitPrice < 100 ? $this->wholesaleLevel->id : null,
+            'wholesale_applied_mode' => $unitPrice < 100 ? 'product' : null,
             'quantity' => $quantity,
             'unit_price' => $unitPrice,
             'line_subtotal' => $unitPrice * $quantity,

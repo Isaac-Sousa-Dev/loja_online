@@ -17,6 +17,8 @@ class OrderItem extends Model
         'client_id',
         'product_id',
         'product_variant_id',
+        'store_wholesale_level_id',
+        'wholesale_applied_mode',
         'selected_color',
         'selected_size',
         'quantity',
@@ -33,6 +35,7 @@ class OrderItem extends Model
             'quantity' => 'integer',
             'unit_price' => 'decimal:2',
             'line_subtotal' => 'decimal:2',
+            'store_wholesale_level_id' => 'integer',
         ];
     }
 
@@ -49,6 +52,11 @@ class OrderItem extends Model
     public function variant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+    }
+
+    public function wholesaleLevel(): BelongsTo
+    {
+        return $this->belongsTo(StoreWholesaleLevel::class, 'store_wholesale_level_id');
     }
 
     public function variationSummary(): string

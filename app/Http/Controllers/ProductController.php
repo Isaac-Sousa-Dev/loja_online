@@ -22,6 +22,7 @@ use App\Services\product\ProductService;
 use App\Services\product\ProductVariantSyncService;
 use App\Services\product\ProductColorImageService;
 use App\Services\product\ProductWizardService;
+use App\Services\Wholesale\WholesalePriceResolver;
 use Illuminate\Http\JsonResponse;
 use App\Support\Cache\PanelCacheKeys;
 use Illuminate\Support\Facades\Auth;
@@ -48,6 +49,7 @@ class ProductController extends Controller
         private readonly PartnerProductListingService $partnerProductListingService,
         private readonly ProductDuplicateService $productDuplicateService,
         private readonly FlushPartnerCatalogAndPanelCachesAction $flushPartnerCatalogAndPanelCaches,
+        private readonly WholesalePriceResolver $wholesalePriceResolver,
     ) {
         $this->uploadFileService = $uploadFileService;
         $this->productService = $productService;
@@ -154,10 +156,12 @@ class ProductController extends Controller
 
         $storeId = $partner->store?->id ?? $partner->id;
         $filterLists = $this->rememberProductFilterLists($partner, $storeId);
+        $wholesaleLevels = $this->wholesalePriceResolver->levelsForStore($partner->store);
 
         return view('partner.products.create', [
             'brandsByPartner' => $filterLists['brandsByPartner'],
             'categoriesByPartner' => $filterLists['categoriesByPartner'],
+            'wholesaleLevels' => $wholesaleLevels,
         ]);
     }
 
@@ -300,6 +304,11 @@ class ProductController extends Controller
         $filterLists = $this->rememberProductFilterLists($partner, $storeId);
         $brandsByPartner = $filterLists['brandsByPartner'];
         $categoriesByPartner = $filterLists['categoriesByPartner'];
+        $wholesaleLevels = $this->wholesalePriceResolver->levelsForStore($partner->store);
+        $productWholesalePrices = $product->wholesalePrices()
+            ->pluck('price', 'store_wholesale_level_id')
+            ->map(static fn ($price): ?string => $price !== null ? number_format((float) $price, 2, ',', '.') : null)
+            ->all();
 
         $existingVariantsJson = $product->variants->map(fn ($v) => [
             'id' => $v->id,
@@ -322,6 +331,8 @@ class ProductController extends Controller
             'existingVariantsJson' => $existingVariantsJson,
             'existingColorPhotosForWizard' => $existingColorPhotosForWizard,
             'genderSelect' => $genderSelect,
+            'wholesaleLevels' => $wholesaleLevels,
+            'productWholesalePrices' => $productWholesalePrices,
         ]);
     }
 

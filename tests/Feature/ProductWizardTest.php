@@ -9,8 +9,10 @@ use App\Models\Category;
 use App\Models\Partner;
 use App\Models\Plan;
 use App\Models\Product;
+use App\Models\ProductWholesalePrice;
 use App\Models\Store;
 use App\Models\StoreCategories;
+use App\Models\StoreWholesaleLevel;
 use App\Models\User;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -24,6 +26,7 @@ class ProductWizardTest extends TestCase
     {
         $this->withoutMiddleware(ValidateCsrfToken::class);
 
+        /** @var User $user */
         $user = User::factory()->create();
         $partner = Partner::create(['user_id' => $user->id]);
         $plan = Plan::create([
@@ -49,6 +52,12 @@ class ProductWizardTest extends TestCase
             'name' => 'Brand',
             'partner_id' => $partner->id,
         ]);
+        $level = StoreWholesaleLevel::create([
+            'store_id' => $store->id,
+            'position' => 1,
+            'label' => 'Atacado 1',
+            'min_quantity' => 6,
+        ]);
 
         $payload = [
             'category_id' => (string) $category->id,
@@ -60,6 +69,9 @@ class ProductWizardTest extends TestCase
             'price_promotional' => '',
             'cost' => '',
             'profit' => '',
+            'wholesale_prices' => [
+                (string) $level->id => '8,50',
+            ],
             'gender' => 'M',
             'weight' => '',
             'width' => '',
@@ -83,5 +95,10 @@ class ProductWizardTest extends TestCase
         $this->assertNotNull($product);
         $this->assertSame(5, (int) $product->stock);
         $this->assertCount(1, $product->variants()->get());
+        $this->assertDatabaseHas('product_wholesale_prices', [
+            'product_id' => $product->id,
+            'store_wholesale_level_id' => $level->id,
+            'price' => 8.50,
+        ]);
     }
 }

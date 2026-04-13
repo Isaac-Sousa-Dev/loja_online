@@ -26,6 +26,16 @@
         @php
             $acceptedPaymentMethods = (array) old('accepted_payment_methods', $store->accepted_payment_methods ?? []);
             $acceptedCardBrands = (array) old('accepted_card_brands', $store->accepted_card_brands ?? []);
+            $wholesaleCountMode = old('wholesale_count_mode', $store->wholesale_count_mode?->value ?? 'product');
+
+
+            $existingWholesaleLevels = old(
+                'wholesale_levels',
+                $store->wholesaleLevels->map(fn ($level) => ['min_quantity' => $level->min_quantity])->values()->all()
+            );
+            if ($existingWholesaleLevels === []) {
+                $existingWholesaleLevels = [];
+            }
             $paymentMethodOptions = [
                 'pix' => ['label' => 'Pix', 'hint' => 'Pagamento instantaneo'],
                 'cash' => ['label' => 'Dinheiro', 'hint' => 'Pagamento no ato'],
@@ -103,12 +113,80 @@
                     <x-text-input id="store_cpf_cnpj" name="store_cpf_cnpj" type="text" class="mt-1 block w-full cpf-cnpj-mask required bg-gray-50 bg-opacity-50" :value="old('store_cpf_cnpj', $store->store_cpf_cnpj)" placeholder="XX.XXX.XXX/0001-XX" required />
                     <x-input-error class="mt-2" :messages="$errors->get('store_cpf_cnpj')" />
                 </div>
-                <div>
-                    <x-input-label for="wholesale_min_quantity" :value="__('Qtd. mínima para atacado')" />
-                    <x-text-input id="wholesale_min_quantity" name="wholesale_min_quantity" type="number" min="2" class="mt-1 block w-full bg-gray-50 bg-opacity-50" :value="old('wholesale_min_quantity', $store->wholesale_min_quantity)" placeholder="Ex: 6" />
-                    <p class="text-xs text-gray-400 mt-1">Quantidade mínima de peças (por variante) para aplicar preço de atacado.</p>
-                    <x-input-error class="mt-2" :messages="$errors->get('wholesale_min_quantity')" />
+            </div>
+        </div>
+
+        <div>
+            <div class="text-sm font-semibold text-gray-700 mb-3 border-b border-gray-100 pb-2">Configuração de atacado</div>
+            <div class="rounded-2xl border border-gray-100 bg-gray-50/80 p-4 md:p-5">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-800">Como o atacado será contado?</h3>
+                        <p class="mt-1 max-w-2xl text-xs text-gray-500">Escolha se o desconto deve considerar a quantidade total do mesmo produto ou a soma de peças do carrinho inteiro.</p>
+                    </div>
+                    <div class="inline-flex rounded-2xl border border-gray-200 bg-white p-1">
+                        <label class="flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold">
+                            <input type="radio" name="wholesale_count_mode" value="product" @checked($wholesaleCountMode === 'product')>
+                            Por peça (produto)
+                        </label>
+                        <label class="flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold">
+                            <input type="radio" name="wholesale_count_mode" value="cart" @checked($wholesaleCountMode === 'cart')>
+                            Por múltiplas peças (carrinho)
+                        </label>
+                    </div>
                 </div>
+
+                <div class="mt-2 grid grid-cols-1 gap-2 lg:grid-cols-2">
+                    <div class="rounded-2xl border p-4">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-700">Por peça (produto)</p>
+                        <p class="mt-2 text-sm text-gray-800">Ativa o atacado quando o cliente atingir a quantidade mínima somando as variantes do mesmo produto.</p>
+                        <p class="mt-2 text-xs text-gray-500">Ex.: 5 camisetas P + 5 camisetas M = 10 peças do mesmo produto.</p>
+                    </div>
+                    <div class="rounded-2xl border p-4">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-700">Por múltiplas peças (carrinho)</p>
+                        <p class="mt-2 text-sm text-gray-800">Ativa o atacado quando o carrinho alcançar a quantidade mínima total, independente dos produtos.</p>
+                        <p class="mt-2 text-xs text-gray-500">Ex.: 5 camisetas + 5 bermudas = 10 peças no carrinho.</p>
+                    </div>
+                </div>
+
+                <div class="mt-5 flex items-center justify-between gap-3">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-800">Níveis de atacado</h3>
+                        <p class="mt-1 text-xs text-gray-500">Adicione quantos níveis quiser. Os labels são gerados automaticamente como Atacado 1, Atacado 2, Atacado 3...</p>
+                    </div>
+                    <button type="button" id="btnAddWholesaleLevel" class="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-50">
+                        <i class="fa-solid fa-plus text-xs"></i>
+                        Adicionar atacado
+                    </button>
+                </div>
+
+                <div id="wholesaleLevelsContainer" class="mt-4 space-y-3"></div>
+
+                <template id="wholesaleLevelTemplate">
+                    <div class="wholesale-level-card rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="wholesale-level-title text-sm font-semibold text-gray-800">Atacado 1</p>
+                                <p class="mt-1 text-xs text-gray-500">Informe a quantidade mínima para liberar este nível no catálogo.</p>
+                            </div>
+                            <button type="button" class="btn-remove-wholesale-level rounded-xl border border-red-100 p-2 text-red-500 transition hover:bg-red-50" aria-label="Remover nível de atacado">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                        </div>
+                        <div class="mt-4">
+                            <x-input-label :value="__('Quantidade mínima de peças')" />
+                            <input type="number" min="2" step="1" class="wholesale-min-quantity-input mt-1 block w-full rounded-md border-gray-300 bg-gray-50 bg-opacity-50 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Ex: 10">
+                        </div>
+                    </div>
+                </template>
+
+                <div id="wholesaleLevelsEmptyState" class="{{ $existingWholesaleLevels !== [] ? 'hidden' : '' }} rounded-2xl border border-dashed border-gray-300 bg-white/70 px-4 py-6 text-center">
+                    <p class="text-sm font-semibold text-gray-700">Nenhum atacado configurado</p>
+                    <p class="mt-1 text-xs text-gray-500">Adicione o primeiro nível para liberar preços de atacado no cadastro de produtos.</p>
+                </div>
+
+                <x-input-error class="mt-3" :messages="$errors->get('wholesale_levels')" />
+                <x-input-error class="mt-2" :messages="$errors->get('wholesale_levels.*.min_quantity')" />
             </div>
         </div>
 
@@ -163,9 +241,9 @@
                         </div>
                     </div>
 
-                    <div class="mt-4 grid grid-cols-1 gap-3">
+                    <div class="mt-2 grid grid-cols-1 gap-2">
                         @foreach ($paymentMethodOptions as $value => $option)
-                            <label class="flex cursor-pointer items-start gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 transition hover:border-blue-300 hover:bg-blue-50/50">
+                            <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-gray-200 bg-white px-2 py-1 transition hover:border-blue-300 hover:bg-blue-50/50">
                                 <input type="checkbox" name="accepted_payment_methods[]" value="{{ $value }}"
                                     class="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                     @checked(in_array($value, $acceptedPaymentMethods, true))>
@@ -189,7 +267,7 @@
 
                     <div class="mt-4 grid grid-cols-2 gap-3">
                         @foreach ($cardBrandOptions as $value => $label)
-                            <label class="flex cursor-pointer items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 transition hover:border-blue-300 hover:bg-blue-50/50">
+                            <label class="flex cursor-pointer items-center gap-3 rounded-2xl border border-gray-200 bg-white px-2 py-1 transition hover:border-blue-300 hover:bg-blue-50/50">
                                 <input type="checkbox" name="accepted_card_brands[]" value="{{ $value }}"
                                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                     @checked(in_array($value, $acceptedCardBrands, true))>
@@ -213,6 +291,8 @@
 </section>
 
 <script>
+    const wholesaleLevelsState = @json($existingWholesaleLevels);
+
     function previewImageStore(event, previewId, placeholderId) {
         const input = event.target;
         const file = input.files[0];
@@ -237,4 +317,71 @@
             reader.readAsDataURL(file);
         }
     }
+
+    function createWholesaleLevelCard(level = {}) {
+        const template = document.getElementById('wholesaleLevelTemplate');
+        const container = document.getElementById('wholesaleLevelsContainer');
+        if (!template || !container) {
+            return null;
+        }
+
+        const card = template.content.firstElementChild.cloneNode(true);
+        const input = card.querySelector('.wholesale-min-quantity-input');
+        const removeButton = card.querySelector('.btn-remove-wholesale-level');
+
+        if (input) {
+            input.value = level.min_quantity ?? '';
+            input.addEventListener('input', refreshWholesaleLevelOrder);
+        }
+
+        if (removeButton) {
+            removeButton.addEventListener('click', function () {
+                card.remove();
+                refreshWholesaleLevelOrder();
+            });
+        }
+
+        container.appendChild(card);
+
+        return card;
+    }
+
+    function refreshWholesaleLevelOrder() {
+        const cards = Array.from(document.querySelectorAll('.wholesale-level-card'));
+        const emptyState = document.getElementById('wholesaleLevelsEmptyState');
+
+        cards.forEach((card, index) => {
+            const levelIndex = index + 1;
+            const title = card.querySelector('.wholesale-level-title');
+            const input = card.querySelector('.wholesale-min-quantity-input');
+
+            if (title) {
+                title.textContent = `Atacado ${levelIndex}`;
+            }
+
+            if (input) {
+                input.name = `wholesale_levels[${index}][min_quantity]`;
+                input.id = `wholesale_levels_${index}_min_quantity`;
+            }
+        });
+
+        if (emptyState) {
+            emptyState.classList.toggle('hidden', cards.length > 0);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const addButton = document.getElementById('btnAddWholesaleLevel');
+        const levels = Array.isArray(wholesaleLevelsState) ? wholesaleLevelsState : [];
+
+        levels.forEach((level) => createWholesaleLevelCard(level));
+        refreshWholesaleLevelOrder();
+
+        if (addButton) {
+            addButton.addEventListener('click', function () {
+                createWholesaleLevelCard();
+                refreshWholesaleLevelOrder();
+            });
+        }
+    });
 </script>
