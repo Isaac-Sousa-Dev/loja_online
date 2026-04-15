@@ -1523,12 +1523,37 @@
             .reduce((sum, current) => sum + current.qty, 0);
     }
 
-    function getSortedWholesaleLevels() {
-        if (!Array.isArray(WHOLESALE_LEVELS) || WHOLESALE_LEVELS.length === 0) {
+    /**
+     * Níveis da loja + preços do produto usados na linha do carrinho.
+     * WHOLESALE_LEVELS na página é sempre do produto atual; no modo "cart" o carrinho pode misturar produtos,
+     * então cada item deve carregar uma cópia dos níveis daquele produto no momento em que foi adicionado.
+     */
+    function cloneWholesaleLevelsSnapshot(levels) {
+        if (!Array.isArray(levels) || levels.length === 0) {
             return [];
         }
 
-        return [...WHOLESALE_LEVELS].sort((left, right) => {
+        return JSON.parse(JSON.stringify(levels));
+    }
+
+    function getItemWholesaleLevels(item) {
+        if (Array.isArray(item.wholesale_levels) && item.wholesale_levels.length > 0) {
+            return item.wholesale_levels;
+        }
+
+        if (item.id === PRODUCT_ID && Array.isArray(WHOLESALE_LEVELS) && WHOLESALE_LEVELS.length > 0) {
+            return WHOLESALE_LEVELS;
+        }
+
+        return [];
+    }
+
+    function sortWholesaleLevels(levels) {
+        if (!Array.isArray(levels) || levels.length === 0) {
+            return [];
+        }
+
+        return [...levels].sort((left, right) => {
             const leftMinQuantity = Number(left.min_quantity || 0);
             const rightMinQuantity = Number(right.min_quantity || 0);
 
@@ -1540,10 +1565,18 @@
         });
     }
 
+    function getSortedWholesaleLevels() {
+        return sortWholesaleLevels(WHOLESALE_LEVELS);
+    }
+
     function getWholesaleComparisonQuantity(productId = PRODUCT_ID) {
         return WHOLESALE_COUNT_MODE === 'cart'
             ? getCartTotalQuantity()
             : getProductQuantityInCart(productId);
+    }
+
+    function cartDistinctProductCount() {
+        return new Set(cart.map((item) => item.id)).size;
     }
 
     function resolveNextWholesaleLevel(productId = PRODUCT_ID) {
@@ -1562,7 +1595,7 @@
     }
 
     function resolveWholesaleLevel(item) {
-        const wholesaleLevels = getSortedWholesaleLevels();
+        const wholesaleLevels = sortWholesaleLevels(getItemWholesaleLevels(item));
         if (!wholesaleLevels.length) {
             return null;
         }
@@ -1589,6 +1622,29 @@
         return item.retail_price;
     }
 
+    function wholesaleUnitPriceForLevelOnItem(level, referenceItem) {
+        const rows = sortWholesaleLevels(getItemWholesaleLevels(referenceItem));
+        if (!rows.length || !level) {
+            return null;
+        }
+
+        const levelId = Number(level.id || 0);
+        if (levelId > 0) {
+            const byId = rows.find((row) => Number(row.id || 0) === levelId);
+            if (byId && byId.price) {
+                return Number(byId.price);
+            }
+        }
+
+        const position = Number(level.position || 0);
+        const byPosition = rows.find((row) => Number(row.position || 0) === position);
+        if (byPosition && byPosition.price) {
+            return Number(byPosition.price);
+        }
+
+        return null;
+    }
+
     function renderWholesaleUpsell() {
         const upsell = $('#cartWholesaleUpsell');
 
@@ -1607,9 +1663,17 @@
         const scopeLabel = WHOLESALE_COUNT_MODE === 'cart'
             ? 'no carrinho'
             : 'deste produto';
-        const priceHighlight = level.price
-            ? ` e pagar <strong class="font-extrabold text-amber-950">R$ ${formatPrice(Number(level.price))}</strong> por peça`
-            : ' e liberar um valor ainda melhor por peça';
+        const singleProductInCart = cartDistinctProductCount() <= 1;
+        const referenceItem = cart[0];
+        const upsellUnitPrice = singleProductInCart
+            ? wholesaleUnitPriceForLevelOnItem(level, referenceItem)
+            : null;
+        let priceHighlight = ' e liberar um valor ainda melhor por peça';
+        if (upsellUnitPrice !== null) {
+            priceHighlight = ` e pagar <strong class="font-extrabold text-amber-950">R$ ${formatPrice(upsellUnitPrice)}</strong> por peça`;
+        } else if (!singleProductInCart) {
+            priceHighlight = ' e liberar os preços de atacado de cada produto';
+        }
 
         upsell
             .removeClass('hidden')
@@ -1712,6 +1776,7 @@
                 return;
             }
             cart[idx].qty++;
+            cart[idx].wholesale_levels = cloneWholesaleLevelsSnapshot(WHOLESALE_LEVELS);
         } else {
             if (maxStock === 0) {
                 showToast('Produto sem estoque');
@@ -1729,6 +1794,7 @@
                 size: selectedSize,
                 payment: selectedPayment,
                 variant_id: variantId,
+                wholesale_levels: cloneWholesaleLevelsSnapshot(WHOLESALE_LEVELS),
             });
         }
 
