@@ -994,12 +994,12 @@
         <div class="mx-auto max-w-screen-2xl px-4 md:px-8">
             <div class="catalog-footer__inner">
                 <div>
-                    <div class="catalog-footer__brand">Vistoo</div>
+                    <div class="catalog-footer__brand">Vistuu</div>
                     <div class="mt-2 text-sm text-white/60">Vitrine digital para lojas modernas.</div>
                 </div>
 
                 <div class="catalog-footer__text">
-                    O sistema Vistoo ajuda lojas a apresentar produtos, organizar catalogos e simplificar o contato com os clientes em uma experiencia visual mais clara, confiavel e intuitiva.
+                    O sistema Vistuu ajuda lojas a apresentar produtos, organizar catalogos e simplificar o contato com os clientes em uma experiencia visual mais clara, confiavel e intuitiva.
                 </div>
             </div>
         </div>

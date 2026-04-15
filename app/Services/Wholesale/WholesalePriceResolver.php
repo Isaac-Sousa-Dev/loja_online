@@ -62,7 +62,7 @@ class WholesalePriceResolver
 
         return $countMode instanceof WholesaleCountMode
             ? $countMode
-            : WholesaleCountMode::PRODUCT;
+            : WholesaleCountMode::CART;
     }
 
     /**

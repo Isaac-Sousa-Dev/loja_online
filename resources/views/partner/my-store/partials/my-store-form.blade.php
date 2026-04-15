@@ -26,8 +26,7 @@
         @php
             $acceptedPaymentMethods = (array) old('accepted_payment_methods', $store->accepted_payment_methods ?? []);
             $acceptedCardBrands = (array) old('accepted_card_brands', $store->accepted_card_brands ?? []);
-            $wholesaleCountMode = old('wholesale_count_mode', $store->wholesale_count_mode?->value ?? 'product');
-
+            $wholesaleCountMode = old('wholesale_count_mode', $store->wholesale_count_mode?->value ?? 'cart');
 
             $existingWholesaleLevels = old(
                 'wholesale_levels',
@@ -118,8 +117,13 @@
 
         <div>
             <div class="text-sm font-semibold text-gray-700 mb-3 border-b border-gray-100 pb-2">Configuração de atacado</div>
-            <div class="rounded-2xl border border-gray-100 bg-gray-50/80 p-4 md:p-5">
-                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+
+            <button type="button" id="btnAddWholesaleLevel" class="inline-flex items-center gap-2 mb-3 rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-50">
+                <i class="fa-solid fa-plus text-xs"></i>
+                Adicionar atacado
+            </button>
+            <div class="rounded-2xl border border-gray-100 bg-gray-50/80 p-2 md:p-5">
+                {{-- <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div>
                         <h3 class="text-sm font-semibold text-gray-800">Como o atacado será contado?</h3>
                         <p class="mt-1 max-w-2xl text-xs text-gray-500">Escolha se o desconto deve considerar a quantidade total do mesmo produto ou a soma de peças do carrinho inteiro.</p>
@@ -134,9 +138,9 @@
                             Por múltiplas peças (carrinho)
                         </label>
                     </div>
-                </div>
+                </div> --}}
 
-                <div class="mt-2 grid grid-cols-1 gap-2 lg:grid-cols-2">
+                {{-- <div class="mt-2 grid grid-cols-1 gap-2">
                     <div class="rounded-2xl border p-4">
                         <p class="text-xs font-semibold uppercase tracking-wide text-gray-700">Por peça (produto)</p>
                         <p class="mt-2 text-sm text-gray-800">Ativa o atacado quando o cliente atingir a quantidade mínima somando as variantes do mesmo produto.</p>
@@ -147,17 +151,16 @@
                         <p class="mt-2 text-sm text-gray-800">Ativa o atacado quando o carrinho alcançar a quantidade mínima total, independente dos produtos.</p>
                         <p class="mt-2 text-xs text-gray-500">Ex.: 5 camisetas + 5 bermudas = 10 peças no carrinho.</p>
                     </div>
-                </div>
+                </div> --}}
 
-                <div class="mt-5 flex items-center justify-between gap-3">
-                    <div>
+               
+
+                <div class="flex justify-between gap-3">
+                    <div class="w-1/2">
                         <h3 class="text-sm font-semibold text-gray-800">Níveis de atacado</h3>
-                        <p class="mt-1 text-xs text-gray-500">Adicione quantos níveis quiser. Os labels são gerados automaticamente como Atacado 1, Atacado 2, Atacado 3...</p>
+                        <p class="mt-1 text-xs text-gray-500 hidden md:block">Adicione quantos níveis quiser. Os labels são gerados automaticamente como Atacado 1, Atacado 2, Atacado 3...</p>
                     </div>
-                    <button type="button" id="btnAddWholesaleLevel" class="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-50">
-                        <i class="fa-solid fa-plus text-xs"></i>
-                        Adicionar atacado
-                    </button>
+                    
                 </div>
 
                 <div id="wholesaleLevelsContainer" class="mt-4 space-y-3"></div>

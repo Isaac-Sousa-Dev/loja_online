@@ -54,7 +54,7 @@ class StoreService implements AbstractServiceInterface {
 
         $data['accepted_payment_methods'] = $this->sanitizeSelection($data['accepted_payment_methods'] ?? null);
         $data['accepted_card_brands'] = $this->sanitizeSelection($data['accepted_card_brands'] ?? null);
-        $data['wholesale_count_mode'] = $this->sanitizeWholesaleCountMode($data['wholesale_count_mode'] ?? null);
+        $data['wholesale_count_mode'] = $this->sanitizeWholesaleCountMode($data['wholesale_count_mode'] ?? 'cart');
         $wholesaleLevels = $this->sanitizeWholesaleLevels($data['wholesale_levels'] ?? null);
 
         $addressStore = AddressStore::firstOrCreate(['store_id' => $storeId]);

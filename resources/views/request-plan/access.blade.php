@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Solicitar acesso — {{ $selectedPlan['name'] }} · Vistoo</title>
+    <title>Solicitar acesso — {{ $selectedPlan['name'] }} · Vistuu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
     <header class="border-b border-[#6A2BBA]/10 bg-white/90 backdrop-blur-md">
         <div class="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-4">
             <a href="{{ route('welcome') }}" class="flex items-center gap-2 rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6A2BBA] focus-visible:ring-offset-2">
-                <img src="{{ asset('img/vistoo-logo.png') }}" width="120" height="40" class="h-8 w-auto" alt="Vistoo — início">
+                <img src="{{ asset('img/vistoo-logo.png') }}" width="120" height="40" class="h-8 w-auto" alt="Vistuu — início">
             </a>
             <a href="{{ route('login') }}" class="text-sm font-bold text-[#6A2BBA] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D131A3] rounded-lg px-2 py-1">Já tenho conta</a>
         </div>
@@ -122,7 +122,7 @@
                 </div>
 
                 <p class="text-xs font-medium leading-relaxed text-[#33363B]/55">
-                    Ao enviar, você confirma que os dados são verdadeiros. Não realizamos cobrança automática nesta etapa; o time Vistoo orientará sobre pagamento e contrato antes da ativação.
+                    Ao enviar, você confirma que os dados são verdadeiros. Não realizamos cobrança automática nesta etapa; o time Vistuu orientará sobre pagamento e contrato antes da ativação.
                 </p>
 
                 <button type="submit" class="w-full rounded-2xl bg-gradient-to-r from-[#6A2BBA] to-[#D131A3] py-4 text-center text-base font-bold text-white shadow-lg shadow-[#6A2BBA]/25 transition hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF914D] focus-visible:ring-offset-2">
@@ -134,7 +134,7 @@
     </main>
 
     <footer class="border-t border-[#33363B]/10 bg-white px-4 py-8 text-center text-xs font-semibold text-[#33363B]/50">
-        © {{ date('Y') }} Vistoo
+        © {{ date('Y') }} Vistuu
     </footer>
 
     <script>
