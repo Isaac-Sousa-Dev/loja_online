@@ -8,7 +8,6 @@ use App\Repository\user\UserRepository;
 use App\Services\partner\PartnerService;
 use App\Services\subscription\SubscriptionService;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
 
 class UserService implements AbstractServiceInterface {
 
@@ -26,14 +25,8 @@ class UserService implements AbstractServiceInterface {
         $this->subscriptionService = $subscriptionService;
     }
 
-    public function userRegistration(array $data, $request = null)
+    public function userRegistration(array $data)
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed'],
-        ]);
-
         $data['password'] = Hash::make($data['password']);
         $userCreated = $this->userRepository->create($data);
         return $userCreated;
