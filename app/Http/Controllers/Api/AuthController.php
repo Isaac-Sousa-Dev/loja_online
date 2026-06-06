@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Services\AuthService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -16,49 +17,79 @@ class AuthController extends Controller
     ) {}
 
     public function registerNewStore(
-        Request $request,
-        AuthService $authService
-    )
+        Request $request
+    ): JsonResponse
     {
         try {
             $data = $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email',
-                'password' => 'required|string|min:6|confirmed',
+                'name'                  => 'required|string|max:255',
+                'email'                 => 'required|email|unique:users,email',
+                'password'              => 'required|string|min:6|confirmed',
                 'password_confirmation' => 'required|string|min:6',
-                'store.name' => 'required|string|max:255',
-                'store.phone' => 'required|string|max:20',
+                'store.name'            => 'required|string|max:255',
+                'store.phone'           => 'required|string|max:20',
             ]);
 
-            $authService->registerNewPartnerAndStore($data);
+            $this->authService->registerNewPartnerAndStore($data);
 
+            return response()->json(['message' => 'Loja registrada com sucesso'], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Registration failed', 'message' => $e->getMessage()], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    public function login(Request $request)
+    public function login(
+        Request $request
+    ): JsonResponse
     {
-        $data = $request->validate([
-            'email' => 'required|email',
+        $credentials = $request->validate([
+            'email'    => 'required|email',
             'password' => 'required|string',
         ]);
 
-        $user = User::where('email', $data['email'])->first();
-        if (! $user || ! Hash::check($data['password'], $user->getAuthPassword())) 
-            return response()->json(['error' => 'Invalid credentials'], 401);
+        $token = Auth::guard('api')->attempt($credentials);
 
-        $token = Auth::login($user);
-        //return $this->respondWithToken($token);
+        if (!$token) {
+            return response()->json(['error' => 'Credenciais inválidas'], 401);
+        }
+
+        $user = Auth::guard('api')->user();
+
+        if (isset($user->is_active) && !$user->is_active) {
+            Auth::guard('api')->logout();
+            return response()->json(['error' => 'Conta inativa'], 403);
+        }
+
+        return $this->respondWithToken($token);
     }
 
-    public function respondWithToken(string $token)
+    public function logout(): JsonResponse
+    {
+        try {
+            JWTAuth::invalidate(JWTAuth::getToken());
+        } catch (JWTException) {
+            // token já expirado ou inválido — logout mesmo assim
+        }
+
+        Auth::guard('api')->logout();
+
+        return response()->json(['message' => 'Logout realizado com sucesso']);
+    }
+
+    public function me(): JsonResponse
+    {
+        return response()->json(Auth::guard('api')->user());
+    }
+
+    private function respondWithToken(string $token): JsonResponse
     {
         return response()->json([
             'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => Auth::factory()->getTTL() * 60,
-            'user' => Auth::user()
+            'token_type'   => 'bearer',
+            'expires_in'   => Auth::guard('api')->factory()->getTTL() * 60,
+            'user'         => Auth::guard('api')->user(),
         ]);
     }
 }
