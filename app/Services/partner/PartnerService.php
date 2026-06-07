@@ -39,7 +39,7 @@ class PartnerService implements AbstractServiceInterface
 
     public function verifyExistPartnerLink($data)
     {
-        $partnerLink = strtolower(str_replace(' ', '-', $data['store_name']));
+        $partnerLink = strtolower(str_replace(' ', '-', $data['name']));
         $exist = Partner::where('partner_link', $partnerLink)->first();
         if($exist) {
             $this->partnerLink = $partnerLink . '-' . rand(1, 665);

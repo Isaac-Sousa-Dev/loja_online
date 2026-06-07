@@ -14,7 +14,9 @@ use App\Observers\AuditObserver;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
+use Illuminate\Database\Events\MigrationsStarted;
 use Illuminate\Routing\Route;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -27,6 +29,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->resetTelescopeSqliteOnFresh();
+
         Product::observe(AuditObserver::class);
         ProductVariant::observe(AuditObserver::class);
         Category::observe(AuditObserver::class);
@@ -35,6 +39,22 @@ class AppServiceProvider extends ServiceProvider
         Store::observe(AuditObserver::class);
 
         $this->configureScramble();
+    }
+
+    private function resetTelescopeSqliteOnFresh(): void
+    {
+        if (! app()->runningInConsole()) return;
+        $argv = $_SERVER['argv'] ?? [];
+
+        if (! in_array('migrate:fresh', $argv)) return;
+
+        Event::listen(MigrationsStarted::class, function () {
+            $dbPath = config('database.connections.telescope.database');
+
+            if ($dbPath && file_exists($dbPath)) {
+                file_put_contents($dbPath, '');
+            }
+        });
     }
 
     private function configureScramble(): void

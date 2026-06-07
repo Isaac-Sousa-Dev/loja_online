@@ -88,10 +88,7 @@ class AuthController extends Controller
         ]);
 
         $token = Auth::guard('api')->attempt($credentials);
-
-        if (!$token) {
-            return response()->json(['error' => 'Credenciais inválidas'], 401);
-        }
+        if (!$token) return response()->json(['error' => 'Credenciais inválidas'], 401);
 
         $user = Auth::guard('api')->user();
 

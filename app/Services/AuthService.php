@@ -33,7 +33,6 @@ class AuthService
             $partner = $this->partnerService->insert($data);
     
             $dataStore = $data['store'];
-            dd($dataStore);
             $dataStore['partner_id'] = $partner->id;
             $this->storeService->insert($dataStore);
         });
