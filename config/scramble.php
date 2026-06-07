@@ -17,6 +17,7 @@ return [
     'export_path' => 'api.json',
 
     'info' => [
+        'title'       => 'Doc Vistuu APP',
         'version'     => env('APP_VERSION', '1.0.0'),
         'description' => 'Documentação da API Vistoo',
     ],
