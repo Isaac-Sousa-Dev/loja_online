@@ -10,15 +10,35 @@ use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
+/**
+ * @tags Autenticação
+ */
 class AuthController extends Controller
 {
     public function __construct(
         private AuthService $authService
     ) {}
 
-    public function registerNewStore(
-        Request $request
-    ): JsonResponse
+    /**
+     * Registrar nova loja
+     *
+     * Cria um novo parceiro (usuário) e sua loja vinculada.
+     *
+     * @unauthenticated
+     *
+     * @response 201 {
+     *   "message": "Loja registrada com sucesso"
+     * }
+     * @response 422 {
+     *   "errors": {
+     *     "email": ["The email has already been taken."]
+     *   }
+     * }
+     * @response 500 {
+     *   "error": "Mensagem de erro interno"
+     * }
+     */
+    public function registerNewStore(Request $request): JsonResponse
     {
         try {
             $data = $request->validate([
@@ -40,9 +60,27 @@ class AuthController extends Controller
         }
     }
 
-    public function login(
-        Request $request
-    ): JsonResponse
+    /**
+     * Login
+     *
+     * Autentica o usuário e retorna o token JWT Bearer.
+     *
+     * @unauthenticated
+     *
+     * @response {
+     *   "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+     *   "token_type": "bearer",
+     *   "expires_in": 3600,
+     *   "user": {}
+     * }
+     * @response 401 {
+     *   "error": "Credenciais inválidas"
+     * }
+     * @response 403 {
+     *   "error": "Conta inativa"
+     * }
+     */
+    public function login(Request $request): JsonResponse
     {
         $credentials = $request->validate([
             'email'    => 'required|email',
@@ -65,6 +103,15 @@ class AuthController extends Controller
         return $this->respondWithToken($token);
     }
 
+    /**
+     * Logout
+     *
+     * Invalida o token JWT atual e encerra a sessão.
+     *
+     * @response {
+     *   "message": "Logout realizado com sucesso"
+     * }
+     */
     public function logout(): JsonResponse
     {
         try {
@@ -78,6 +125,13 @@ class AuthController extends Controller
         return response()->json(['message' => 'Logout realizado com sucesso']);
     }
 
+    /**
+     * Usuário autenticado
+     *
+     * Retorna os dados do usuário dono do token JWT.
+     *
+     * @response {}
+     */
     public function me(): JsonResponse
     {
         return response()->json(Auth::guard('api')->user());
