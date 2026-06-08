@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\ForgotPasswordRequest;
+use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Password;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -132,6 +135,67 @@ class AuthController extends Controller
     public function me(): JsonResponse
     {
         return response()->json(Auth::guard('api')->user());
+    }
+
+    /**
+     * Esqueci minha senha
+     *
+     * Envia um link de redefinição de senha para o e-mail informado.
+     * A resposta é sempre a mesma, independente de o e-mail existir ou não (anti-enumeração).
+     *
+     * @unauthenticated
+     *
+     * @response {
+     *   "message": "Se o e-mail estiver cadastrado, você receberá um link de recuperação em breve."
+     * }
+     * @response 422 {
+     *   "errors": {
+     *     "email": ["The email field is required."]
+     *   }
+     * }
+     * @response 429 {
+     *   "message": "Too Many Attempts."
+     * }
+     */
+    public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
+    {
+        $this->authService->sendPasswordResetLink($request->email);
+
+        return response()->json([
+            'message' => 'Se o e-mail estiver cadastrado, você receberá um link de recuperação em breve.',
+        ]);
+    }
+
+    /**
+     * Redefinir senha
+     *
+     * Valida o token recebido por e-mail e redefine a senha do usuário.
+     *
+     * @unauthenticated
+     *
+     * @response {
+     *   "message": "Senha redefinida com sucesso."
+     * }
+     * @response 400 {
+     *   "error": "Token inválido ou expirado."
+     * }
+     * @response 422 {
+     *   "errors": {
+     *     "password": ["The password field must be at least 8 characters."]
+     *   }
+     * }
+     */
+    public function resetPassword(ResetPasswordRequest $request): JsonResponse
+    {
+        $status = $this->authService->resetPassword($request->only(
+            'token', 'email', 'password', 'password_confirmation'
+        ));
+
+        if ($status !== Password::PASSWORD_RESET) {
+            return response()->json(['error' => 'Token inválido ou expirado.'], 400);
+        }
+
+        return response()->json(['message' => 'Senha redefinida com sucesso.']);
     }
 
     private function respondWithToken(string $token): JsonResponse
